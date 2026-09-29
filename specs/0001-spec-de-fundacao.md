@@ -5,7 +5,7 @@
 | **ID** | SPEC-0001 |
 | **Título** | Fundação do projeto: estrutura, convenções, build, configuração e pipelines |
 | **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Versão** | 0.2 |
 | **Data** | 2026-09-28 |
 | **Autor** | Agente de IA (Codex), sob revisão do responsável pelo projeto |
 | **Revisores** | Responsável pelo projeto CANAMED |
@@ -43,6 +43,8 @@ SPECs serão implementadas.
 - O repositório já possui commit inicial (`a272f36`) e **não possui nenhum código ainda**.
 - Ambiente verificado: .NET SDK 10.0.201, ASP.NET Core Runtime 10.0.5, Node.js v20.10.0, npm presente;
   Docker Desktop e pnpm ausentes.
+- Decisões de fundação tomadas pelo responsável pelo projeto em 2026-09-28: **PostgreSQL local**,
+  **npm**, **EF Core** e **.NET 10** (`net10.0`). Detalhamento na seção 18.
 
 ## 3. Escopo
 
@@ -52,6 +54,7 @@ SPECs serão implementadas.
 - Convenções de nomenclatura, formatação e organização de código nas duas stacks.
 - Fixação de versões de ferramentas (SDK .NET, Node.js) e arquivos de configuração de editor.
 - Estratégia de configuração por ambiente e `.env.example`.
+- Provisionamento do PostgreSQL local e configuração do EF Core com provider Npgsql.
 - Comandos padronizados de build, teste e execução local.
 - Contrato de API: versionamento, formato de erro, paginação e documentação OpenAPI.
 - Linha de base de logs estruturados e de eventos de auditoria.
@@ -90,7 +93,7 @@ Estas regras são vinculantes para todas as SPECs e todo o código subsequente.
 | RN-004 | O contrato canônico da API é o OpenAPI gerado pelo backend; tipos do frontend são gerados a partir dele e nunca escritos à mão. | ADR-0006. |
 | RN-005 | Toda rota de API é versionada sob `/api/v1`. | `GEMINI.md` (versionamento de API). |
 | RN-006 | Toda configuração vem de variáveis de ambiente; nenhum valor sensível possui padrão (*fallback*) no código. | ADR-0004. |
-| RN-007 | Alterações de schema ocorrem apenas por migrations versionadas; nenhuma alteração manual. | ADR-0007. |
+| RN-007 | Alterações de schema ocorrem apenas por **EF Core Migrations** versionadas; nenhuma alteração manual. | ADR-0007; Q-003 resolvida. |
 | RN-008 | Erros da API seguem o formato **RFC 7807 (Problem Details)**, sem expor detalhe interno. | Padronização e OWASP (não vazar informação). |
 | RN-009 | Logs são estruturados (JSON) e nunca contêm segredos, tokens ou dados pessoais de paciente. | `GEMINI.md`; ADR-0003. |
 | RN-010 | Eventos de auditoria são *append-only*, com usuário, data, hora, ação e recurso afetado. | `GEMINI.md` (Auditoria); ADR-0007. |
@@ -161,6 +164,7 @@ convenções que todas as tabelas futuras devem seguir:
 
 | Convenção | Definição |
 | :--- | :--- |
+| Acesso a dados | **EF Core** com provider Npgsql; SQL bruto apenas quando justificado na SPEC da funcionalidade |
 | Nomenclatura de tabelas e colunas | `snake_case`, em inglês, no plural para tabelas |
 | Chave primária | `id` do tipo UUID |
 | Timestamps | `created_at` e `updated_at` em UTC (`timestamptz`) |
@@ -193,6 +197,7 @@ Convenções:
 Convenções do frontend, aplicáveis a todas as telas futuras:
 
 - organização por funcionalidade (*feature folders*), não por tipo de arquivo;
+- gerenciador de pacotes **npm**, com o `package-lock.json` versionado (Q-002 resolvida);
 - cliente HTTP e tipos **gerados** a partir do OpenAPI (RN-004), encapsulados em uma camada única;
 - todo consumo de API passa por essa camada; componentes não chamam `fetch` diretamente;
 - estados obrigatórios por tela: vazio, carregando, erro e sucesso;
@@ -271,7 +276,7 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | Tipo | Cobertura mínima |
 | :--- | :--- |
 | Unitário (backend, xUnit) | Regras de camada, formatação de erro e configuração obrigatória |
-| Integração (backend) | Endpoints de saúde, conexão com banco e aplicação de migrations |
+| Integração (backend) | Endpoints de saúde, conexão com banco e aplicação de migrations em banco de teste local dedicado (Docker indisponível no ambiente) |
 | Unitário/componente (frontend, Vitest) | Camada de cliente HTTP e estados de tela |
 | Comportamento (frontend, Playwright) | Um fluxo mínimo de navegação e um cenário de erro de API |
 | Regressão | Não aplicável nesta SPEC; passa a valer a partir da primeira funcionalidade |
@@ -287,13 +292,18 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 
 ## 18. Pendências e Questões Abertas
 
+| ID | Questão | Decisão | Data |
+| :--- | :--- | :--- | :--- |
+| Q-001 | Estratégia de banco de dados local | **PostgreSQL local**, executando na máquina, sem contêiner. O modo de instalação (instalador oficial com serviço do Windows vs. binários portáteis em `D:\Tools\`) será definido na execução e exige autorização explícita, por ser alteração global do sistema | 2026-09-28 |
+| Q-002 | Gerenciador de pacotes do frontend | **npm**, com `package-lock.json` versionado | 2026-09-28 |
+| Q-003 | Acesso a dados no backend | **EF Core** com provider Npgsql; migrações via EF Core Migrations | 2026-09-28 |
+| Q-004 | Framework alvo do backend | **`net10.0`**, com o SDK 10.0.201 fixado em `global.json` | 2026-09-28 |
+
+### 18.1 Questões abertas
+
 | ID | Questão | Responsável | Prazo |
 | :--- | :--- | :--- | :--- |
-| Q-001 | Estratégia de PostgreSQL local: instalação nativa em `D:\Tools\` ou Docker Desktop (ausente)? | Responsável pelo projeto | Antes de implementar a SPEC |
-| Q-002 | Gerenciador de pacotes do frontend: `npm` (já instalado) ou `pnpm` (ausente)? | Responsável pelo projeto | Antes de implementar a SPEC |
-| Q-003 | ORM do backend: EF Core ou acesso por SQL/`Dapper`? | Responsável pelo projeto | Antes de implementar a SPEC |
-| Q-004 | Confirmar `net10.0` como framework alvo e fixação do SDK em `global.json` | Responsável pelo projeto | Antes de implementar a SPEC |
-| Q-005 | Ferramenta de orquestração do monorepo (scripts raiz, npm workspaces ou outra) | Responsável pelo projeto | Junto de Q-002 |
+| Q-005 | Orquestração do monorepo: scripts na raiz, npm workspaces ou outra | Responsável pelo projeto | Antes de implementar a SPEC |
 | Q-006 | Local e formato do pipeline CI (hospedado ou apenas verificação local no início) | Responsável pelo projeto | Pode ficar para etapa posterior |
 | Q-007 | Retenção e formato de logs de aplicação em produção | Responsável pelo projeto | Pode ficar para etapa posterior |
 
@@ -302,6 +312,7 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | Versão | Data | Autor | Alteração |
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-09-28 | Agente de IA (Codex) | Versão inicial, derivada do ADR-0006 e demais ADRs aprovados. |
+| 0.2 | 2026-09-28 | Agente de IA (Codex) | Resolve Q-001 a Q-004: PostgreSQL local, npm, EF Core e .NET 10. |
 
 ## 20. Aprovação
 
@@ -349,9 +360,10 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 
 | Arquivo | Finalidade |
 | :--- | :--- |
-| `global.json` | Fixar a versão do SDK .NET e a política de `rollForward` (Q-004) |
+| `global.json` | Fixar o SDK **10.0.201** (`net10.0`) e a política de `rollForward` (Q-004 resolvida) |
 | `.editorconfig` | Unificar formatação entre C# e TypeScript |
 | `Directory.Build.props` | Convenções comuns de compilação (nullable, warnings como erro, idioma) |
 | `.env.example` | Listar as variáveis exigidas, sem valores sensíveis (ADR-0004) |
+| `.gitattributes` | Normalizar fim de linha (`* text=auto eol=lf`) e marcar binários, evitando churn entre Windows e Linux |
 | `README.md` raiz | Pré-requisitos, provisionamento e comandos unificados (RN-011) |
 | `Canamed.sln` | Solução com os quatro projetos do backend e os projetos de teste |

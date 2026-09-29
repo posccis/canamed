@@ -133,3 +133,16 @@ Formato:
 
 A estrutura de diretórios proposta no Anexo A da SPEC-0001 **não foi criada**: aguarda aprovação para não
 introduzir diretórios especulativos no repositório antes da decisão sobre orquestração do monorepo (Q-005).
+
+---
+
+### [2026-09-28] — Fase 0: Decisões de Fundação (Q-001 a Q-004)
+
+- **AÇÃO**: Resolução das questões Q-001 a Q-004 na `specs/0001-spec-de-fundacao.md`
+  - **MOTIVO**: Decisões fornecidas pelo responsável pelo projeto, necessárias para desbloquear a implementação.
+  - **LOCAL AFETADO**: `specs/0001-spec-de-fundacao.md`, `docs/CHANGELOG_AGENTE.md`
+  - **RESULTADO**: Registradas as decisões — **PostgreSQL local** sem contêiner (Q-001), **npm** com `package-lock.json` versionado (Q-002), **EF Core** com provider Npgsql e EF Core Migrations (Q-003) e **`net10.0`** com SDK 10.0.201 fixado em `global.json` (Q-004). A SPEC foi promovida de 0.1 para **0.2**; a seção 18 foi dividida em "questões resolvidas" e "questões abertas" (Q-005 a Q-007); o `.gitattributes` foi incluído no Anexo B; a regra RN-007 passou a nomear EF Core Migrations; a convenção de acesso a dados e o gerenciador de pacotes foram incorporados às seções 7 e 9.
+- **AÇÃO**: Registro de pré-condição para a instalação do PostgreSQL
+  - **MOTIVO**: O modo de instalação ainda não foi escolhido e o instalador oficial cria serviço do Windows.
+  - **LOCAL AFETADO**: `specs/0001-spec-de-fundacao.md` (seção 18)
+  - **RESULTADO**: Registrado que o modo de instalação (serviço do Windows vs. binários portáteis em `D:\Tools\`) será definido na execução e **exige autorização explícita**, por ser alteração global do sistema. Nada foi instalado.
