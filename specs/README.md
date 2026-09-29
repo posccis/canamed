@@ -1,0 +1,80 @@
+# Especificações — CANAMED
+
+Diretório que guarda a **fonte de verdade da implementação**, conforme exigido pelo
+[`GEMINI.md`](../GEMINI.md).
+
+## Regra fundamental
+
+**Nenhuma funcionalidade deve ser implementada antes de existir uma SPEC aprovada.** O fluxo obrigatório é:
+
+1. entender o problema;
+2. criar a especificação;
+3. validar impacto;
+4. implementar;
+5. testar;
+6. atualizar documentação.
+
+## Nomenclatura e ciclo de vida
+
+- Nome do arquivo: `NNNN-titulo-em-kebab-case.md`, com numeração sequencial (`0001`, `0002`, ...).
+- Um número de SPEC **nunca** é reutilizado.
+- Após `Aprovada`, a SPEC só muda por **revisão registrada** na seção "Histórico de revisões"; mudanças de
+  escopo relevantes devem gerar uma nova SPEC ou um ADR.
+- Status válidos: `Rascunho`, `Em revisão`, `Aprovada`, `Implementada`, `Obsoleta`,
+  `Substituída por SPEC-XXXX`.
+
+## Conteúdo mínimo obrigatório
+
+Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
+
+| Exigência | Seção do modelo |
+| :--- | :--- |
+| objetivo | 1. Objetivo |
+| contexto | 2. Contexto |
+| regras de negócio | 5. Regras de negócio |
+| fluxos | 6. Fluxos |
+| critérios de aceitação | 10. Critérios de aceitação |
+| casos de erro | 11. Casos de erro |
+| impacto em outras funcionalidades | 12. Impacto em outras funcionalidades |
+| requisitos de segurança | 13. Requisitos de segurança |
+| requisitos legais aplicáveis | 14. Requisitos legais aplicáveis |
+
+## Definition of Ready (antes de implementar)
+
+- SPEC escrita com todas as seções obrigatórias preenchidas.
+- Regras de negócio numeradas, sem contradição entre si.
+- Critérios de aceitação verificáveis e casos de erro descritos.
+- Requisitos de segurança e legais preenchidos (ou marcados como "não aplicável" com justificativa).
+- ADRs necessários já aprovados.
+- Dúvidas abertas resolvidas ou explicitamente marcadas como pendência fora do escopo.
+
+## Definition of Done (antes de considerar concluída)
+
+- Critérios de aceitação atendidos e verificados por teste.
+- Testes automatizados criados (unitário, integração e/ou comportamento, conforme o caso).
+- Nenhum segredo, dado real ou dado pessoal em código, teste ou log.
+- Auditoria registrando os eventos definidos na seção 17 do modelo.
+- Documentação e ADRs atualizados; seção "Histórico de revisões" preenchida.
+- Status da SPEC atualizado para `Implementada`.
+
+## Índice
+
+| SPEC | Título | Status | Data |
+| :--- | :--- | :--- | :--- |
+| [0000](0000-modelo-de-spec.md) | Modelo de Especificação | Modelo | 2026-09-28 |
+| [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Rascunho | 2026-09-28 |
+
+A [SPEC-0001](0001-spec-de-fundacao.md) aguarda aprovação do responsável pelo projeto. **Nenhuma
+implementação de código pode começar** antes da aprovação e da resolução das questões abertas (Q-001 a Q-007)
+da própria SPEC.
+
+## Decisões que toda SPEC deve respeitar
+
+- [`adr/0001-fonte-de-verdade-documental.md`](../adr/0001-fonte-de-verdade-documental.md)
+- [`adr/0002-estrutura-de-documentacao-e-processo-spec-driven.md`](../adr/0002-estrutura-de-documentacao-e-processo-spec-driven.md)
+- [`adr/0003-segregacao-de-ambientes-e-uso-de-dados.md`](../adr/0003-segregacao-de-ambientes-e-uso-de-dados.md)
+- [`adr/0004-gestao-de-segredos-e-configuracao.md`](../adr/0004-gestao-de-segredos-e-configuracao.md)
+- [`adr/0005-versionamento-e-fluxo-de-git.md`](../adr/0005-versionamento-e-fluxo-de-git.md)
+- [`adr/0006-stack-de-aplicacao.md`](../adr/0006-stack-de-aplicacao.md)
+- [`adr/0007-banco-de-dados-e-persistencia.md`](../adr/0007-banco-de-dados-e-persistencia.md)
+- [`adr/0008-autenticacao-autorizacao-e-auditoria.md`](../adr/0008-autenticacao-autorizacao-e-auditoria.md)

@@ -288,11 +288,10 @@ instalações desnecessárias no disco C:. Instalar somente o que for necessidad
 
 | Pendência | Referência |
 | :--- | :--- |
-| Nenhuma SPEC criada | [`/specs`](specs) |
-| Decisão de stack de aplicação pendente | `adr/0006-stack-de-aplicacao.md` |
-| Decisão de banco de dados pendente | `adr/0007-banco-de-dados-e-persistencia.md` |
-| Estratégia de autenticação/autorização pendente | `adr/0008-autenticacao-autorizacao-e-auditoria.md` |
-| Repositório Git sem commit inicial | `adr/0005-versionamento-e-fluxo-de-git.md` |
+| `SPEC-0001` (fundação) escrita, aguardando aprovação | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
+| Estrutura e convenções do monorepo .NET + React a definir | `adr/0006-stack-de-aplicacao.md` |
+| Estratégia de banco local (Docker Desktop ausente) | `adr/0007-banco-de-dados-e-persistencia.md` |
+| Hospedagem e região dos dados (LGPD) | ADR futuro |
 | `assets/brand/identidadevisual.html` está truncado (sem `<head>`, `<style>` e variáveis `:root`) | `docs/identidade-visual.md` |
 
 ---

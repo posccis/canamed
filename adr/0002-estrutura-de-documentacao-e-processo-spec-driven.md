@@ -50,12 +50,14 @@ Adotar a alternativa **A**, com as seguintes regras:
 
 ### Mitigações
 
-- Manter templates enxutos (`adr/0000-template.md` e um modelo de SPEC a ser criado na primeira SPEC).
+- Manter templates enxutos: [`adr/0000-template.md`](0000-template.md) e
+  [`specs/0000-modelo-de-spec.md`](../specs/0000-modelo-de-spec.md).
 
 ## Impacto
 
 - **Documentação:** `docs/visao-produto.md` e `docs/seguranca-e-conformidade.md` criados; índice de ADRs criado.
-- **SPECs:** nenhuma criada ainda; o template de SPEC deve nascer com a primeira especificação.
+- **SPECs:** o modelo foi criado em [`specs/0000-modelo-de-spec.md`](../specs/0000-modelo-de-spec.md);
+  nenhuma SPEC funcional existe ainda.
 - **Código:** nenhum.
 - **Segurança / LGPD:** requisitos legais tornam-se item obrigatório de toda SPEC.
 

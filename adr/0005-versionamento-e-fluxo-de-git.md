@@ -11,7 +11,8 @@ O `GEMINI.md` autoriza o agente a executar `git status`, `git diff`, `git log`, 
 arquivos versionados e preparar commits, mas exige autorização explícita para `git push`, releases e
 alterações de configuração remota.
 
-O repositório local já foi inicializado na branch `main`, porém **não possui nenhum commit** (nenhum
+O repositório local já foi inicializado na branch `main` e, no momento desta decisão, **não possuía
+nenhum commit** (nenhum
 objeto em `.git/objects`) e os comandos Git estão bloqueados por erro de *ownership* do diretório
 (`unsafe repository ... owned by someone else`).
 
@@ -56,9 +57,10 @@ Adotar a alternativa **A**, com as seguintes regras:
 
 ## Pendências
 
-1. Corrigir o erro de *ownership* do diretório para permitir comandos Git — requer
+1. Realizar o **commit inicial** versionando documentação, ativos e ADRs existentes.
+   — **Concluído em 2026-09-28**: commit `a272f36` ("initial commit") na branch `main`.
+2. Corrigir o erro de *ownership* do diretório para permitir comandos Git — requer
    `git config --global --add safe.directory` (alteração de configuração global, exige autorização do usuário).
-2. Realizar o **commit inicial** versionando documentação, ativos e ADRs existentes.
 
 ## Impacto
 

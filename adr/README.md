@@ -25,11 +25,14 @@ Nunca inclua segredos, credenciais ou dados reais de pacientes em um ADR.
 | [0003](0003-segregacao-de-ambientes-e-uso-de-dados.md) | Segregação de ambientes e uso de dados | Aceito | 2026-09-28 |
 | [0004](0004-gestao-de-segredos-e-configuracao.md) | Gestão de segredos e configuração | Aceito | 2026-09-28 |
 | [0005](0005-versionamento-e-fluxo-de-git.md) | Versionamento e fluxo de Git | Aceito | 2026-09-28 |
-| [0006](0006-stack-de-aplicacao.md) | Stack de aplicação | Proposto | 2026-09-28 |
-| [0007](0007-banco-de-dados-e-persistencia.md) | Banco de dados e persistência | Proposto | 2026-09-28 |
-| [0008](0008-autenticacao-autorizacao-e-auditoria.md) | Autenticação, autorização e auditoria | Proposto | 2026-09-28 |
+| [0006](0006-stack-de-aplicacao.md) | Stack de aplicação | Aceito | 2026-09-28 |
+| [0007](0007-banco-de-dados-e-persistencia.md) | Banco de dados e persistência | Aceito | 2026-09-28 |
+| [0008](0008-autenticacao-autorizacao-e-auditoria.md) | Autenticação, autorização e auditoria | Aceito | 2026-09-28 |
 
-## Decisões pendentes de aprovação
+## Decisões pendentes
 
-Os ADRs com status `Proposto` (0006, 0007 e 0008) **bloqueiam o início da implementação**, pois definem
-stack, persistência e autenticação. Nenhuma SPEC pode ser implementada antes da aprovação deles.
+Não há ADRs aguardando aprovação. Os ADRs 0006, 0007 e 0008 foram aprovados em 2026-09-28, o que
+desbloqueia a escrita e a implementação das SPECs.
+
+Ficam pendentes apenas decisões ainda não abertas como ADR: hospedagem e região dos dados (LGPD) e o
+ADR de fundação do monorepo, que nasce junto da primeira SPEC.

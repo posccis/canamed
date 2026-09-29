@@ -1,6 +1,7 @@
 # ADR-0008 — Autenticação, autorização e auditoria
 
-- **Status:** Proposto (aguardando aprovação do responsável pelo projeto)
+- **Status:** Aceito
+- **Aprovado em:** 2026-09-28, pelo responsável pelo projeto
 - **Data:** 2026-09-28
 - **Decisores:** Responsável pelo projeto CANAMED
 - **Relacionados:** ADR-0006, ADR-0007, `docs/seguranca-e-conformidade.md`
@@ -25,7 +26,7 @@ princípios do prontuário eletrônico (CFM / NGS2)?
 | B. JWT *stateless* (access + refresh) | Escala horizontalmente sem store | Revogação difícil; risco de token exposto; complexidade de rotação |
 | C. Provedor de identidade externo (Keycloak *self-hosted* ou SaaS) | MFA e federação prontos; menos código próprio | Custo e dependência externa; dados de identidade fora do controle; região/LGPD a validar |
 
-## Decisão proposta
+## Decisão
 
 Adotar a alternativa **A**, com as seguintes diretrizes:
 
@@ -44,9 +45,10 @@ Adotar a alternativa **A**, com as seguintes diretrizes:
 
 Alternativa C permanece como opção caso o produto passe a exigir federação/SSO corporativo.
 
-> **Esta decisão depende de aprovação explícita** e da definição de stack (ADR-0006).
+> Decisão aprovada em 2026-09-28, junto com o ADR-0006. A implementação usa os recursos nativos de
+> autenticação por *cookie* do ASP.NET Core, mantendo a fronteira de sessão descrita acima.
 
-## Consequências (se aprovada)
+## Consequências
 
 ### Positivas
 

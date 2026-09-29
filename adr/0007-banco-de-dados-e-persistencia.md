@@ -1,6 +1,7 @@
 # ADR-0007 — Banco de dados e persistência
 
-- **Status:** Proposto (aguardando aprovação do responsável pelo projeto)
+- **Status:** Aceito
+- **Aprovado em:** 2026-09-28, pelo responsável pelo projeto
 - **Data:** 2026-09-28
 - **Decisores:** Responsável pelo projeto CANAMED
 - **Relacionados:** ADR-0003, ADR-0006, ADR-0008, `docs/seguranca-e-conformidade.md`
@@ -31,7 +32,7 @@ Qual tecnologia de persistência adotar e como provisioná-la em desenvolvimento
 | C. SQLite em desenvolvimento e PostgreSQL em produção | Zero infraestrutura local | Divergência de comportamento entre ambientes |
 | D. Banco de documentos (ex.: MongoDB) | Flexível | Enfraquece integridade relacional e auditoria em domínio transacional |
 
-## Decisão proposta
+## Decisão
 
 Adotar a alternativa **A**: **PostgreSQL** como banco único, com instância gerenciada em produção em
 região brasileira e uma instância local de desenvolvimento isolada por ambiente.
@@ -45,9 +46,10 @@ Diretrizes propostas:
 5. DEV e TEST com dados sintéticos, recriáveis a qualquer momento (ADR-0003).
 6. *Soft delete* apenas onde a regra de negócio exigir; exclusão de dados pessoais tratada conforme LGPD.
 
-> **Esta decisão depende de aprovação explícita** e da definição de stack (ADR-0006).
+> Decisão aprovada em 2026-09-28, junto com o ADR-0006. A stack escolhida (ASP.NET Core + React em
+> monorepo) não altera esta decisão; o PostgreSQL é acessado pelo backend.
 
-## Consequências (se aprovada)
+## Consequências
 
 ### Positivas
 
