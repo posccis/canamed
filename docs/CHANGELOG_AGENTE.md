@@ -254,3 +254,7 @@ de pendências do `PROJECT_BRIEF.md`.
   - **LOCAL AFETADO**: `specs/0002-spec-agenda-de-consultas.md`, `specs/README.md`
   - **RESULTADO**: SPEC escrita conforme o modelo, com as 9 seções obrigatórias e mais 11 complementares: 14 regras de negócio, 4 fluxos, modelo de dados com classificação LGPD, contrato de API, 10 critérios de aceitação, 6 casos de erro, requisitos de segurança e legais, e 6 questões abertas de produto (Q-001 a Q-006). Status **Rascunho**, aguardando aprovação.
   - **OBSERVAÇÃO**: Conforme a regra fundamental do `GEMINI.md` e a RN-012, **nenhuma linha de código desta funcionalidade será escrita antes da aprovação da SPEC e da resolução das questões abertas**.
+- **AÇÃO**: Correção da documentação de log do PostgreSQL no `README.md`
+  - **MOTIVO**: Verificação final mostrou que, após habilitar `logging_collector`, o arquivo apontado por `-l` deixou de receber registros; o log ativo passou para o diretório de dados.
+  - **LOCAL AFETADO**: `README.md`
+  - **RESULTADO**: Caminho real do log documentado como `D:\Tools\PostgreSQL\data\log\postgresql-<data>.log` e comando de `start` simplificado. Confirmado por `pg_isready` que o servidor permanece aceitando conexões em `127.0.0.1:5432` após todas as operações.

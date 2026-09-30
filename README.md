@@ -37,15 +37,16 @@ Antes de qualquer alteração, leia:
 ### PostgreSQL portátil (ambiente atual)
 
 Instalado em `D:\Tools\PostgreSQL\18.6` a partir dos binários oficiais, **sem serviço do Windows**,
-com dados em `D:\Tools\PostgreSQL\data` e log em `D:\Tools\PostgreSQL\logs`.
+com dados em `D:\Tools\PostgreSQL\data`.
 
 ```powershell
 $pg = 'D:\Tools\PostgreSQL\18.6\pgsql\bin'
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' -l 'D:\Tools\PostgreSQL\logs\postgres.log' start
+& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' start
 & "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' status
 & "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' stop -m fast
 ```
 
+- Log do servidor: `D:\Tools\PostgreSQL\data\log\postgresql-<data>.log` (coleta nativa habilitada).
 - Bancos: `canamed_dev` e `canamed_test`. Usuário da aplicação: `canamed_app`.
 - Senha do superusuário `postgres`: em `D:\Tools\PostgreSQL\postgres-superuser.txt`, **fora do repositório**.
 - Senha da aplicação: apenas no `.env` local, que não é versionado.
