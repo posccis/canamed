@@ -31,9 +31,25 @@ Antes de qualquer alteração, leia:
 ## Provisionamento local
 
 1. Copie `.env.example` para `.env` e preencha os valores locais (o `.env` não é versionado).
-2. Garanta um banco PostgreSQL local acessível conforme `ConnectionStrings__Canamed`.
-3. Aplique as migrations do backend (quando existirem).
-4. Instale as dependências do frontend: `npm --prefix frontend install`.
+2. Suba o PostgreSQL local (abaixo) e aplique as migrations do backend (quando existirem).
+3. Instale as dependências do frontend: `npm --prefix frontend install`.
+
+### PostgreSQL portátil (ambiente atual)
+
+Instalado em `D:\Tools\PostgreSQL\18.6` a partir dos binários oficiais, **sem serviço do Windows**,
+com dados em `D:\Tools\PostgreSQL\data` e log em `D:\Tools\PostgreSQL\logs`.
+
+```powershell
+$pg = 'D:\Tools\PostgreSQL\18.6\pgsql\bin'
+& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' -l 'D:\Tools\PostgreSQL\logs\postgres.log' start
+& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' status
+& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' stop -m fast
+```
+
+- Bancos: `canamed_dev` e `canamed_test`. Usuário da aplicação: `canamed_app`.
+- Senha do superusuário `postgres`: em `D:\Tools\PostgreSQL\postgres-superuser.txt`, **fora do repositório**.
+- Senha da aplicação: apenas no `.env` local, que não é versionado.
+- O servidor **não** sobe automaticamente com a máquina: use o comando `start` acima quando necessário.
 
 ## Comandos unificados
 

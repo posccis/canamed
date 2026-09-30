@@ -288,7 +288,6 @@ instalações desnecessárias no disco C:. Instalar somente o que for necessidad
 
 | Pendência | Referência |
 | :--- | :--- |
-| PostgreSQL local ainda não instalado (exige autorização) | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
 | Migrations do EF Core ainda não criadas | `adr/0007-banco-de-dados-e-persistencia.md` |
 | Tipos do frontend ainda não gerados a partir do OpenAPI | `adr/0006-stack-de-aplicacao.md` |
 | Testes de comportamento (Playwright) ainda não instalados | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |

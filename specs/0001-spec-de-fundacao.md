@@ -308,7 +308,7 @@ Não restam questões abertas nesta SPEC.
 
 | ID | Pendência | Situação |
 | :--- | :--- | :--- |
-| P-001 | Instalação do PostgreSQL local | Bloqueada: exige autorização explícita, por ser alteração global do sistema |
+| P-001 | Instalação do PostgreSQL local | **Concluída em 2026-09-30**: PostgreSQL 18.6 portátil em `D:\Tools\PostgreSQL`, sem serviço do Windows |
 | P-002 | Migrations do EF Core | Aguardando a primeira entidade de domínio |
 | P-003 | Geração dos tipos do frontend a partir do OpenAPI | Aguardando o primeiro endpoint de negócio; RN-004 segue pendente de aplicação |
 | P-004 | Testes de comportamento com Playwright | Adiado: exige download de navegadores; será tratado junto da primeira funcionalidade |
@@ -322,6 +322,7 @@ Não restam questões abertas nesta SPEC.
 | 0.2 | 2026-09-28 | Agente de IA (Codex) | Resolve Q-001 a Q-004: PostgreSQL local, npm, EF Core e .NET 10. |
 | 1.0 | 2026-09-29 | Agente de IA (Codex) | SPEC aprovada; resolve Q-005 a Q-007 (scripts raiz, verificação local, logs adiados). |
 | 1.1 | 2026-09-29 | Agente de IA (Codex) | Esqueleto implementado (6 projetos .NET, frontend React/Vite, arquivos raiz, comandos unificados); registradas as pendências P-001 a P-005. |
+| 1.2 | 2026-09-30 | Agente de IA (Codex) | P-001 concluída (PostgreSQL 18.6 portátil); rota do documento OpenAPI fixada em `/api/v1/openapi.json`, conforme a seção 8. |
 
 ## 20. Aprovação
 

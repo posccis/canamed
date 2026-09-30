@@ -1,10 +1,8 @@
-using System.Diagnostics;
+using Canamed.Api.Health;
 using Canamed.Application.Configuration;
 using Canamed.Infrastructure;
 using Canamed.Infrastructure.Health;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +15,7 @@ StartupRequirements.EnsureSatisfied(builder.Configuration);
 
 builder.Services.AddCanamedInfrastructure(builder.Configuration);
 builder.Services.AddProblemDetails();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi("v1");
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
 
 var app = builder.Build();
@@ -25,9 +23,10 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+// Contrato canônico da API (RN-004), disponível apenas em desenvolvimento.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi("/api/v1/openapi.json");
 }
 
 var api = app.MapGroup("/api/v1");
@@ -35,26 +34,8 @@ var api = app.MapGroup("/api/v1");
 api.MapGet("/health/live", () => Results.Ok(new HealthResponse("healthy")))
     .WithName("HealthLive");
 
-api.MapHealthChecks("/health/ready", new HealthCheckOptions { ResponseWriter = WriteReadinessAsync })
+api.MapHealthChecks("/health/ready", new HealthCheckOptions { ResponseWriter = ReadinessResponseWriter.WriteAsync })
     .WithName("HealthReady");
-
-static async Task WriteReadinessAsync(HttpContext context, HealthReport report)
-{
-    var healthy = report.Status == HealthStatus.Healthy;
-
-    context.Response.ContentType = "application/problem+json";
-
-    await context.Response.WriteAsJsonAsync(new ProblemDetails
-    {
-        Status = context.Response.StatusCode,
-        Title = healthy ? "Serviço pronto" : "Serviço indisponível",
-        Detail = healthy
-            ? "Todas as dependências obrigatórias estão acessíveis."
-            : "Uma ou mais dependências obrigatórias estão inacessíveis.",
-        Instance = context.Request.Path,
-        Extensions = { ["traceId"] = Activity.Current?.Id ?? context.TraceIdentifier },
-    });
-}
 
 app.Run();
 

@@ -210,3 +210,37 @@ introduzir diretórios especulativos no repositório antes da decisão sobre orq
 Instalação do PostgreSQL (exige autorização), migrations do EF Core, geração de tipos a partir do OpenAPI,
 testes de comportamento com Playwright e pipeline de CI. Detalhadas na seção 18.1 da SPEC-0001 e na tabela
 de pendências do `PROJECT_BRIEF.md`.
+
+---
+
+### [2026-09-30] — PostgreSQL Portátil e Ajustes de Conformidade com a SPEC
+
+#### Instalação do PostgreSQL (autorizada pelo responsável pelo projeto)
+- **AÇÃO**: Instalação do PostgreSQL 18.6 em modo portátil em `D:\Tools\PostgreSQL`
+  - **MOTIVO**: Executar a pendência P-001 da SPEC-0001 e destravar a verificação do critério CA-004.
+  - **LOCAL AFETADO**: `D:\Tools\PostgreSQL` (fora do repositório), `.env` local
+  - **RESULTADO**: Binários oficiais baixados de `get.enterprisedb.com` (327,9 MB, versão validada em `postgresql.org/versions.json`, suporte até nov/2030). Cluster inicializado em `D:\Tools\PostgreSQL\data` com autenticação `scram-sha-256` para conexões TCP e **nenhum serviço do Windows** criado. Bancos `canamed_dev` e `canamed_test` criados com a role `canamed_app` como proprietária.
+- **AÇÃO**: Inicialização do servidor como processo totalmente destacado
+  - **MOTIVO**: O `pg_ctl start` mantinha o pipe do terminal aberto, o que deixava o comando preso e colocava o banco em risco de ser encerrado junto com a sessão.
+  - **LOCAL AFETADO**: `D:\Tools\PostgreSQL\data\postgresql.conf`
+  - **RESULTADO**: `logging_collector` habilitado (log próprio em `D:\Tools\PostgreSQL\logs`) e servidor iniciado via `Win32_Process.Create`, ficando independente da sessão do agente. Instruções de `start`, `status` e `stop` documentadas no `README.md`.
+- **AÇÃO**: Criação do arquivo `.env` local
+  - **MOTIVO**: Fornecer a configuração de ambiente exigida por RN-006 sem versionar segredos.
+  - **LOCAL AFETADO**: `.env`
+  - **RESULTADO**: Credenciais geradas aleatoriamente e gravadas apenas no `.env` (a senha do superusuário ficou em `D:\Tools\PostgreSQL\postgres-superuser.txt`, fora do repositório). Confirmado por `git check-ignore` que `.env` é ignorado (`.gitignore:27`). Nenhum valor foi impresso no terminal nem registrado neste log.
+
+#### Ajustes de conformidade
+- **AÇÃO**: Correção do `Content-Type` do endpoint de prontidão
+  - **MOTIVO**: A resposta usava `application/json`, divergindo do formato Problem Details da seção 8 da SPEC-0001, porque `WriteAsJsonAsync` sobrescrevia o cabeçalho definido antes.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/Health/ReadinessResponseWriter.cs` (novo), `backend/src/Canamed.Api/Program.cs`
+  - **RESULTADO**: Escrita extraída para uma classe dedicada, com serialização explícita e `contentType` definido após a serialização. Verificado com o banco ativo: `/health/ready` responde **200** em `application/problem+json`.
+- **AÇÃO**: Fixação da rota do documento OpenAPI
+  - **MOTIVO**: Verificação pontual constatou **404** na rota esperada; o SDK 10 usa um nome de documento padrão diferente do suposto.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/Program.cs`, `backend/tests/Canamed.IntegrationTests/HealthEndpointsTests.cs`
+  - **RESULTADO**: Documento nomeado explicitamente (`AddOpenApi("v1")`) e publicado em `/api/v1/openapi.json`, conforme a seção 8 da SPEC. Coberto pelo novo teste `ContratoOpenApi_DeveEstarPublicado`.
+
+#### Verificação
+- **AÇÃO**: Reexecução da suíte completa
+  - **MOTIVO**: Validar as correções acima.
+  - **LOCAL AFETADO**: raiz do repositório
+  - **RESULTADO**: **12 testes aprovados e 0 falhas** (4 unitários, 4 de integração e 4 do frontend). Critérios CA-004 e CA-005 verificados tanto por teste automatizado quanto contra o banco real em execução.
