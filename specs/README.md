@@ -63,6 +63,7 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | :--- | :--- | :--- | :--- |
 | [0000](0000-modelo-de-spec.md) | Modelo de Especificação | Modelo | 2026-09-28 |
 | [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Aprovada | 2026-09-29 |
+| [0002](0002-spec-agenda-de-consultas.md) | Agenda de Consultas | Rascunho | 2026-09-30 |
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
 

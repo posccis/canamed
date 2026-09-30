@@ -244,3 +244,13 @@ de pendências do `PROJECT_BRIEF.md`.
   - **MOTIVO**: Validar as correções acima.
   - **LOCAL AFETADO**: raiz do repositório
   - **RESULTADO**: **12 testes aprovados e 0 falhas** (4 unitários, 4 de integração e 4 do frontend). Critérios CA-004 e CA-005 verificados tanto por teste automatizado quanto contra o banco real em execução.
+
+---
+
+### [2026-09-30] — Primeira SPEC Funcional
+
+- **AÇÃO**: Criação da `specs/0002-spec-agenda-de-consultas.md`
+  - **MOTIVO**: Iniciar o desenvolvimento orientado por especificação sobre o pilar de gestão de agenda, que é a base dos demais pilares do produto.
+  - **LOCAL AFETADO**: `specs/0002-spec-agenda-de-consultas.md`, `specs/README.md`
+  - **RESULTADO**: SPEC escrita conforme o modelo, com as 9 seções obrigatórias e mais 11 complementares: 14 regras de negócio, 4 fluxos, modelo de dados com classificação LGPD, contrato de API, 10 critérios de aceitação, 6 casos de erro, requisitos de segurança e legais, e 6 questões abertas de produto (Q-001 a Q-006). Status **Rascunho**, aguardando aprovação.
+  - **OBSERVAÇÃO**: Conforme a regra fundamental do `GEMINI.md` e a RN-012, **nenhuma linha de código desta funcionalidade será escrita antes da aprovação da SPEC e da resolução das questões abertas**.
