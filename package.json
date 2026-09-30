@@ -1,0 +1,17 @@
+{
+  "name": "canamed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo do CANAMED - backend ASP.NET Core + frontend React",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "dotnet build Canamed.sln --nologo",
+    "build:frontend": "npm --prefix frontend run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "dotnet test Canamed.sln --nologo",
+    "test:frontend": "npm --prefix frontend run test -- --run"
+  }
+}

@@ -15,6 +15,14 @@ out/
 coverage/
 *.tsbuildinfo
 
+# .NET (build, artefatos e ferramentas)
+[Bb]in/
+[Oo]bj/
+artifacts/
+project.lock.json
+*.nupkg
+*.snupkg
+
 # Segredos, Chaves e Variáveis de Ambiente (CRÍTICO - LGPD / Segurança)
 .env
 .env.*

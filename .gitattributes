@@ -1,0 +1,18 @@
+# Normaliza fim de linha em todo o repositório.
+* text=auto eol=lf
+
+# Arquivos gerados por ferramentas Windows permanecem em CRLF.
+*.sln text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binários não sofrem normalização.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
