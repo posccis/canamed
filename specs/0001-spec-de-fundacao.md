@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0001 |
 | **Título** | Fundação do projeto: estrutura, convenções, build, configuração e pipelines |
-| **Status** | Rascunho |
-| **Versão** | 0.2 |
+| **Status** | Aprovada |
+| **Versão** | 1.0 |
 | **Data** | 2026-09-28 |
 | **Autor** | Agente de IA (Codex), sob revisão do responsável pelo projeto |
 | **Revisores** | Responsável pelo projeto CANAMED |
@@ -290,7 +290,7 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | Requisição de negócio | recurso | `traceId`, usuário (quando autenticado), rota, resultado — sem dados pessoais no corpo do log |
 | Migração aplicada | banco | data, hora, ambiente, identificação da migração |
 
-## 18. Pendências e Questões Abertas
+## 18. Decisões de Fundação
 
 | ID | Questão | Decisão | Data |
 | :--- | :--- | :--- | :--- |
@@ -298,14 +298,21 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | Q-002 | Gerenciador de pacotes do frontend | **npm**, com `package-lock.json` versionado | 2026-09-28 |
 | Q-003 | Acesso a dados no backend | **EF Core** com provider Npgsql; migrações via EF Core Migrations | 2026-09-28 |
 | Q-004 | Framework alvo do backend | **`net10.0`**, com o SDK 10.0.201 fixado em `global.json` | 2026-09-28 |
+| Q-005 | Orquestração do monorepo | **Scripts na raiz**: um `package.json` raiz expõe `npm run build` e `npm run test`, invocando `dotnet` e o próprio `npm`. Sem ferramenta adicional de monorepo | 2026-09-29 |
+| Q-006 | Pipeline de CI | **Verificação local** nesta fase, pelos comandos unificados; CI hospedada em etapa posterior | 2026-09-29 |
+| Q-007 | Retenção e formato de logs em produção | Adiado para a futura SPEC de autenticação e observabilidade; nesta fase, apenas logs estruturados em JSON | 2026-09-29 |
 
-### 18.1 Questões abertas
+Não restam questões abertas nesta SPEC.
 
-| ID | Questão | Responsável | Prazo |
-| :--- | :--- | :--- | :--- |
-| Q-005 | Orquestração do monorepo: scripts na raiz, npm workspaces ou outra | Responsável pelo projeto | Antes de implementar a SPEC |
-| Q-006 | Local e formato do pipeline CI (hospedado ou apenas verificação local no início) | Responsável pelo projeto | Pode ficar para etapa posterior |
-| Q-007 | Retenção e formato de logs de aplicação em produção | Responsável pelo projeto | Pode ficar para etapa posterior |
+### 18.1 Pendências de Implementação
+
+| ID | Pendência | Situação |
+| :--- | :--- | :--- |
+| P-001 | Instalação do PostgreSQL local | Bloqueada: exige autorização explícita, por ser alteração global do sistema |
+| P-002 | Migrations do EF Core | Aguardando a primeira entidade de domínio |
+| P-003 | Geração dos tipos do frontend a partir do OpenAPI | Aguardando o primeiro endpoint de negócio; RN-004 segue pendente de aplicação |
+| P-004 | Testes de comportamento com Playwright | Adiado: exige download de navegadores; será tratado junto da primeira funcionalidade |
+| P-005 | Pipeline de CI hospedada | Adiado conforme Q-006 |
 
 ## 19. Histórico de Revisões
 
@@ -313,13 +320,15 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-09-28 | Agente de IA (Codex) | Versão inicial, derivada do ADR-0006 e demais ADRs aprovados. |
 | 0.2 | 2026-09-28 | Agente de IA (Codex) | Resolve Q-001 a Q-004: PostgreSQL local, npm, EF Core e .NET 10. |
+| 1.0 | 2026-09-29 | Agente de IA (Codex) | SPEC aprovada; resolve Q-005 a Q-007 (scripts raiz, verificação local, logs adiados). |
+| 1.1 | 2026-09-29 | Agente de IA (Codex) | Esqueleto implementado (6 projetos .NET, frontend React/Vite, arquivos raiz, comandos unificados); registradas as pendências P-001 a P-005. |
 
 ## 20. Aprovação
 
 | Papel | Nome | Data | Status |
 | :--- | :--- | :--- | :--- |
 | Autor | Agente de IA (Codex) | 2026-09-28 | Escrita |
-| Aprovador | Responsável pelo projeto CANAMED | | **Pendente** |
+| Aprovador | Responsável pelo projeto CANAMED | 2026-09-29 | **Aprovado** |
 
 ---
 
@@ -329,10 +338,12 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 /
 ├─ .editorconfig
 ├─ .gitignore
+├─ .gitattributes
 ├─ .env.example
 ├─ global.json
 ├─ Canamed.sln
 ├─ Directory.Build.props
+├─ package.json
 ├─ README.md
 ├─ adr/
 ├─ assets/
@@ -367,3 +378,4 @@ Convenções do frontend, aplicáveis a todas as telas futuras:
 | `.gitattributes` | Normalizar fim de linha (`* text=auto eol=lf`) e marcar binários, evitando churn entre Windows e Linux |
 | `README.md` raiz | Pré-requisitos, provisionamento e comandos unificados (RN-011) |
 | `Canamed.sln` | Solução com os quatro projetos do backend e os projetos de teste |
+| `package.json` raiz | Expor `npm run build` e `npm run test`, orquestrando backend e frontend (Q-005) |

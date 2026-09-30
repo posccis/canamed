@@ -146,3 +146,67 @@ introduzir diretórios especulativos no repositório antes da decisão sobre orq
   - **MOTIVO**: O modo de instalação ainda não foi escolhido e o instalador oficial cria serviço do Windows.
   - **LOCAL AFETADO**: `specs/0001-spec-de-fundacao.md` (seção 18)
   - **RESULTADO**: Registrado que o modo de instalação (serviço do Windows vs. binários portáteis em `D:\Tools\`) será definido na execução e **exige autorização explícita**, por ser alteração global do sistema. Nada foi instalado.
+
+---
+
+### [2026-09-29] — Fase 0: Implementação do Esqueleto (SPEC-0001 aprovada)
+
+#### Aprovação
+- **AÇÃO**: `specs/0001-spec-de-fundacao.md` promovida para `Aprovada` (v1.0) e, na sequência, revisada para v1.1
+  - **MOTIVO**: Aprovação concedida pelo responsável pelo projeto, com os defaults propostos para Q-005 a Q-007.
+  - **LOCAL AFETADO**: `specs/0001-spec-de-fundacao.md`, `specs/README.md`, `PROJECT_BRIEF.md`
+  - **RESULTADO**: Q-005 resolvida (scripts na raiz em `package.json`, sem ferramenta extra de monorepo), Q-006 (verificação local nesta fase) e Q-007 (logs adiados). Adicionada a seção 18.1 com as pendências de implementação P-001 a P-005.
+
+#### Arquivos raiz criados
+- **AÇÃO**: Criação de `global.json`, `.gitattributes`, `.editorconfig`, `Directory.Build.props`, `.env.example`, `package.json` e `README.md` na raiz
+  - **MOTIVO**: Cumprir o Anexo B da SPEC-0001.
+  - **LOCAL AFETADO**: raiz do repositório
+  - **RESULTADO**: SDK .NET fixado em 10.0.201; fim de linha normalizado; convenções de formatação para C# e TypeScript; `nullable` e `TreatWarningsAsErrors` habilitados; template de variáveis de ambiente sem valores sensíveis; comandos unificados `npm run build` e `npm run test`.
+- **AÇÃO**: Ampliação do `.gitignore` com artefatos .NET
+  - **MOTIVO**: `bin/` e `obj/` não estavam cobertos, o que permitiria versionar artefatos de build.
+  - **LOCAL AFETADO**: `.gitignore`
+  - **RESULTADO**: Adicionadas as regras `[Bb]in/`, `[Oo]bj/`, `artifacts/`, `project.lock.json`, `*.nupkg` e `*.snupkg`. Verificado que `bin/`, `obj/`, `dist/` e `node_modules` não aparecem no `git status`.
+
+#### Backend
+- **AÇÃO**: Criação da solução `Canamed.sln` com 6 projetos (Domain, Application, Infrastructure, Api, UnitTests, IntegrationTests) e as referências entre camadas
+  - **MOTIVO**: Estrutura definida no Anexo A da SPEC-0001 (RN-001 a RN-002).
+  - **LOCAL AFETADO**: `Canamed.sln`, `backend/`
+  - **RESULTADO**: `Domain` sem dependências; `Application` → `Domain`; `Infrastructure` → `Application`; `Api` → `Application` e `Infrastructure`. O SDK gerou `Canamed.slnx` por padrão; o formato clássico `.sln` foi mantido para compatibilidade com o ferramental e com a SPEC.
+- **AÇÃO**: Adição dos pacotes `Microsoft.EntityFrameworkCore` 10.0.12, `Npgsql.EntityFrameworkCore.PostgreSQL` 10.0.3, `Microsoft.AspNetCore.OpenApi` 10.0.12 e `Microsoft.AspNetCore.Mvc.Testing` 10.0.12
+  - **MOTIVO**: Stack aprovada no ADR-0006 e no ADR-0007 (Q-002 a Q-004).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/Canamed.Infrastructure.csproj`, `backend/src/Canamed.Api/Canamed.Api.csproj`, `backend/tests/Canamed.IntegrationTests/Canamed.IntegrationTests.csproj`
+  - **RESULTADO**: Versões alinhadas ao `net10.0`.
+- **AÇÃO**: Correção de vulnerabilidade detectada pelo NuGet Audit
+  - **MOTIVO**: O restore falhou com `NU1903`: o pacote `Microsoft.OpenApi` 2.0.0, dependência transitiva do template, possui advisory de alta severidade (GHSA-v5pm-xwqc-g5wc).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/Canamed.Api.csproj`
+  - **RESULTADO**: `Microsoft.AspNetCore.OpenApi` elevado de 10.0.5 para **10.0.12**, eliminando a versão vulnerável. O NuGet Audit permanece habilitado e o build voltou a passar sem alertas.
+- **AÇÃO**: Implementação do código de fundação do backend
+  - **MOTIVO**: Atender às seções 5 a 8 e 13 da SPEC-0001.
+  - **LOCAL AFETADO**: `Canamed.Application/Configuration/StartupRequirements.cs`, `Canamed.Infrastructure/Persistence/CanamedDbContext.cs`, `Canamed.Infrastructure/Health/DatabaseHealthCheck.cs`, `Canamed.Infrastructure/DependencyInjection.cs`, `Canamed.Api/Program.cs`, `Canamed.Api/Properties/launchSettings.json`, `Canamed.Api/Canamed.Api.http`
+  - **RESULTADO**: Validação de configuração com falha rápida sem expor valores (ER-002); logs estruturados em JSON (RN-009); `ProblemDetails` (RFC 7807) para erros; OpenAPI em desenvolvimento; endpoints `/api/v1/health/live` e `/api/v1/health/ready`, com o segundo verificando o banco via EF Core e respondendo 503 quando indisponível. Porta local padronizada em `5080`.
+
+#### Frontend
+- **AÇÃO**: Scaffold manual do frontend React + TypeScript + Vite + Vitest
+  - **MOTIVO**: Cumprir `frontend/` do Anexo A e viabilizar os comandos unificados (CA-001 e CA-002).
+  - **LOCAL AFETADO**: `frontend/`
+  - **RESULTADO**: Build via Vite 6.4.3 e 4 testes com Vitest passando. O scaffold manual foi escolhido em vez de `npm create vite@latest` porque o template atual exige Vite 7, incompatível com o Node.js 20.10.0 do ambiente. Inclui tokens visuais oficiais em `src/styles/theme.css`, derivados de `docs/identidade-visual.md`.
+- **AÇÃO**: Criação da camada de cliente HTTP e de seus testes
+  - **MOTIVO**: Seção 9 da SPEC-0001 (todo consumo de API passa por uma camada única).
+  - **LOCAL AFETADO**: `frontend/src/api/client.ts`, `frontend/src/api/client.test.ts`
+  - **RESULTADO**: `apiGet` converte falhas em `ApiError` a partir do Problem Details, preservando `status` e `traceId`. Um defeito de leitura dupla do corpo da resposta foi identificado e corrigido antes do commit.
+
+#### Verificação
+- **AÇÃO**: Execução dos comandos unificados de build e teste
+  - **MOTIVO**: Validar os critérios de aceitação CA-001 e CA-002.
+  - **LOCAL AFETADO**: raiz do repositório
+  - **RESULTADO**: `npm run build` e `npm run test` concluíram com sucesso: backend compilado com 0 avisos e 0 erros, **10 testes aprovados** (4 unitários, 2 de integração e 4 do frontend) e 0 falhas.
+- **AÇÃO**: Auditoria de dependências do frontend
+  - **MOTIVO**: A instalação reportou 2 vulnerabilidades moderadas.
+  - **LOCAL AFETADO**: `frontend/`, `docs/seguranca-e-conformidade.md`
+  - **RESULTADO**: Ambas restritas à dependência **de desenvolvimento** `@vitest/mocker` (GHSA-82fw-gwwq-j7x9). `npm audit --omit=dev` reporta **0 vulnerabilidades** em produção. A correção exige `vitest@5`, incompatível com o Node.js 20.10.0. Risco aceito temporariamente e registrado na nova seção 8 de `docs/seguranca-e-conformidade.md`, com reavaliação condicionada à atualização do Node.js.
+
+#### Pendências registradas
+
+Instalação do PostgreSQL (exige autorização), migrations do EF Core, geração de tipos a partir do OpenAPI,
+testes de comportamento com Playwright e pipeline de CI. Detalhadas na seção 18.1 da SPEC-0001 e na tabela
+de pendências do `PROJECT_BRIEF.md`.

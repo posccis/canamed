@@ -1,0 +1,42 @@
+/*
+ * Tokens visuais oficiais da marca.
+ * Fonte de verdade: assets/brand/ e docs/identidade-visual.md.
+ * Não alterar valores sem atualização formal da identidade visual.
+ */
+:root {
+  --color-primary: #008080;
+  --color-secondary: #005f6a;
+  --color-accent: #66cdaa;
+  --color-text: #333333;
+  --color-surface: #f7fafc;
+  --color-border: #e2e8f0;
+  --color-highlight: #e6fffa;
+  --font-family-base: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.app__title {
+  margin: 0;
+  color: var(--color-secondary);
+  font-weight: 700;
+}
+
+.app__tagline {
+  margin: 0;
+  color: var(--color-primary);
+}

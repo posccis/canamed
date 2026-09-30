@@ -62,11 +62,9 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | SPEC | Título | Status | Data |
 | :--- | :--- | :--- | :--- |
 | [0000](0000-modelo-de-spec.md) | Modelo de Especificação | Modelo | 2026-09-28 |
-| [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Rascunho | 2026-09-28 |
+| [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Aprovada | 2026-09-29 |
 
-A [SPEC-0001](0001-spec-de-fundacao.md) aguarda aprovação do responsável pelo projeto. **Nenhuma
-implementação de código pode começar** antes da aprovação e da resolução das questões abertas (Q-001 a Q-007)
-da própria SPEC.
+A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
 
 ## Decisões que toda SPEC deve respeitar
 

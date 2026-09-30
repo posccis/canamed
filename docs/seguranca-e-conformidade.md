@@ -176,6 +176,23 @@ Antes de considerar uma funcionalidade concluída, confirmar:
 - [ ] Impacto em retenção/guarda avaliado quando houver prontuário.
 - [ ] Documentação e ADRs atualizados.
 
+## 8. Vulnerabilidades Conhecidas e Aceitas
+
+### Dependência de desenvolvimento
+
+| Pacote | Severidade | Situação | Justificativa |
+| :--- | :--- | :--- | :--- |
+| `@vitest/mocker` (via `vitest`) | Moderada — *Path Traversal / Arbitrary File Read* (GHSA-82fw-gwwq-j7x9) | **Aceita temporariamente** | Afeta apenas a ferramenta de testes. `npm audit --omit=dev` reporta **0 vulnerabilidades** nas dependências de produção. A correção exige `vitest@5`, mudança incompatível com o Node.js 20.10.0 do ambiente atual. Reavaliar após atualizar o Node.js |
+
+### Regras
+
+- Vulnerabilidade em dependência **de produção** não é aceita: deve ser corrigida antes de qualquer release.
+- Toda vulnerabilidade aceita exige justificativa registrada aqui e prazo de reavaliação.
+- Verificações obrigatórias: `npm audit --omit=dev` no frontend e **NuGet Audit** no backend.
+- O NuGet Audit permanece habilitado e bloqueando o build. Ele já detectou e impediu o uso de
+  `Microsoft.OpenApi` 2.0.0 (advisory GHSA-v5pm-xwqc-g5wc), resolvido ao subir
+  `Microsoft.AspNetCore.OpenApi` para 10.0.12.
+
 ## Referências
 
 - [`GEMINI.md`](../GEMINI.md) — requisitos completos de segurança e conformidade.

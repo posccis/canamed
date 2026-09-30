@@ -288,9 +288,11 @@ instalações desnecessárias no disco C:. Instalar somente o que for necessidad
 
 | Pendência | Referência |
 | :--- | :--- |
-| `SPEC-0001` (fundação) escrita, aguardando aprovação | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
-| Estrutura e convenções do monorepo .NET + React a definir | `adr/0006-stack-de-aplicacao.md` |
-| Estratégia de banco local (Docker Desktop ausente) | `adr/0007-banco-de-dados-e-persistencia.md` |
+| PostgreSQL local ainda não instalado (exige autorização) | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
+| Migrations do EF Core ainda não criadas | `adr/0007-banco-de-dados-e-persistencia.md` |
+| Tipos do frontend ainda não gerados a partir do OpenAPI | `adr/0006-stack-de-aplicacao.md` |
+| Testes de comportamento (Playwright) ainda não instalados | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
+| Vulnerabilidade moderada aceita em dependência de desenvolvimento (`vitest`) | [`docs/seguranca-e-conformidade.md`](docs/seguranca-e-conformidade.md) |
 | Hospedagem e região dos dados (LGPD) | ADR futuro |
 | `assets/brand/identidadevisual.html` está truncado (sem `<head>`, `<style>` e variáveis `:root`) | `docs/identidade-visual.md` |
 

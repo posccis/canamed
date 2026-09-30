@@ -1,0 +1,12 @@
+@host = http://localhost:5080
+
+### Liveness — deve responder 200
+GET {{host}}/api/v1/health/live
+Accept: application/json
+
+### Readiness — 200 com banco acessível, 503 com Problem Details quando indisponível
+GET {{host}}/api/v1/health/ready
+Accept: application/problem+json
+
+### Rota inexistente — deve responder 404 em Problem Details (RFC 7807)
+GET {{host}}/api/v1/rota-inexistente
