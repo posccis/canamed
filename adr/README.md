@@ -28,11 +28,14 @@ Nunca inclua segredos, credenciais ou dados reais de pacientes em um ADR.
 | [0006](0006-stack-de-aplicacao.md) | Stack de aplicação | Aceito | 2026-09-28 |
 | [0007](0007-banco-de-dados-e-persistencia.md) | Banco de dados e persistência | Aceito | 2026-09-28 |
 | [0008](0008-autenticacao-autorizacao-e-auditoria.md) | Autenticação, autorização e auditoria | Aceito | 2026-09-28 |
+| [0009](0009-identidade-de-desenvolvimento-e-autorizacao-temporaria.md) | Identidade de desenvolvimento e autorização temporária | Substituído por ADR-0010 | 2026-09-30 |
+| [0010](0010-sessao-de-usuario-e-substituicao-da-identidade-de-desenvolvimento.md) | Sessão de usuário e substituição da identidade de desenvolvimento | Aceito | 2026-10-01 |
 
 ## Decisões pendentes
 
-Não há ADRs aguardando aprovação. Os ADRs 0006, 0007 e 0008 foram aprovados em 2026-09-28, o que
-desbloqueia a escrita e a implementação das SPECs.
+Ficam pendentes apenas decisões ainda não abertas como ADR: hospedagem e região dos dados (LGPD) e
+CI/CD hospedada.
 
-Ficam pendentes apenas decisões ainda não abertas como ADR: hospedagem e região dos dados (LGPD) e o
-ADR de fundação do monorepo, que nasce junto da primeira SPEC.
+Não há ADRs aguardando aprovação. Os ADRs 0006, 0007 e 0008 foram aprovados em 2026-09-28, o ADR-0009
+em 2026-09-30 (substituído pelo ADR-0010 em 2026-10-01) e o ADR-0010 foi aprovado em 2026-10-01 junto da
+[SPEC-0003](../specs/0003-spec-autenticacao-autorizacao-e-auditoria.md).

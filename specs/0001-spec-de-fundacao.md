@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0001 |
 | **Título** | Fundação do projeto: estrutura, convenções, build, configuração e pipelines |
-| **Status** | Aprovada |
-| **Versão** | 1.0 |
+| **Status** | Implementada |
+| **Versão** | 1.3 |
 | **Data** | 2026-09-28 |
 | **Autor** | Agente de IA (Codex), sob revisão do responsável pelo projeto |
 | **Revisores** | Responsável pelo projeto CANAMED |
@@ -309,9 +309,9 @@ Não restam questões abertas nesta SPEC.
 | ID | Pendência | Situação |
 | :--- | :--- | :--- |
 | P-001 | Instalação do PostgreSQL local | **Concluída em 2026-09-30**: PostgreSQL 18.6 portátil em `D:\Tools\PostgreSQL`, sem serviço do Windows |
-| P-002 | Migrations do EF Core | Aguardando a primeira entidade de domínio |
-| P-003 | Geração dos tipos do frontend a partir do OpenAPI | Aguardando o primeiro endpoint de negócio; RN-004 segue pendente de aplicação |
-| P-004 | Testes de comportamento com Playwright | Adiado: exige download de navegadores; será tratado junto da primeira funcionalidade |
+| P-002 | Migrations do EF Core | **Concluída em 2026-09-30** pela [SPEC-0002](0002-spec-agenda-de-consultas.md): migration `InitialAgendaSchema` criada e aplicada |
+| P-003 | Geração dos tipos do frontend a partir do OpenAPI | **Concluída em 2026-09-30** pela [SPEC-0002](0002-spec-agenda-de-consultas.md): `npm run generate:api` gera `frontend/src/api/schema.d.ts` a partir do contrato; RN-004 em vigor |
+| P-004 | Testes de comportamento com Playwright | Pendente: exige download de navegadores. Rastreada como P-002 da [SPEC-0002](0002-spec-agenda-de-consultas.md), que já entregou a primeira funcionalidade |
 | P-005 | Pipeline de CI hospedada | Adiado conforme Q-006 |
 
 ## 19. Histórico de Revisões
@@ -323,6 +323,7 @@ Não restam questões abertas nesta SPEC.
 | 1.0 | 2026-09-29 | Agente de IA (Codex) | SPEC aprovada; resolve Q-005 a Q-007 (scripts raiz, verificação local, logs adiados). |
 | 1.1 | 2026-09-29 | Agente de IA (Codex) | Esqueleto implementado (6 projetos .NET, frontend React/Vite, arquivos raiz, comandos unificados); registradas as pendências P-001 a P-005. |
 | 1.2 | 2026-09-30 | Agente de IA (Codex) | P-001 concluída (PostgreSQL 18.6 portátil); rota do documento OpenAPI fixada em `/api/v1/openapi.json`, conforme a seção 8. |
+| 1.3 | 2026-09-30 | Agente de IA (Codex) | P-002 e P-003 concluídas pela SPEC-0002 (migrations do EF Core e geração dos tipos do frontend a partir do OpenAPI); P-004 passa a ser rastreada na SPEC-0002. |
 
 ## 20. Aprovação
 

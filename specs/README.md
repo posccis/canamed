@@ -62,10 +62,21 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | SPEC | Título | Status | Data |
 | :--- | :--- | :--- | :--- |
 | [0000](0000-modelo-de-spec.md) | Modelo de Especificação | Modelo | 2026-09-28 |
-| [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Aprovada | 2026-09-29 |
-| [0002](0002-spec-agenda-de-consultas.md) | Agenda de Consultas | Rascunho | 2026-09-30 |
+| [0001](0001-spec-de-fundacao.md) | Fundação do Projeto (monorepo .NET + React) | Implementada | 2026-09-29 |
+| [0002](0002-spec-agenda-de-consultas.md) | Agenda de Consultas | Implementada | 2026-09-30 |
+| [0003](0003-spec-autenticacao-autorizacao-e-auditoria.md) | Autenticação, Autorização e Auditoria | Implementada | 2026-10-01 |
+| [0004](0004-spec-catalogo-e-classificacao-das-consultas.md) | Catálogo Assistencial e Classificação das Consultas | Implementada | 2026-10-01 |
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
+Está implementada, com P-002 (migrations) e P-003 (tipos do frontend gerados a partir do OpenAPI)
+resolvidas pela [SPEC-0002](0002-spec-agenda-de-consultas.md).
+
+A [SPEC-0002](0002-spec-agenda-de-consultas.md) está **aprovada e implementada** (v1.0): agenda de
+consultas com criação, remarcação, cancelamento e bloqueio de horário, coberta por testes unitários, de
+integração e de frontend. As decisões de produto Q-001 a Q-006 estão registradas na seção 18.1 e as
+pendências na seção 18.2.
+
+Guia operacional do projeto: [`docs/guia-de-uso-e-execucao.md`](../docs/guia-de-uso-e-execucao.md).
 
 ## Decisões que toda SPEC deve respeitar
 

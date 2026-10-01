@@ -11,6 +11,16 @@ Antes de qualquer alteração, leia:
 - [`specs/README.md`](specs/README.md) — processo spec-driven. **Nenhuma funcionalidade sem SPEC aprovada.**
 - [`adr/README.md`](adr/README.md) — decisões arquiteturais.
 - [`docs/`](docs) — visão de produto, identidade visual e segurança/conformidade.
+- [`docs/guia-de-uso-e-execucao.md`](docs/guia-de-uso-e-execucao.md) — **guia de instalação, execução e uso**.
+
+## Estado atual
+
+| Entrega | Situação |
+| :--- | :--- |
+| Fundação do monorepo (.NET 10 + React/Vite) | Implementada — [SPEC-0001](specs/0001-spec-de-fundacao.md) |
+| Agenda de consultas (agendar, remarcar, cancelar, bloquear) | Implementada — [SPEC-0002](specs/0002-spec-agenda-de-consultas.md) |
+| Login, sessão, papéis por clínica, segundo fator e usuários | Implementada — [SPEC-0003](specs/0003-spec-autenticacao-autorizacao-e-auditoria.md) |
+| Fila de espera, triagem, pagamentos, dashboards e gestão operacional | Pendente — [backlog priorizado](docs/backlog-proximas-funcionalidades.md) |
 
 ## Estrutura
 
@@ -31,8 +41,14 @@ Antes de qualquer alteração, leia:
 ## Provisionamento local
 
 1. Copie `.env.example` para `.env` e preencha os valores locais (o `.env` não é versionado).
-2. Suba o PostgreSQL local (abaixo) e aplique as migrations do backend (quando existirem).
+2. Suba o PostgreSQL local (abaixo) e aplique as migrations do backend (abaixo).
 3. Instale as dependências do frontend: `npm --prefix frontend install`.
+
+### Migrations
+
+```powershell
+dotnet ef database update --project backend/src/Canamed.Infrastructure --startup-project backend/src/Canamed.Api
+```
 
 ### PostgreSQL portátil (ambiente atual)
 
@@ -57,7 +73,26 @@ $pg = 'D:\Tools\PostgreSQL\18.6\pgsql\bin'
 ```bash
 npm run build   # compila backend e frontend
 npm run test    # executa os testes das duas stacks
+npm run test:e2e       # testes de comportamento no navegador (Playwright)
+npm run generate:api   # regenera os tipos do frontend a partir do OpenAPI (API em execução)
 ```
+
+Os testes de integração do backend usam o banco `canamed_test` e exigem o PostgreSQL em execução.
+Os testes de comportamento usam o banco de desenvolvimento e o gestor criado a partir do `.env`
+([`docs/guia-de-uso-e-execucao.md`](docs/guia-de-uso-e-execucao.md), seção 9).
+
+## Execução local
+
+```bash
+dotnet run --project backend/src/Canamed.Api   # API em http://localhost:5080
+npm --prefix frontend run dev                 # SPA em http://localhost:5173
+```
+
+Em Development, a API cria dados sintéticos de demonstração (clínica, profissional, paciente e tipos de
+atendimento) e o primeiro usuário gestor — cujo e-mail e senha vêm de `Canamed__Development__SeedUser*`
+no `.env` — quando o banco está vazio. O acesso é sempre pelo login, com verificação em duas etapas
+obrigatória para o papel de gestor. Detalhes, roteiro de uso e solução de problemas estão no
+[`docs/guia-de-uso-e-execucao.md`](docs/guia-de-uso-e-execucao.md).
 
 Equivalentes por stack:
 

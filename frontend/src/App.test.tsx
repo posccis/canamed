@@ -1,13 +1,77 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mocks = vi.hoisted(() => ({
+  apiGet: vi.fn(),
+  apiPost: vi.fn(),
+}));
+
+vi.mock('./api/client', () => ({
+  ApiError: class ApiError extends Error {
+    public readonly status: number;
+
+    public readonly detail: string | undefined;
+
+    public readonly extensions: Record<string, unknown> = {};
+
+    public constructor(status: number, title: string) {
+      super(title);
+      this.status = status;
+      this.detail = title;
+    }
+  },
+  apiGet: mocks.apiGet,
+  apiPost: mocks.apiPost,
+}));
+
+import { ApiError } from './api/client';
 import { App } from './App';
 
 describe('App', () => {
-  it('exibe o nome e a tagline oficiais da marca', () => {
+  beforeEach(() => {
+    mocks.apiGet.mockReset();
+    mocks.apiPost.mockReset();
+  });
+
+  it('exige login antes de mostrar qualquer funcionalidade', async () => {
+    mocks.apiGet.mockRejectedValue(new ApiError(401, 'Sessão expirada'));
+
     render(<App />);
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CANA MED');
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('CANA MED');
     expect(screen.getByText('Eficiência para quem mais precisa.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Agenda$/ })).not.toBeInTheDocument();
+  });
+
+  it('mostra a agenda quando a sessão está ativa', async () => {
+    mocks.apiGet.mockImplementation(async (path: string) => {
+      if (path === '/auth/session') {
+        return {
+          user: { id: 'usuario-1', name: 'Recepção Teste', email: 'recepcao@canamed.local' },
+          clinicId: 'clinica-1',
+          clinicName: 'Clínica Teste',
+          role: 'recepcionista',
+          permissions: ['agenda:read', 'agenda:write'],
+          professionalId: null,
+          mfaEnabled: false,
+          mfaPending: false,
+          clinics: [{ id: 'clinica-1', name: 'Clínica Teste', role: 'recepcionista' }],
+          expiresAt: '2026-10-01T20:00:00Z',
+        };
+      }
+
+      if (path.startsWith('/appointments')) {
+        return { date: '2026-10-01', professionalId: null, appointments: [], blocks: [] };
+      }
+
+      return [];
+    });
+
+    render(<App />);
+
+    expect(await screen.findByRole('button', { name: /^Agenda$/ })).toBeInTheDocument();
+    expect(await screen.findByText('Nenhum agendamento para esta data.')).toBeInTheDocument();
+    expect(screen.getByText(/Clínica Teste/)).toBeInTheDocument();
   });
 });

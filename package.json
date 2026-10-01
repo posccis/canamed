@@ -12,6 +12,8 @@
     "build:frontend": "npm --prefix frontend run build",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "dotnet test Canamed.sln --nologo",
-    "test:frontend": "npm --prefix frontend run test -- --run"
+    "test:frontend": "npm --prefix frontend run test -- --run",
+    "test:e2e": "npm --prefix frontend run test:e2e",
+    "generate:api": "npm --prefix frontend run generate:api"
   }
 }

@@ -4,8 +4,8 @@
 > Requisitos legais aqui registrados são **obrigatórios** e devem constar na SPEC de cada funcionalidade
 > que trate dados pessoais ou de saúde.
 
-- **Versão:** 1.0
-- **Data:** 2026-09-28
+- **Versão:** 1.2
+- **Data:** 2026-10-01
 - **Status:** Vigente
 
 ---
@@ -192,6 +192,41 @@ Antes de considerar uma funcionalidade concluída, confirmar:
 - O NuGet Audit permanece habilitado e bloqueando o build. Ele já detectou e impediu o uso de
   `Microsoft.OpenApi` 2.0.0 (advisory GHSA-v5pm-xwqc-g5wc), resolvido ao subir
   `Microsoft.AspNetCore.OpenApi` para 10.0.12.
+
+## 9. Controles Implementados na Fundação e na Agenda (2026-09-30)
+
+| Controle | Como foi implementado | Origem |
+| :--- | :--- | :--- |
+| Autorização verificada no backend, por recurso | Filtro de permissões por rota (`agenda:read`, `agenda:read:own`, `agenda:write`, `agenda:block`, `agenda:configure`) + `ClinicId` obrigatório em todas as consultas | ADR-0008; SPEC-0002, seção 4 |
+| Isolamento multi-clínica | Registro de outra clínica responde `404`, sem revelar existência, e gera evento de auditoria de acesso negado | ADR-0008; RN-004 |
+| Identidade em desenvolvimento | Cabeçalhos `X-Canamed-*` aceitos **apenas** em `Development`/`Testing`; fora disso a resposta é `401` (falha segura) | [ADR-0009](../adr/0009-identidade-de-desenvolvimento-e-autorizacao-temporaria.md) |
+| Trilha de auditoria resistente a alteração | Tabela `audit_events` com gatilho `trg_audit_events_append_only` que rejeita `UPDATE` e `DELETE`; verificado por teste automatizado | ADR-0007; RN-010 da SPEC-0001 |
+| Integridade da agenda sob concorrência | Restrição de exclusão `ex_appointments_professional_no_overlap` no banco + trava por profissional (`pg_advisory_xact_lock`) na transação de escrita | SPEC-0002, RN-001 |
+| Minimização em logs | Logs estruturados registram rota, status e `traceId`; nome e telefone de paciente nunca são registrados | RN-014; LGPD |
+| Dados sintéticos em DEV/TEST | Semeadura de demonstração e fixtures exclusivamente sintéticas; testes de integração recusam bancos sem `test` no nome | ADR-0003 |
+| Erros sem vazamento de detalhe interno | Problem Details (RFC 7807) com mensagens de negócio; exceções inesperadas respondem `500` genérico com correlação | RN-008 da SPEC-0001 |
+
+Pendências de segurança conhecidas: autenticação real, MFA, sessão com revogação, rate limiting e
+bloqueio progressivo foram entregues pela [SPEC-0003](../specs/0003-spec-autenticacao-autorizacao-e-auditoria.md)
+(veja a seção 10). Seguem pendentes: hospedagem com região brasileira e criptografia gerenciada,
+backups com teste de restauração, limite de requisições nas demais rotas e observabilidade de produção.
+
+## 10. Controles de Identidade Implementados (SPEC-0003)
+
+| Controle | Como foi implementado |
+| :--- | :--- |
+| Credenciais | Argon2id (64 MiB, 3 iterações, salt de 16 bytes); política de no mínimo 12 caracteres com recusa de senhas comuns e de valores derivados do usuário |
+| Sessão | Cookie `canamed_session` `httpOnly`, `SameSite=Lax`, `Secure` em HTTPS; token aleatório de 256 bits e apenas o hash SHA-256 persistido |
+| Expiração e revogação | 30 minutos de inatividade, 8 horas absolutas, logout, troca de senha e revogação administrativa de todas as sessões |
+| Segundo fator | TOTP (RFC 6238, 30 s, 6 dígitos, janela ±1) obrigatório para gestor, com estado de cadastro pendente; segredo cifrado em repouso com Data Protection (chaves em diretório do projeto, fora do Git) |
+| Bloqueio progressivo | 5 tentativas inválidas bloqueiam a conta por 15 minutos; mensagem genérica sem revelar existência de conta |
+| Limitação de requisições | 10 requisições por minuto por origem nos endpoints de login |
+| Proteção CSRF | Cabeçalho obrigatório `X-Canamed-Requested-With` em métodos que alteram estado + validação de `Origin` quando presente |
+| CORS | Origens explícitas com credenciais; nenhuma origem curinga |
+| Cabeçalhos de segurança | `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` e `Content-Security-Policy` mínima |
+| Autorização | Papéis por clínica (`gestor`, `recepcionista`, `profissional`) traduzidos em permissões verificadas rota a rota |
+| Minimização e auditoria | Nenhum IP ou *user agent* é armazenado; eventos de identidade e acessos negados vão para a trilha *append-only*, inclusive quando a operação de negócio é revertida |
+| Identidade de desenvolvimento | Cabeçalhos `X-Canamed-*` aceitos somente em DEV/TEST e apenas quando enviados explicitamente; em produção a única via é a sessão |
 
 ## Referências
 

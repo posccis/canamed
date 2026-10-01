@@ -4,8 +4,8 @@
 > [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md). Em caso de divergência, o `GEMINI.md` prevalece.
 > Este documento **não** substitui uma SPEC: detalhes de execução são definidos por especificação.
 
-- **Versão:** 1.0
-- **Data:** 2026-09-28
+- **Versão:** 1.1
+- **Data:** 2026-09-30
 - **Status:** Vigente
 
 ---
@@ -52,6 +52,10 @@ foi definida.
 Organização de horários considerando profissionais, disponibilidade, duração de atendimento e salas.
 Objetivos de eficiência: eliminar conflitos de horário, reduzir tempo de marcação e dar visibilidade
 imediata da ocupação.
+
+**Situação:** implementada pela [SPEC-0002](../specs/0002-spec-agenda-de-consultas.md) — agendamento, remarcação,
+cancelamento com motivo, bloqueio de agenda e visão do dia por profissional. Salas, equipamentos e
+telemedicina permanecem fora de escopo (ver a seção 3.2 da SPEC).
 
 ### 5.2 Fila de espera
 

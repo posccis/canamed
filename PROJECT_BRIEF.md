@@ -116,12 +116,12 @@ Nenhum deles pode ser implementado antes de existir SPEC aprovada.
 
 | Pilar | Descrição | Situação |
 | :--- | :--- | :--- |
-| Gestão de agenda | Organização de horários, profissionais e salas. | Sem SPEC |
-| Fila de espera | Organização da chegada e do fluxo de espera dos pacientes. | Sem SPEC |
-| Pagamento antes da consulta | Fluxo de pagamento pré-consulta quando aplicável. | Sem SPEC |
-| Apoio à triagem | Suporte ao processo de triagem. | Sem SPEC |
-| Dashboards gerenciais | Informações organizadas para apoio à decisão da gestão. | Sem SPEC |
-| Gestão operacional da clínica | Fluxos administrativos e operacionais do dia a dia. | Sem SPEC |
+| Gestão de agenda | Organização de horários, profissionais e salas. | **Implementada** — [`SPEC-0002`](specs/0002-spec-agenda-de-consultas.md) (salas e equipamentos permanecem fora de escopo) |
+| Fila de espera | Organização da chegada e do fluxo de espera dos pacientes. | Sem SPEC — 2ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+| Pagamento antes da consulta | Fluxo de pagamento pré-consulta quando aplicável. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+| Apoio à triagem | Suporte ao processo de triagem. | Sem SPEC — 7ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+| Dashboards gerenciais | Informações organizadas para apoio à decisão da gestão. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+| Gestão operacional da clínica | Fluxos administrativos e operacionais do dia a dia. | Sem SPEC — 3ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
 
 A visão de longo prazo contempla um ecossistema de gestão para clínicas; a evolução deve ser gradual.
 
@@ -288,12 +288,20 @@ instalações desnecessárias no disco C:. Instalar somente o que for necessidad
 
 | Pendência | Referência |
 | :--- | :--- |
-| Migrations do EF Core ainda não criadas | `adr/0007-banco-de-dados-e-persistencia.md` |
-| Tipos do frontend ainda não gerados a partir do OpenAPI | `adr/0006-stack-de-aplicacao.md` |
-| Testes de comportamento (Playwright) ainda não instalados | [`specs/0001-spec-de-fundacao.md`](specs/0001-spec-de-fundacao.md) |
+| ~~Migrations do EF Core ainda não criadas~~ **Resolvido** pela [SPEC-0002](specs/0002-spec-agenda-de-consultas.md) (migration `InitialAgendaSchema`) | `adr/0007-banco-de-dados-e-persistencia.md` |
+| ~~Tipos do frontend ainda não gerados a partir do OpenAPI~~ **Resolvido**: `npm run generate:api` gera `frontend/src/api/schema.d.ts` | `adr/0006-stack-de-aplicacao.md` |
+| ~~Testes de comportamento (Playwright) ainda não instalados~~ **Resolvido** pela suíte `frontend/e2e` (`npm run test:e2e`) | [`specs/0002-spec-agenda-de-consultas.md`](specs/0002-spec-agenda-de-consultas.md) (P-002) |
+| ~~Autenticação real de usuários pendente~~ **Resolvido** pela [SPEC-0003](specs/0003-spec-autenticacao-autorizacao-e-auditoria.md); os cabeçalhos do [ADR-0009](adr/0009-identidade-de-desenvolvimento-e-autorizacao-temporaria.md) ficam apenas como conveniência de DEV/TEST ([ADR-0010](adr/0010-sessao-de-usuario-e-substituicao-da-identidade-de-desenvolvimento.md)) | `adr/0008-autenticacao-autorizacao-e-auditoria.md` |
 | Vulnerabilidade moderada aceita em dependência de desenvolvimento (`vitest`) | [`docs/seguranca-e-conformidade.md`](docs/seguranca-e-conformidade.md) |
 | Hospedagem e região dos dados (LGPD) | ADR futuro |
 | `assets/brand/identidadevisual.html` está truncado (sem `<head>`, `<style>` e variáveis `:root`) | `docs/identidade-visual.md` |
+| Recuperação de senha pelo próprio usuário, convites e códigos de recuperação de MFA | [`docs/backlog-proximas-funcionalidades.md`](docs/backlog-proximas-funcionalidades.md) (seção 2) |
+
+Guia operacional (instalação, execução, uso da agenda e testes):
+[`docs/guia-de-uso-e-execucao.md`](docs/guia-de-uso-e-execucao.md).
+
+Próximas funcionalidades, com descrição, esforço e complexidade:
+[`docs/backlog-proximas-funcionalidades.md`](docs/backlog-proximas-funcionalidades.md).
 
 ---
 

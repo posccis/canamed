@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Canamed.Domain\Canamed.Domain.csproj" />
     <ProjectReference Include="..\..\src\Canamed.Application\Canamed.Application.csproj" />
+    <ProjectReference Include="..\..\src\Canamed.Infrastructure\Canamed.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
