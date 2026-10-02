@@ -67,6 +67,13 @@ public static class AuditActions
     public const string PaymentReceived = "payment.received";
     public const string PaymentRefunded = "payment.refunded";
     public const string TriageRecorded = "triage.recorded";
+
+    public const string AppointmentOverbooked = "appointment.overbooked";
+    public const string CashRegisterOpened = "cashier.opened";
+    public const string CashRegisterClosed = "cashier.closed";
+    public const string CashMovementRegistered = "cashier.movement";
+    public const string PatientDataExported = "privacy.patient_exported";
+    public const string PatientAnonymized = "privacy.patient_anonymized";
 }
 
 /// <summary>Tipos de recurso da trilha de auditoria.</summary>
@@ -89,4 +96,6 @@ public static class AuditResources
     public const string ClinicClosures = "clinic_closures";
     public const string Payments = "payments";
     public const string Triage = "triage";
+    public const string CashRegister = "cash_register";
+    public const string Privacy = "privacy";
 }

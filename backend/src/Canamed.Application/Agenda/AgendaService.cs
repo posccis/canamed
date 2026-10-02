@@ -86,7 +86,22 @@ public sealed class AgendaService(
                     excludedAppointmentId: null,
                     token).ConfigureAwait(false);
 
-                EnsureRangeIsFree(range, busy);
+                if (request.IsOverbooking)
+                {
+                    actor.EnsurePermission(Permissions.AgendaOverbooking);
+                    if (string.IsNullOrWhiteSpace(request.OverbookingReason) || request.OverbookingReason.Trim().Length < 5)
+                    {
+                        throw new CanamedException(
+                            ProblemKind.Validation,
+                            "Justificativa de encaixe obrigatória",
+                            "A justificativa do encaixe deve ter pelo menos 5 caracteres.",
+                            "overbooking-reason-required");
+                    }
+                }
+                else
+                {
+                    EnsureRangeIsFree(range, busy);
+                }
 
                 var appointment = Appointment.Schedule(
                     actor.ClinicId,
@@ -96,18 +111,24 @@ public sealed class AgendaService(
                     startsAt,
                     appointmentType.DurationMinutes,
                     timeProvider.GetUtcNow(),
-                    request.RoomId);
+                    request.RoomId,
+                    request.IsOverbooking,
+                    request.OverbookingReason);
 
                 agendaRepository.AddAppointment(appointment);
                 auditRepository.Add(AuditEvent.Record(
                     actor.ClinicId,
                     actor.UserId,
                     actor.Name,
-                    AuditActions.AppointmentCreated,
+                    request.IsOverbooking ? AuditActions.AppointmentOverbooked : AuditActions.AppointmentCreated,
                     AuditResources.Appointments,
                     appointment.Id.ToString(),
                     timeProvider.GetUtcNow(),
-                    Details(("professionalId", appointment.ProfessionalId), ("startsAt", appointment.StartsAt))));
+                    Details(
+                        ("professionalId", appointment.ProfessionalId),
+                        ("startsAt", appointment.StartsAt),
+                        ("isOverbooking", appointment.IsOverbooking),
+                        ("overbookingReason", appointment.OverbookingReason))));
 
                 await agendaRepository.SaveChangesAsync(token).ConfigureAwait(false);
 
@@ -204,9 +225,31 @@ public sealed class AgendaService(
                     appointment.Id,
                     token).ConfigureAwait(false);
 
-                EnsureRangeIsFree(range, busy);
+                var isOverbooking = request.IsOverbooking ?? appointment.IsOverbooking;
+                var overbookingReason = request.OverbookingReason ?? appointment.OverbookingReason;
 
-                appointment.Reschedule(newStartsAt, timeProvider.GetUtcNow());
+                if (isOverbooking)
+                {
+                    actor.EnsurePermission(Permissions.AgendaOverbooking);
+                    if (string.IsNullOrWhiteSpace(overbookingReason) || overbookingReason.Trim().Length < 5)
+                    {
+                        throw new CanamedException(
+                            ProblemKind.Validation,
+                            "Justificativa de encaixe obrigatória",
+                            "A justificativa do encaixe deve ter pelo menos 5 caracteres.",
+                            "overbooking-reason-required");
+                    }
+                }
+                else
+                {
+                    EnsureRangeIsFree(range, busy);
+                }
+
+                appointment.Reschedule(
+                    newStartsAt,
+                    timeProvider.GetUtcNow(),
+                    request.IsOverbooking,
+                    request.OverbookingReason);
 
                 // SPEC-0006: a sala pode ser trocada na remarcação; nula mantém a atual.
                 if (request.RoomId is not null && request.RoomId != appointment.RoomId)
@@ -222,7 +265,10 @@ public sealed class AgendaService(
                     AuditResources.Appointments,
                     appointment.Id.ToString(),
                     timeProvider.GetUtcNow(),
-                    Details(("previousStartsAt", previousStartsAt), ("startsAt", appointment.StartsAt))));
+                    Details(
+                        ("previousStartsAt", previousStartsAt),
+                        ("startsAt", appointment.StartsAt),
+                        ("isOverbooking", appointment.IsOverbooking))));
 
                 await agendaRepository.SaveChangesAsync(token).ConfigureAwait(false);
 
@@ -856,7 +902,9 @@ public sealed class AgendaService(
             appointment.Status.ToStoredValue(),
             appointment.CancellationReason,
             appointment.CreatedAt,
-            appointment.UpdatedAt);
+            appointment.UpdatedAt,
+            appointment.IsOverbooking,
+            appointment.OverbookingReason);
     }
 
     private static BlockResponse MapBlock(ProfessionalBlock block) =>

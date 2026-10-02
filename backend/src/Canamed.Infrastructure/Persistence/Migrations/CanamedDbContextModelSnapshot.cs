@@ -59,6 +59,17 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ends_at");
 
+                    b.Property<bool>("IsOverbooking")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_overbooking");
+
+                    b.Property<string>("OverbookingReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("overbooking_reason");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid")
                         .HasColumnName("patient_id");
@@ -912,6 +923,144 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("user_sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.Payments.CashMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("CashRegisterShiftId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cash_register_shift_id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operator_id");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("CashRegisterShiftId", "CreatedAt");
+
+                    b.ToTable("cash_movements", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_movements_amount_positive", "amount > 0");
+
+                            t.HasCheckConstraint("ck_cash_movements_type_valid", "type IN ('suprimento', 'sangria')");
+                        });
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Payments.CashRegisterShift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CashDifference")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cash_difference");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal?>("DeclaredCash")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("declared_cash");
+
+                    b.Property<decimal?>("ExpectedCash")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("expected_cash");
+
+                    b.Property<decimal>("InitialCash")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("initial_cash");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operator_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("ClinicId", "OpenedAt");
+
+                    b.HasIndex("ClinicId", "OperatorId", "Status");
+
+                    b.ToTable("cash_register_shifts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_shifts_initial_cash_non_negative", "initial_cash >= 0");
+
+                            t.HasCheckConstraint("ck_cash_shifts_status_valid", "status IN ('aberto', 'fechado')");
+                        });
+                });
+
             modelBuilder.Entity("Canamed.Domain.Payments.PaymentTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1311,6 +1460,42 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasOne("Canamed.Domain.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Payments.CashMovement", b =>
+                {
+                    b.HasOne("Canamed.Domain.Payments.CashRegisterShift", null)
+                        .WithMany()
+                        .HasForeignKey("CashRegisterShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("OperatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Payments.CashRegisterShift", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("OperatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

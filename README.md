@@ -52,19 +52,20 @@ dotnet ef database update --project backend/src/Canamed.Infrastructure --startup
 
 ### PostgreSQL portátil (ambiente atual)
 
-Instalado em `D:\Tools\PostgreSQL\18.6` a partir dos binários oficiais, **sem serviço do Windows**,
-com dados em `D:\Tools\PostgreSQL\data`.
+Instalado em `C:\Tools\PostgreSQL\18.6` (ou `D:\Tools\PostgreSQL\18.6` onde aplicável) a partir dos binários oficiais, **sem serviço do Windows**,
+com dados em `C:\Tools\PostgreSQL\data`.
 
 ```powershell
-$pg = 'D:\Tools\PostgreSQL\18.6\pgsql\bin'
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' start
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' status
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' stop -m fast
+$pg = if (Test-Path 'C:\Tools\PostgreSQL\18.6\pgsql\bin') { 'C:\Tools\PostgreSQL\18.6\pgsql\bin' } else { 'D:\Tools\PostgreSQL\18.6\pgsql\bin' }
+$pgData = if (Test-Path 'C:\Tools\PostgreSQL\data') { 'C:\Tools\PostgreSQL\data' } else { 'D:\Tools\PostgreSQL\data' }
+& "$pg\pg_ctl.exe" -D $pgData start
+& "$pg\pg_ctl.exe" -D $pgData status
+& "$pg\pg_ctl.exe" -D $pgData stop -m fast
 ```
 
-- Log do servidor: `D:\Tools\PostgreSQL\data\log\postgresql-<data>.log` (coleta nativa habilitada).
+- Log do servidor: `C:\Tools\PostgreSQL\data\log\postgresql-<data>.log` (coleta nativa habilitada).
 - Bancos: `canamed_dev` e `canamed_test`. Usuário da aplicação: `canamed_app`.
-- Senha do superusuário `postgres`: em `D:\Tools\PostgreSQL\postgres-superuser.txt`, **fora do repositório**.
+- Senha do superusuário `postgres`: em `C:\Tools\PostgreSQL\postgres-superuser.txt`, **fora do repositório**.
 - Senha da aplicação: apenas no `.env` local, que não é versionado.
 - O servidor **não** sobe automaticamente com a máquina: use o comando `start` acima quando necessário.
 

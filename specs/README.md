@@ -71,6 +71,9 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0007](0007-spec-painel-gerencial-e-indicadores-operacionais.md) | Painel Gerencial e Indicadores Operacionais (Dashboard) | Implementada | 2026-10-01 |
 | [0008](0008-spec-fluxo-de-pagamento-e-cobranca.md) | Fluxo de Pagamento e Cobrança no Balcão | Implementada | 2026-10-01 |
 | [0009](0009-spec-triagem-e-classificacao-de-risco.md) | Apoio ao Processo de Triagem e Classificação de Risco | Implementada | 2026-10-01 |
+| [0010](0010-spec-encaixe-e-overbooking-na-agenda.md) | Encaixe e Overbooking com Justificativa na Agenda | Implementada | 2026-10-02 |
+| [0011](0011-spec-fechamento-de-caixa-sangria-e-conferencia.md) | Fechamento de Caixa, Sangria e Conferência por Operador | Implementada | 2026-10-02 |
+| [0012](0012-spec-direitos-do-titular-lgpd.md) | Governança de Privacidade e Direitos do Titular (LGPD) | Implementada | 2026-10-02 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.

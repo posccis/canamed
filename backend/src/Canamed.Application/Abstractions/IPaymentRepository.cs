@@ -10,6 +10,8 @@ public interface IPaymentRepository
 
     Task<IReadOnlyList<PaymentTransaction>> ListByAppointmentAsync(Guid appointmentId, Guid clinicId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<PaymentTransaction>> ListByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<PaymentTransaction>> ListByDateAsync(DateOnly date, Guid clinicId, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(PaymentTransaction transaction, CancellationToken cancellationToken = default);

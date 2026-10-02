@@ -38,6 +38,10 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<Canamed.Domain.Payments.PaymentTransaction> PaymentTransactions => Set<Canamed.Domain.Payments.PaymentTransaction>();
 
+    public DbSet<Canamed.Domain.Payments.CashRegisterShift> CashRegisterShifts => Set<Canamed.Domain.Payments.CashRegisterShift>();
+
+    public DbSet<Canamed.Domain.Payments.CashMovement> CashMovements => Set<Canamed.Domain.Payments.CashMovement>();
+
     public DbSet<Canamed.Domain.Queue.TriageRecord> TriageRecords => Set<Canamed.Domain.Queue.TriageRecord>();
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();

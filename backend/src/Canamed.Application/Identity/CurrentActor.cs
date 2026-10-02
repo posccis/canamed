@@ -19,4 +19,17 @@ public sealed record CurrentActor(
 
     /// <summary>Indica se o usuário possui ao menos uma das permissões informadas.</summary>
     public bool HasAny(params string[] permissions) => permissions.Any(Has);
+
+    /// <summary>Garante que o usuário possui a permissão informada ou lança exceção de acesso proibido.</summary>
+    public void EnsurePermission(string permission)
+    {
+        if (!Has(permission))
+        {
+            throw new Errors.CanamedException(
+                Errors.ProblemKind.Forbidden,
+                "Acesso negado",
+                $"O usuário não possui a permissão necessária: {permission}.",
+                "permission-denied");
+        }
+    }
 }

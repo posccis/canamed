@@ -106,6 +106,20 @@ public sealed class Patient : Entity
         MarkUpdated(now);
     }
 
+    /// <summary>
+    /// Executa a anonimização definitiva dos dados cadastrais do paciente (LGPD Art. 18, VI e SPEC-0012).
+    /// </summary>
+    public void Anonymize(DateTimeOffset now)
+    {
+        Name = "[TITULAR ANONIMIZADO - LGPD]";
+        Phone = "(00) 00000-0000";
+        Email = null;
+        BirthDate = null;
+        Document = null;
+        IsActive = false;
+        MarkUpdated(now);
+    }
+
     private static string? NormalizeEmail(string? email) =>
         string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
 

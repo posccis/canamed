@@ -48,6 +48,21 @@ public static class Permissions
     /// <summary>Registra sinais vitais e classificação de risco na triagem (SPEC-0009).</summary>
     public const string TriageWrite = "triage:write";
 
+    /// <summary>Realiza agendamentos em modalidade de encaixe/overbooking (SPEC-0010).</summary>
+    public const string AgendaOverbooking = "agenda:overbooking";
+
+    /// <summary>Opera abertura, fechamento e movimentações de caixa de balcão (SPEC-0011).</summary>
+    public const string CashierOperate = "cashier:operate";
+
+    /// <summary>Administra e visualiza histórico de todos os caixas e sangrias (SPEC-0011).</summary>
+    public const string CashierManage = "cashier:manage";
+
+    /// <summary>Exporta dossiê de portabilidade do titular conforme LGPD (SPEC-0012).</summary>
+    public const string PrivacyExport = "privacy:export";
+
+    /// <summary>Executa a anonimização de cadastro de titular conforme LGPD (SPEC-0012).</summary>
+    public const string PrivacyAnonymize = "privacy:anonymize";
+
     /// <summary>Todas as permissões conhecidas, na ordem de declaração.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
@@ -65,5 +80,10 @@ public static class Permissions
         PaymentsRefund,
         TriageRead,
         TriageWrite,
+        AgendaOverbooking,
+        CashierOperate,
+        CashierManage,
+        PrivacyExport,
+        PrivacyAnonymize,
     ];
 }

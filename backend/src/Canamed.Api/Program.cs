@@ -109,6 +109,8 @@ api.MapAgendaEndpoints();
 api.MapQueueEndpoints();
 api.MapDashboardEndpoints();
 api.MapPaymentEndpoints();
+api.MapCashRegisterEndpoints();
+api.MapPrivacyEndpoints();
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 

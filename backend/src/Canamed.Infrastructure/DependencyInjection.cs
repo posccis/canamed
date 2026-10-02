@@ -63,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IClinicOperationRepository, ClinicOperationRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
         services.AddScoped<ITriageRepository, TriageRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IAuditTrail, AuditTrail>();

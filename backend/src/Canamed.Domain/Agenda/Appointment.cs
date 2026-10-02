@@ -37,6 +37,12 @@ public sealed class Appointment : Entity
     /// <summary>Status financeiro da consulta (pendente, pago, isento, estornado) — SPEC-0008.</summary>
     public string PaymentStatus { get; private set; } = "pendente";
 
+    /// <summary>Indica se o agendamento foi criado em modalidade de encaixe (SPEC-0010).</summary>
+    public bool IsOverbooking { get; private set; }
+
+    /// <summary>Justificativa do encaixe (SPEC-0010).</summary>
+    public string? OverbookingReason { get; private set; }
+
     /// <summary>Motivo do cancelamento, obrigatório na operação (RN-006).</summary>
     public string? CancellationReason { get; private set; }
 
@@ -58,7 +64,9 @@ public sealed class Appointment : Entity
         DateTimeOffset startsAt,
         int durationMinutes,
         DateTimeOffset now,
-        Guid? roomId = null)
+        Guid? roomId = null,
+        bool isOverbooking = false,
+        string? overbookingReason = null)
     {
         if (clinicId == Guid.Empty)
         {
@@ -83,6 +91,14 @@ public sealed class Appointment : Entity
         var range = TimeRange.FromStartAndMinutes(startsAt.ToUniversalTime(), durationMinutes);
         AgendaRules.EnsureNotInThePast(range, now);
 
+        if (isOverbooking)
+        {
+            if (string.IsNullOrWhiteSpace(overbookingReason) || overbookingReason.Trim().Length < 5)
+            {
+                throw new ArgumentException("A justificativa de encaixe deve ter pelo menos 5 caracteres.", nameof(overbookingReason));
+            }
+        }
+
         var appointment = new Appointment
         {
             ClinicId = clinicId,
@@ -94,6 +110,8 @@ public sealed class Appointment : Entity
             EndsAt = range.EndsAt,
             DurationMinutes = durationMinutes,
             Status = AppointmentStatus.Scheduled,
+            IsOverbooking = isOverbooking,
+            OverbookingReason = isOverbooking ? overbookingReason?.Trim() : null,
         };
 
         appointment.MarkCreated(now);
@@ -102,7 +120,11 @@ public sealed class Appointment : Entity
     }
 
     /// <summary>Remarca o agendamento para um novo início, mantendo o histórico no log de auditoria (RN-007).</summary>
-    public void Reschedule(DateTimeOffset newStartsAt, DateTimeOffset now)
+    public void Reschedule(
+        DateTimeOffset newStartsAt,
+        DateTimeOffset now,
+        bool? isOverbooking = null,
+        string? overbookingReason = null)
     {
         EnsureChangeable();
 
@@ -111,6 +133,25 @@ public sealed class Appointment : Entity
 
         StartsAt = range.StartsAt;
         EndsAt = range.EndsAt;
+
+        if (isOverbooking.HasValue)
+        {
+            if (isOverbooking.Value)
+            {
+                if (string.IsNullOrWhiteSpace(overbookingReason) || overbookingReason.Trim().Length < 5)
+                {
+                    throw new ArgumentException("A justificativa de encaixe deve ter pelo menos 5 caracteres.", nameof(overbookingReason));
+                }
+                IsOverbooking = true;
+                OverbookingReason = overbookingReason.Trim();
+            }
+            else
+            {
+                IsOverbooking = false;
+                OverbookingReason = null;
+            }
+        }
+
         MarkUpdated(now);
     }
 

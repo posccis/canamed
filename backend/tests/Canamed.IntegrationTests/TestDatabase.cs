@@ -34,6 +34,8 @@ internal static class TestDatabase
         // A fila e os pagamentos referenciam agendamentos (RESTRICT): precisam sair antes deles.
         context.Database.ExecuteSqlRaw("DELETE FROM triage_records");
         context.Database.ExecuteSqlRaw("DELETE FROM queue_entries");
+        context.Database.ExecuteSqlRaw("DELETE FROM cash_movements");
+        context.Database.ExecuteSqlRaw("DELETE FROM cash_register_shifts");
         context.Database.ExecuteSqlRaw("DELETE FROM payment_transactions");
         context.Database.ExecuteSqlRaw("DELETE FROM appointments");
         context.Database.ExecuteSqlRaw("DELETE FROM professional_blocks");

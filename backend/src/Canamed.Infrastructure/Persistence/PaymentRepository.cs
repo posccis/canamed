@@ -31,6 +31,20 @@ public sealed class PaymentRepository(CanamedDbContext context) : IPaymentReposi
         return list;
     }
 
+    public async Task<IReadOnlyList<PaymentTransaction>> ListByPatientAsync(
+        Guid patientId,
+        Guid clinicId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await context.Set<PaymentTransaction>()
+            .Where(t => t.PatientId == patientId && t.ClinicId == clinicId)
+            .OrderByDescending(t => t.PaidAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return list;
+    }
+
     public async Task<IReadOnlyList<PaymentTransaction>> ListByDateAsync(
         DateOnly date,
         Guid clinicId,

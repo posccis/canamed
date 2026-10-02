@@ -43,7 +43,7 @@ de fila de espera, triagem, pagamento e dashboards.
 | Domínio | Entidades e regras de negócio | `backend/src/Canamed.Domain` | — |
 | Infraestrutura | EF Core, repositórios, auditoria, dados de desenvolvimento | `backend/src/Canamed.Infrastructure` | — |
 | SPA | React + TypeScript + Vite | `frontend/` | `http://localhost:5173` |
-| Banco | PostgreSQL 18.6 portátil | `D:\Tools\PostgreSQL` (fora do repositório) | `127.0.0.1:5432` |
+| Banco | PostgreSQL 18.6 portátil | `C:\Tools\PostgreSQL` (ou `D:\Tools\PostgreSQL`) | `127.0.0.1:5432` |
 
 Fluxo de uma requisição: SPA → API (`/api/v1`) → validação de configuração → identidade e permissão →
 caso de uso → domínio → EF Core/PostgreSQL → evento de auditoria → resposta JSON ou Problem Details
@@ -73,7 +73,8 @@ Verificação rápida (Environment & Safety Check):
 ```powershell
 dotnet --version
 node --version
-& 'D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_isready.exe' -h 127.0.0.1 -p 5432
+$pgBin = if (Test-Path 'C:\Tools\PostgreSQL\18.6\pgsql\bin') { 'C:\Tools\PostgreSQL\18.6\pgsql\bin' } else { 'D:\Tools\PostgreSQL\18.6\pgsql\bin' }
+& "$pgBin\pg_isready.exe" -h 127.0.0.1 -p 5432
 ```
 
 Se o PostgreSQL responder `accepting connections`, o ambiente está pronto para o passo seguinte.
@@ -111,16 +112,17 @@ O servidor local foi instalado em modo portátil (sem serviço do Windows) e **n
 com a máquina**.
 
 ```powershell
-$pg = 'D:\Tools\PostgreSQL\18.6\pgsql\bin'
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' start
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' status
-& "$pg\pg_ctl.exe" -D 'D:\Tools\PostgreSQL\data' stop -m fast
+$pg = if (Test-Path 'C:\Tools\PostgreSQL\18.6\pgsql\bin') { 'C:\Tools\PostgreSQL\18.6\pgsql\bin' } else { 'D:\Tools\PostgreSQL\18.6\pgsql\bin' }
+$pgData = if (Test-Path 'C:\Tools\PostgreSQL\data') { 'C:\Tools\PostgreSQL\data' } else { 'D:\Tools\PostgreSQL\data' }
+& "$pg\pg_ctl.exe" -D $pgData start
+& "$pg\pg_ctl.exe" -D $pgData status
+& "$pg\pg_ctl.exe" -D $pgData stop -m fast
 ```
 
 - Bancos: `canamed_dev` (desenvolvimento) e `canamed_test` (testes automatizados).
 - Usuário da aplicação: `canamed_app`; a senha existe apenas no `.env` local.
-- Senha do superusuário: `D:\Tools\PostgreSQL\postgres-superuser.txt`, **fora do repositório**.
-- Log do servidor: `D:\Tools\PostgreSQL\data\log\postgresql-<data>.log`.
+- Senha do superusuário: `C:\Tools\PostgreSQL\postgres-superuser.txt` (ou `D:\Tools\PostgreSQL\...`), **fora do repositório**.
+- Log do servidor: `$pgData\log\postgresql-<data>.log`.
 
 ### 4.3 Migrations do banco
 

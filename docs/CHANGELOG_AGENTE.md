@@ -696,4 +696,90 @@ Resolução de inconsistência de coluna no banco de dados, definição do Dashb
     - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
     - **Build de Produção:** `npm run build` executado com sucesso (zero erros de tipagem TypeScript e bundles otimizados gerados).
 
+---
+
+### [2026-10-02] — Adequação do Ambiente Local e Provisionamento do PostgreSQL
+
+#### 1. Diagnóstico e Resolução de Ferramental
+- **AÇÃO**: Configuração do Node.js v24.21.0 e npm 11.19.0 no PATH do usuário
+  - **MOTIVO**: Node.js instalado via `fnm` não estava exposto no PATH padrão de sessões Windows.
+  - **LOCAL AFETADO**: Variável de ambiente `PATH` do usuário (`HKCU\Environment\Path`)
+  - **RESULTADO**: `node` e `npm` disponíveis globalmente em qualquer terminal.
+- **AÇÃO**: Instalação das dependências do Frontend
+  - **MOTIVO**: `frontend/node_modules` estava ausente, impedindo build e testes.
+  - **LOCAL AFETADO**: `frontend/node_modules/`
+  - **RESULTADO**: 209 pacotes instalados com integridade e TypeScript / Vite / Vitest operacionais.
+- **AÇÃO**: Instalação global do `dotnet-ef` 10.0.12
+  - **MOTIVO**: Gestão e aplicação de migrations via linha de comando.
+  - **LOCAL AFETADO**: `.dotnet/tools`
+  - **RESULTADO**: Ferramenta `dotnet-ef` disponível para comandos do Entity Framework Core.
+- **AÇÃO**: Recriação da solução `Canamed.sln` e ajuste do `.gitignore`
+  - **MOTIVO**: `Canamed.sln` não estava versionado devido à regra `*.sln` no `.gitignore`, quebrando os scripts unificados do `package.json`.
+  - **LOCAL AFETADO**: `Canamed.sln`, `.gitignore`
+  - **RESULTADO**: Solução clássica gerada contendo os 6 projetos da arquitetura e regra `!Canamed.sln` adicionada ao `.gitignore`.
+
+#### 2. Provisionamento do PostgreSQL 18.6 Portátil no Disco C:
+- **AÇÃO**: Download e extração dos binários oficiais do PostgreSQL 18.6-1 em `C:\Tools\PostgreSQL\18.6`
+  - **MOTIVO**: A máquina física atual possui apenas a unidade `C:` (SSD com >300 GB livres), sem disco físico `D:`.
+  - **LOCAL AFETADO**: `C:\Tools\PostgreSQL\18.6`, `C:\Tools\PostgreSQL\data`
+  - **RESULTADO**: Binários extraídos sem instalação de serviços do Windows.
+- **AÇÃO**: Inicialização do cluster, criação de bancos e credenciais seguras
+  - **MOTIVO**: Atender ao ADR-0007 e habilitar os ambientes `canamed_dev` e `canamed_test`.
+  - **LOCAL AFETADO**: `C:\Tools\PostgreSQL\data`, `C:\Tools\PostgreSQL\postgres-superuser.txt`, `.env`
+  - **RESULTADO**:
+    - Cluster inicializado com autenticação `scram-sha-256`, escuta restrita a `127.0.0.1:5432` e logs em `$pgData\log`.
+    - Role `canamed_app` criada com privilégios nas bases `canamed_dev` e `canamed_test`.
+    - Arquivo `.env` local criado com credenciais seguras e não versionado (`git check-ignore` verificado).
+    - Binários do PostgreSQL adicionados ao PATH do usuário (`C:\Tools\PostgreSQL\18.6\pgsql\bin`).
+- **AÇÃO**: Aplicação das migrations do Entity Framework Core
+  - **MOTIVO**: Sincronizar o schema das 7 migrations existentes com a base `canamed_dev`.
+  - **LOCAL AFETADO**: Banco `canamed_dev`
+  - **RESULTADO**: 7 migrations aplicadas com sucesso via `dotnet ef database update`.
+
+#### 3. Verificação Integral do Ambiente
+- **AÇÃO**: Execução dos comandos unificados de build e teste
+  - **MOTIVO**: Validar o critério de aceitação de prontidão completa do ambiente.
+  - **LOCAL AFETADO**: Raiz do repositório
+  - **RESULTADO**:
+    - `npm run build`: Compilação de backend e frontend com **0 avisos e 0 erros**.
+    - `npm test`: **229 testes aprovados (100% de sucesso, 0 falhas)**:
+      - 128 testes unitários .NET
+      - 74 testes de integração .NET com banco real
+      - 27 testes frontend Vitest
+
+---
+
+### [2026-10-02] — Implementação das SPECs 0010, 0011 e 0012 (Encaixe, Fechamento de Caixa e LGPD)
+
+Implementação orientada por especificação atendendo aos itens pendentes do backlog funcional do CANAMED.
+
+#### 1. SPEC-0010 — Encaixe e Overbooking com Justificativa na Agenda
+- **AÇÃO**: Extensão do domínio `Appointment` com suporte a `IsOverbooking` e `OverbookingReason` obrigatório (mínimo 5 caracteres), permissão `agenda:overbooking` e atualização da constraint GiST (`ex_appointments_professional_no_overlap`) para excluir sobreposições autorizadas marcadas com `is_overbooking = false`.
+  - **MOTIVO**: Resolver a dívida funcional D-04 e formalizar a reavaliação de Q-002, permitindo encaixes de urgência sem conflito espúrio na agenda e mantendo integridade e auditoria (`audit_events`).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Agenda/Appointment.cs`, `backend/src/Canamed.Application/Agenda/AgendaService.cs`, `backend/src/Canamed.Infrastructure/Persistence/Migrations/20261002133743_AddOverbookingAndCashRegister.cs`, `backend/tests/Canamed.IntegrationTests/Agenda/OverbookingEndpointsTests.cs`.
+  - **RESULTADO**: Encaixes com justificativa gravada e auditada com sucesso; bloqueio mantido para sobreposições sem justificativa/flag.
+
+#### 2. SPEC-0011 — Fechamento de Caixa, Sangria e Conferência por Operador
+- **AÇÃO**: Criação das entidades `CashRegisterShift` e `CashMovement`, repositório `ICashRegisterRepository` / `CashRegisterRepository` com `SaveChangesAsync`, serviço `CashRegisterService` e endpoints `/api/v1/cash-register/*` (abertura, sangria, suprimento, status atual com saldo físico em gaveta, fechamento com cálculo de divergência e histórico).
+  - **MOTIVO**: Atender ao item B-04 do backlog para gestão financeira e conferência de tesouraria de balcão segregada por operador.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Payments/CashRegisterShift.cs`, `backend/src/Canamed.Domain/Payments/CashMovement.cs`, `backend/src/Canamed.Application/Payments/CashRegisterService.cs`, `backend/src/Canamed.Api/Endpoints/CashRegisterEndpoints.cs`, `backend/tests/Canamed.IntegrationTests/Payments/CashRegisterEndpointsTests.cs`.
+  - **RESULTADO**: Turno de caixa por operador implementado com controle de saldo, bloqueio de sangria excedente e registro de auditoria completo.
+
+#### 3. SPEC-0012 — Governança de Privacidade e Direitos do Titular (LGPD)
+- **AÇÃO**: Implementação dos fluxos de atendimento ao Art. 18 da LGPD via `PrivacyService` e rotas `/api/v1/patients/{id}/data-portability` (exportação de dossiê completo) e `/api/v1/patients/{id}/anonymize` (anonimização com substituição de dados pessoais cadastrais preservando histórico clínico e trilha imutável).
+  - **MOTIVO**: Conformidade obrigatória com a LGPD e articulação com a Lei nº 13.787/2018 (guarda mínima de prontuário e histórico).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Agenda/Patient.cs`, `backend/src/Canamed.Application/Privacy/`, `backend/src/Canamed.Api/Endpoints/PrivacyEndpoints.cs`, `backend/tests/Canamed.IntegrationTests/Catalog/PrivacyEndpointsTests.cs`.
+  - **RESULTADO**: Dossiê de portabilidade e anonimização validados com sucesso; impedimento de anonimização com consultas futuras ativas verificado.
+
+#### 4. Verificação de Integridade Integral
+- **AÇÃO**: Execução de todas as suítes de testes automatizados e builds de produção.
+  - **LOCAL AFETADO**: Solução inteira (`Canamed.sln` e `frontend`)
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 138 testes unitários + 82 testes de integração = **220 testes aprovados, 0 falhas**.
+    - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
+    - **Total Geral:** **247 testes aprovados (100% de sucesso)**.
+    - **Build:** `dotnet build` e `npm run build` concluídos com **0 erros e 0 avisos**.
+
+
+
 

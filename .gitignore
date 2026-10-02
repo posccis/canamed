@@ -58,6 +58,7 @@ Desktop.ini
 *.ntvs*
 *.njsproj
 *.sln
+!Canamed.sln
 *.sw?
 .vscode/*
 !.vscode/settings.json
