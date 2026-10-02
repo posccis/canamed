@@ -16,6 +16,9 @@ public sealed class Professional : Entity
     /// <summary>Especialidade do profissional, quando informada.</summary>
     public Guid? SpecialtyId { get; private set; }
 
+    /// <summary>Registro profissional (ex.: CRM). Dado pessoal; nunca é registrado em log (RN-014).</summary>
+    public string? RegistrationNumber { get; private set; }
+
     /// <summary>Profissional inativo não recebe novos agendamentos (RN-005).</summary>
     public bool IsActive { get; private set; } = true;
 
@@ -25,7 +28,8 @@ public sealed class Professional : Entity
         string name,
         DateTimeOffset now,
         Guid? id = null,
-        Guid? specialtyId = null)
+        Guid? specialtyId = null,
+        string? registrationNumber = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -34,6 +38,7 @@ public sealed class Professional : Entity
             ClinicId = clinicId,
             Name = name.Trim(),
             SpecialtyId = specialtyId,
+            RegistrationNumber = NormalizeOptional(registrationNumber),
             IsActive = true,
         };
 
@@ -47,13 +52,14 @@ public sealed class Professional : Entity
         return professional;
     }
 
-    /// <summary>Altera nome e especialidade do profissional.</summary>
-    public void Update(string name, Guid? specialtyId, DateTimeOffset now)
+    /// <summary>Altera nome, especialidade e registro profissional.</summary>
+    public void Update(string name, Guid? specialtyId, string? registrationNumber, DateTimeOffset now)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         Name = name.Trim();
         SpecialtyId = specialtyId;
+        RegistrationNumber = NormalizeOptional(registrationNumber);
         MarkUpdated(now);
     }
 
@@ -70,4 +76,7 @@ public sealed class Professional : Entity
         IsActive = true;
         MarkUpdated(now);
     }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

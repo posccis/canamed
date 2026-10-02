@@ -1,6 +1,8 @@
 using Canamed.Application.Agenda;
 using Canamed.Application.Catalog;
+using Canamed.Application.Clinics;
 using Canamed.Application.Identity;
+using Canamed.Application.Queue;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Canamed.Application;
@@ -16,8 +18,14 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<AgendaService>();
         services.AddScoped<CatalogService>();
+        services.AddScoped<ClinicOperationService>();
+        services.AddScoped<QueueService>();
+        services.AddScoped<DayClosingService>();
         services.AddScoped<AuthService>();
         services.AddScoped<UserService>();
+        services.AddScoped<Canamed.Application.Dashboard.DashboardService>();
+        services.AddScoped<Canamed.Application.Payments.PaymentService>();
+        services.AddScoped<TriageService>();
 
         return services;
     }

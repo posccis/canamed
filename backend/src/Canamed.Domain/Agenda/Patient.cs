@@ -24,6 +24,12 @@ public sealed class Patient : Entity
     /// <summary>Data de nascimento, opcional. Dado pessoal; nunca aparece em log.</summary>
     public DateOnly? BirthDate { get; private set; }
 
+    /// <summary>Documento (CPF), opcional. Dado pessoal; nunca aparece em log (RN-014).</summary>
+    public string? Document { get; private set; }
+
+    /// <summary>Convênio do paciente, opcional (SPEC-0006).</summary>
+    public Guid? HealthPlanId { get; private set; }
+
     /// <summary>Paciente inativo não recebe novos agendamentos (RN-006).</summary>
     public bool IsActive { get; private set; } = true;
 
@@ -35,7 +41,9 @@ public sealed class Patient : Entity
         DateTimeOffset now,
         Guid? id = null,
         string? email = null,
-        DateOnly? birthDate = null)
+        DateOnly? birthDate = null,
+        string? document = null,
+        Guid? healthPlanId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(phone);
@@ -47,6 +55,8 @@ public sealed class Patient : Entity
             Phone = phone.Trim(),
             Email = NormalizeEmail(email),
             BirthDate = ValidateBirthDate(birthDate, now),
+            Document = NormalizeDocument(document),
+            HealthPlanId = healthPlanId,
             IsActive = true,
         };
 
@@ -66,6 +76,8 @@ public sealed class Patient : Entity
         string phone,
         string? email,
         DateOnly? birthDate,
+        string? document,
+        Guid? healthPlanId,
         DateTimeOffset now)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -75,6 +87,8 @@ public sealed class Patient : Entity
         Phone = phone.Trim();
         Email = NormalizeEmail(email);
         BirthDate = ValidateBirthDate(birthDate, now);
+        Document = NormalizeDocument(document);
+        HealthPlanId = healthPlanId;
         MarkUpdated(now);
     }
 
@@ -94,6 +108,19 @@ public sealed class Patient : Entity
 
     private static string? NormalizeEmail(string? email) =>
         string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
+
+    /// <summary>Mantém apenas dígitos do documento e devolve <c>null</c> quando vazio.</summary>
+    private static string? NormalizeDocument(string? document)
+    {
+        if (string.IsNullOrWhiteSpace(document))
+        {
+            return null;
+        }
+
+        var digits = new string([.. document.Where(char.IsAsciiDigit)]);
+
+        return digits.Length is 0 ? null : digits;
+    }
 
     private static DateOnly? ValidateBirthDate(DateOnly? birthDate, DateTimeOffset now)
     {

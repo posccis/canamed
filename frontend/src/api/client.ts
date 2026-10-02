@@ -49,6 +49,11 @@ export async function apiPost<T>(path: string, body?: unknown, signal?: AbortSig
   return request<T>('POST', path, body, signal);
 }
 
+/** Executa um PUT com corpo JSON na API do CANAMED. */
+export async function apiPut<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+  return request<T>('PUT', path, body, signal);
+}
+
 /** Executa um DELETE na API do CANAMED. */
 export async function apiDelete<T>(path: string, signal?: AbortSignal): Promise<T> {
   return request<T>('DELETE', path, undefined, signal);

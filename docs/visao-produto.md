@@ -62,6 +62,11 @@ telemedicina permanecem fora de escopo (ver a seção 3.2 da SPEC).
 Organização da chegada e da ordem de atendimento dos pacientes, tornando a espera visível e previsível
 para a recepção e para o paciente.
 
+**Situação:** implementada pela [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) —
+check-in com e sem agendamento, prioridade de atendimento (normal e preferencial), ordem por prioridade e
+chegada, chamada, ciclo do atendimento e fechamento do dia. Painel de chamada e aviso ao paciente ficam
+para as SPECs de cadastro completo e de notificações.
+
 ### 5.3 Pagamento antes da consulta
 
 Fluxo de pagamento pré-consulta quando aplicável ao modelo da clínica, reduzindo inadimplência e

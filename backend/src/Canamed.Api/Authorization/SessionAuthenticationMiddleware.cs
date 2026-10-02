@@ -110,13 +110,23 @@ public static class SessionCookies
             IsEssential = true,
         };
 
-    /// <summary>Grava o cookie com a expiração absoluta da sessão.</summary>
-    public static void Write(HttpContext context, string token, DateTimeOffset expiresAt)
+    /// <summary>
+    /// Grava o cookie com a expiração absoluta da sessão. A expiração é um atributo interpretado pelo
+    /// navegador no relógio do cliente, então a duração restante é preservada a partir do relógio real —
+    /// mesmo quando o relógio de negócio é ajustado (relógio determinístico de testes ou deriva do host).
+    /// </summary>
+    public static void Write(
+        HttpContext context,
+        string token,
+        DateTimeOffset expiresAt,
+        TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         var options = BuildOptions(context);
-        options.Expires = expiresAt;
+        var remaining = expiresAt - timeProvider.GetUtcNow();
+        options.Expires = DateTimeOffset.UtcNow + (remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero);
 
         context.Response.Cookies.Append(SessionAuthenticationMiddleware.CookieName, token, options);
     }

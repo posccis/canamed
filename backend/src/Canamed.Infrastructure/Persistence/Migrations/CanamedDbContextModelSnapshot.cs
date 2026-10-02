@@ -63,9 +63,21 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("patient_id");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("pendente")
+                        .HasColumnName("payment_status");
+
                     b.Property<Guid>("ProfessionalId")
                         .HasColumnType("uuid")
                         .HasColumnName("professional_id");
+
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_id");
 
                     b.Property<DateTimeOffset>("StartsAt")
                         .HasColumnType("timestamp with time zone")
@@ -87,9 +99,13 @@ namespace Canamed.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PatientId");
 
+                    b.HasIndex("RoomId");
+
                     b.HasIndex("ClinicId", "StartsAt");
 
                     b.HasIndex("ProfessionalId", "StartsAt");
+
+                    b.HasIndex("ClinicId", "RoomId", "StartsAt");
 
                     b.ToTable("appointments", null, t =>
                         {
@@ -185,10 +201,19 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("Document")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("document");
+
                     b.Property<string>("Email")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)")
                         .HasColumnName("email");
+
+                    b.Property<Guid?>("HealthPlanId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("health_plan_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
@@ -211,6 +236,8 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HealthPlanId");
 
                     b.HasIndex("ClinicId", "Name");
 
@@ -241,6 +268,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("registration_number");
 
                     b.Property<Guid?>("SpecialtyId")
                         .HasColumnType("uuid")
@@ -304,6 +336,91 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("professional_blocks", null, t =>
                         {
                             t.HasCheckConstraint("ck_professional_blocks_period_valid", "ends_at > starts_at");
+                        });
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Agenda.QueueEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<DateTimeOffset>("ArrivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("arrived_at");
+
+                    b.Property<DateTimeOffset?>("CalledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("called_at");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("priority");
+
+                    b.Property<Guid>("ProfessionalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("professional_id");
+
+                    b.Property<DateOnly>("QueueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("queue_date");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique()
+                        .HasFilter("status IN ('aguardando', 'chamado', 'em_atendimento')");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.HasIndex("ClinicId", "QueueDate", "ProfessionalId");
+
+                    b.ToTable("queue_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_queue_entries_period_valid", "finished_at IS NULL OR started_at IS NULL OR finished_at >= started_at");
+
+                            t.HasCheckConstraint("ck_queue_entries_priority_valid", "priority IN ('normal', 'preferencial')");
+
+                            t.HasCheckConstraint("ck_queue_entries_status_valid", "status IN ('aguardando', 'chamado', 'em_atendimento', 'atendido', 'desistiu', 'cancelado')");
                         });
                 });
 
@@ -425,6 +542,163 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("clinics", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.ClinicClosure", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("clinic_closures", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.HealthPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AnsCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("ans_code");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId", "Name");
+
+                    b.ToTable("health_plans", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.OperatingHour", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeOnly>("EndsAt")
+                        .HasColumnType("time")
+                        .HasColumnName("ends_at");
+
+                    b.Property<TimeOnly>("StartsAt")
+                        .HasColumnType("time")
+                        .HasColumnName("starts_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId", "DayOfWeek");
+
+                    b.ToTable("operating_hours", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_operating_hours_day_valid", "day_of_week BETWEEN 0 AND 6");
+
+                            t.HasCheckConstraint("ck_operating_hours_period_valid", "ends_at > starts_at");
+                        });
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId", "Name");
+
+                    b.ToTable("rooms", (string)null);
                 });
 
             modelBuilder.Entity("Canamed.Domain.Identity.ClinicMembership", b =>
@@ -638,6 +912,205 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("user_sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.Payments.PaymentTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<string>("CardBrand")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("card_brand");
+
+                    b.Property<string>("CardLastFourDigits")
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)")
+                        .HasColumnName("card_last_four_digits");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operator_id");
+
+                    b.Property<DateTimeOffset>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("RefundReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("refund_reason");
+
+                    b.Property<DateTimeOffset?>("RefundedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refunded_at");
+
+                    b.Property<Guid?>("RefundedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("refunded_by");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ClinicId", "AppointmentId");
+
+                    b.HasIndex("ClinicId", "PaidAt");
+
+                    b.ToTable("payment_transactions", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Queue.TriageRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Allergies")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("allergies");
+
+                    b.Property<string>("BloodPressure")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("blood_pressure");
+
+                    b.Property<decimal?>("CalculatedBmi")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("calculated_bmi");
+
+                    b.Property<string>("ChiefComplaint")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("chief_complaint");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("Glucose")
+                        .HasColumnType("integer")
+                        .HasColumnName("glucose");
+
+                    b.Property<int?>("HeartRate")
+                        .HasColumnType("integer")
+                        .HasColumnName("heart_rate");
+
+                    b.Property<decimal?>("HeightCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)")
+                        .HasColumnName("height_cm");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operator_id");
+
+                    b.Property<string>("OperatorName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("operator_name");
+
+                    b.Property<int?>("OxygenSaturation")
+                        .HasColumnType("integer")
+                        .HasColumnName("oxygen_saturation");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<Guid>("QueueEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("queue_entry_id");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at");
+
+                    b.Property<string>("RiskClassification")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("risk_classification");
+
+                    b.Property<decimal?>("Temperature")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)")
+                        .HasColumnName("temperature");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("weight_kg");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("QueueEntryId");
+
+                    b.HasIndex("ClinicId", "QueueEntryId")
+                        .IsUnique();
+
+                    b.ToTable("triage_records", (string)null);
+                });
+
             modelBuilder.Entity("Canamed.Domain.Agenda.Appointment", b =>
                 {
                     b.HasOne("Canamed.Domain.Agenda.AppointmentType", null)
@@ -663,6 +1136,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ProfessionalId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Clinics.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Canamed.Domain.Agenda.AppointmentType", b =>
@@ -686,6 +1164,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ClinicId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Clinics.HealthPlan", null)
+                        .WithMany()
+                        .HasForeignKey("HealthPlanId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Canamed.Domain.Agenda.Professional", b =>
@@ -717,7 +1200,69 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Canamed.Domain.Agenda.QueueEntry", b =>
+                {
+                    b.HasOne("Canamed.Domain.Agenda.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.Professional", null)
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Canamed.Domain.Agenda.Specialty", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.ClinicClosure", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.HealthPlan", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.OperatingHour", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Clinics.Room", b =>
                 {
                     b.HasOne("Canamed.Domain.Clinics.Clinic", null)
                         .WithMany()
@@ -767,6 +1312,48 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Payments.PaymentTransaction", b =>
+                {
+                    b.HasOne("Canamed.Domain.Agenda.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Queue.TriageRecord", b =>
+                {
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.QueueEntry", null)
+                        .WithMany()
+                        .HasForeignKey("QueueEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

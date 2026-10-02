@@ -26,10 +26,15 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
                 value => AppointmentStatusMap.FromStoredValue(value))
             .HasMaxLength(20)
             .IsRequired();
+        builder.Property(appointment => appointment.PaymentStatus)
+            .HasMaxLength(20)
+            .HasDefaultValue("pendente")
+            .IsRequired();
         builder.Property(appointment => appointment.CancellationReason).HasMaxLength(500);
         builder.Property(appointment => appointment.DurationMinutes).IsRequired();
         builder.HasIndex(appointment => new { appointment.ProfessionalId, appointment.StartsAt });
         builder.HasIndex(appointment => new { appointment.ClinicId, appointment.StartsAt });
+        builder.HasIndex(appointment => new { appointment.ClinicId, appointment.RoomId, appointment.StartsAt });
 
         builder.HasOne<Canamed.Domain.Clinics.Clinic>()
             .WithMany()
@@ -49,6 +54,11 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.HasOne<AppointmentType>()
             .WithMany()
             .HasForeignKey(appointment => appointment.AppointmentTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Canamed.Domain.Clinics.Room>()
+            .WithMany()
+            .HasForeignKey(appointment => appointment.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

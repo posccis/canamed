@@ -117,7 +117,7 @@ Nenhum deles pode ser implementado antes de existir SPEC aprovada.
 | Pilar | Descrição | Situação |
 | :--- | :--- | :--- |
 | Gestão de agenda | Organização de horários, profissionais e salas. | **Implementada** — [`SPEC-0002`](specs/0002-spec-agenda-de-consultas.md) (salas e equipamentos permanecem fora de escopo) |
-| Fila de espera | Organização da chegada e do fluxo de espera dos pacientes. | Sem SPEC — 2ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+| Fila de espera | Organização da chegada e do fluxo de espera dos pacientes. | **Implementada** — [`SPEC-0005`](specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
 | Pagamento antes da consulta | Fluxo de pagamento pré-consulta quando aplicável. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
 | Apoio à triagem | Suporte ao processo de triagem. | Sem SPEC — 7ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
 | Dashboards gerenciais | Informações organizadas para apoio à decisão da gestão. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |

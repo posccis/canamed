@@ -71,30 +71,32 @@ public static class AuthEndpoints
     private static async Task<IResult> LoginAsync(
         AuthService authService,
         HttpContext httpContext,
+        TimeProvider timeProvider,
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
         var response = await authService.LoginAsync(request, cancellationToken).ConfigureAwait(false);
 
-        return CompleteLogin(httpContext, response);
+        return CompleteLogin(httpContext, response, timeProvider);
     }
 
     private static async Task<IResult> CompleteMfaLoginAsync(
         AuthService authService,
         HttpContext httpContext,
+        TimeProvider timeProvider,
         [FromBody] MfaLoginRequest request,
         CancellationToken cancellationToken)
     {
         var response = await authService.CompleteMfaLoginAsync(request, cancellationToken).ConfigureAwait(false);
 
-        return CompleteLogin(httpContext, response);
+        return CompleteLogin(httpContext, response, timeProvider);
     }
 
-    private static IResult CompleteLogin(HttpContext httpContext, LoginResponse response)
+    private static IResult CompleteLogin(HttpContext httpContext, LoginResponse response, TimeProvider timeProvider)
     {
         if (response.SessionToken is not null && response.Session is not null)
         {
-            SessionCookies.Write(httpContext, response.SessionToken, response.Session.ExpiresAt);
+            SessionCookies.Write(httpContext, response.SessionToken, response.Session.ExpiresAt, timeProvider);
         }
 
         return Results.Ok(response);

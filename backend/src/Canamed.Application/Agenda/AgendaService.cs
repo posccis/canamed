@@ -5,6 +5,7 @@ using Canamed.Application.Errors;
 using Canamed.Application.Identity;
 using Canamed.Domain.Agenda;
 using Canamed.Domain.Auditing;
+using Canamed.Domain.Clinics;
 
 namespace Canamed.Application.Agenda;
 
@@ -15,6 +16,8 @@ namespace Canamed.Application.Agenda;
 public sealed class AgendaService(
     IAgendaRepository agendaRepository,
     ICatalogRepository catalogRepository,
+    IClinicOperationRepository clinicOperationRepository,
+    IQueueRepository queueRepository,
     IAuditRepository auditRepository,
     IAuditTrail auditTrail,
     IUnitOfWork unitOfWork,
@@ -72,6 +75,17 @@ public sealed class AgendaService(
                     excludedAppointmentId: null,
                     token).ConfigureAwait(false);
 
+                EnsureNotInPast(range);
+
+                // As regras de sala e calendário são avaliadas antes do conflito de profissional para que
+                // uma sala ocupada (RN-011) seja reportada como conflito de sala, e não de agenda.
+                await EnsureSchedulingAllowedAsync(
+                    actor,
+                    range,
+                    request.RoomId,
+                    excludedAppointmentId: null,
+                    token).ConfigureAwait(false);
+
                 EnsureRangeIsFree(range, busy);
 
                 var appointment = Appointment.Schedule(
@@ -81,7 +95,8 @@ public sealed class AgendaService(
                     appointmentType.Id,
                     startsAt,
                     appointmentType.DurationMinutes,
-                    timeProvider.GetUtcNow());
+                    timeProvider.GetUtcNow(),
+                    request.RoomId);
 
                 agendaRepository.AddAppointment(appointment);
                 auditRepository.Add(AuditEvent.Record(
@@ -180,9 +195,24 @@ public sealed class AgendaService(
                     appointment.Id,
                     token).ConfigureAwait(false);
 
+                EnsureNotInPast(range);
+
+                await EnsureSchedulingAllowedAsync(
+                    actor,
+                    range,
+                    request.RoomId ?? appointment.RoomId,
+                    appointment.Id,
+                    token).ConfigureAwait(false);
+
                 EnsureRangeIsFree(range, busy);
 
                 appointment.Reschedule(newStartsAt, timeProvider.GetUtcNow());
+
+                // SPEC-0006: a sala pode ser trocada na remarcação; nula mantém a atual.
+                if (request.RoomId is not null && request.RoomId != appointment.RoomId)
+                {
+                    appointment.ChangeRoom(request.RoomId, timeProvider.GetUtcNow());
+                }
 
                 auditRepository.Add(AuditEvent.Record(
                     actor.ClinicId,
@@ -240,6 +270,13 @@ public sealed class AgendaService(
                     .ConfigureAwait(false);
 
                 appointment.Cancel(request.Reason, timeProvider.GetUtcNow());
+
+                await CloseLinkedQueueEntryAsync(
+                    actor,
+                    appointment.Id,
+                    QueueOutcome.Canceled,
+                    timeProvider.GetUtcNow(),
+                    token).ConfigureAwait(false);
 
                 auditRepository.Add(AuditEvent.Record(
                     actor.ClinicId,
@@ -382,6 +419,14 @@ public sealed class AgendaService(
                         ConflictTypeInvalidState);
                 }
 
+                // RN-007 da SPEC-0005: o desfecho na agenda fecha a entrada de fila correspondente.
+                await CloseLinkedQueueEntryAsync(
+                    actor,
+                    appointment.Id,
+                    auditAction == AuditActions.AppointmentAttended ? QueueOutcome.Attended : QueueOutcome.Left,
+                    now,
+                    token).ConfigureAwait(false);
+
                 auditRepository.Add(AuditEvent.Record(
                     actor.ClinicId,
                     actor.UserId,
@@ -490,8 +535,8 @@ public sealed class AgendaService(
         return new BusyAgenda(appointmentRanges, [.. blocks.Select(static block => block.TimeRange)]);
     }
 
-    /// <summary>Aplica RN-001, RN-003 e RN-011 e converte as violações em Problem Details de conflito.</summary>
-    private void EnsureRangeIsFree(TimeRange range, BusyAgenda busy)
+    /// <summary>RN-001: não é possível agendar em data passada.</summary>
+    private void EnsureNotInPast(TimeRange range)
     {
         if (range.StartsAt < timeProvider.GetUtcNow())
         {
@@ -501,7 +546,11 @@ public sealed class AgendaService(
                 "Não é possível agendar em data passada.",
                 "past-scheduling");
         }
+    }
 
+    /// <summary>Aplica RN-003 e RN-011 e converte as violações em Problem Details de conflito.</summary>
+    private void EnsureRangeIsFree(TimeRange range, BusyAgenda busy)
+    {
         try
         {
             AgendaRules.EnsureNoOverlap(range, busy.Appointments);
@@ -550,6 +599,92 @@ public sealed class AgendaService(
                     (int)range.Duration.TotalMinutes,
                     busyRanges),
             });
+
+    /// <summary>
+    /// Aplica as regras operacionais da SPEC-0006 ao horário candidato: sala válida (RN-010), feriado
+    /// (RN-008), funcionamento da clínica (RN-007/RN-009) e conflito de sala (RN-011).
+    /// </summary>
+    private async Task EnsureSchedulingAllowedAsync(
+        CurrentActor actor,
+        TimeRange range,
+        Guid? roomId,
+        Guid? excludedAppointmentId,
+        CancellationToken cancellationToken)
+    {
+        if (roomId is not null)
+        {
+            var room = await clinicOperationRepository
+                .FindRoomAsync(actor.ClinicId, roomId.Value, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (room is null || !room.IsActive)
+            {
+                throw new CanamedException(
+                    ProblemKind.Validation,
+                    "Sala inválida",
+                    "A sala informada não está disponível nesta clínica.",
+                    "invalid-room");
+            }
+        }
+
+        var localStart = AgendaTimeZone.ToLocal(range.StartsAt);
+        var localEnd = AgendaTimeZone.ToLocal(range.EndsAt);
+        var date = DateOnly.FromDateTime(localStart.DateTime);
+
+        if (await clinicOperationRepository
+                .ClosureDateExistsAsync(actor.ClinicId, date, cancellationToken)
+                .ConfigureAwait(false))
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Clínica fechada",
+                "A clínica não funciona nesta data. Escolha outro dia.",
+                "clinic-closed");
+        }
+
+        var operatingHours = await clinicOperationRepository
+            .ListOperatingHoursAsync(actor.ClinicId, cancellationToken)
+            .ConfigureAwait(false);
+
+        var hoursOfDay = operatingHours
+            .Where(hour => hour.DayOfWeek == (int)localStart.DayOfWeek)
+            .ToArray();
+
+        if (hoursOfDay.Length > 0)
+        {
+            var sameLocalDay = localEnd.Date == localStart.Date;
+            var withinHours = sameLocalDay && ClinicOperatingRules.IsWithinOperatingHours(
+                TimeOnly.FromDateTime(localStart.DateTime),
+                TimeOnly.FromDateTime(localEnd.DateTime),
+                hoursOfDay);
+
+            if (!withinHours)
+            {
+                throw new CanamedException(
+                    ProblemKind.Conflict,
+                    "Fora do horário de funcionamento",
+                    "Este horário está fora do funcionamento da clínica.",
+                    "outside-operating-hours");
+            }
+        }
+
+        if (roomId is not null && await agendaRepository
+                .RoomHasOverlappingAppointmentAsync(
+                    actor.ClinicId,
+                    roomId.Value,
+                    range.StartsAt,
+                    range.EndsAt,
+                    excludedAppointmentId,
+                    cancellationToken)
+                .ConfigureAwait(false))
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Sala ocupada",
+                "Esta sala já está ocupada neste horário. Escolha outra sala ou outro horário.",
+                "room-conflict");
+        }
+    }
 
     private async Task EnsureProfessionalExistsAsync(
         CurrentActor actor,
@@ -662,6 +797,25 @@ public sealed class AgendaService(
 
         var specialtyNames = specialties.ToDictionary(static specialty => specialty.Id, static specialty => specialty.Name);
 
+        var roomIds = appointments
+            .Where(static appointment => appointment.RoomId is not null)
+            .Select(static appointment => appointment.RoomId!.Value)
+            .Distinct()
+            .ToArray();
+
+        var roomNames = new Dictionary<Guid, string>();
+
+        if (roomIds.Length > 0)
+        {
+            var rooms = await clinicOperationRepository
+                .ListRoomsAsync(clinicId, cancellationToken)
+                .ConfigureAwait(false);
+
+            roomNames = rooms
+                .Where(room => roomIds.Contains(room.Id))
+                .ToDictionary(static room => room.Id, static room => room.Name);
+        }
+
         return new AgendaNames(
             patients.ToDictionary(static patient => patient.Id, static patient => patient.Name),
             types.ToDictionary(
@@ -672,7 +826,8 @@ public sealed class AgendaService(
                     type.Coverage.ToStoredValue(),
                     type.SpecialtyId is not null && specialtyNames.TryGetValue(type.SpecialtyId.Value, out var specialtyName)
                         ? specialtyName
-                        : null)));
+                        : null)),
+            roomNames);
     }
 
     private static AppointmentResponse Map(Appointment appointment, AgendaNames names)
@@ -691,6 +846,10 @@ public sealed class AgendaService(
             type.Category,
             type.Coverage,
             type.SpecialtyName,
+            appointment.RoomId,
+            appointment.RoomId is not null && names.Rooms.TryGetValue(appointment.RoomId.Value, out var roomName)
+                ? roomName
+                : null,
             appointment.StartsAt,
             appointment.EndsAt,
             appointment.DurationMinutes,
@@ -750,14 +909,75 @@ public sealed class AgendaService(
             "permission-denied");
     }
 
+    /// <summary>
+    /// Fecha a entrada de fila vinculada ao agendamento quando a agenda define o desfecho
+    /// (RN-007 da SPEC-0005). Sem entrada aberta, nada acontece.
+    /// </summary>
+    private async Task CloseLinkedQueueEntryAsync(
+        CurrentActor actor,
+        Guid appointmentId,
+        QueueOutcome outcome,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var entry = await queueRepository
+            .FindOpenByAppointmentAsync(actor.ClinicId, appointmentId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null)
+        {
+            return;
+        }
+
+        var auditAction = outcome switch
+        {
+            QueueOutcome.Attended => AuditActions.QueueCompleted,
+            QueueOutcome.Left => AuditActions.QueueLeft,
+            _ => AuditActions.QueueCanceled,
+        };
+
+        switch (outcome)
+        {
+            case QueueOutcome.Attended:
+                entry.CompleteFromAgenda(now);
+                break;
+            case QueueOutcome.Left:
+                entry.LeaveFromAgenda(now);
+                break;
+            default:
+                entry.CancelFromAgenda(now);
+                break;
+        }
+
+        auditRepository.Add(AuditEvent.Record(
+            actor.ClinicId,
+            actor.UserId,
+            actor.Name,
+            auditAction,
+            AuditResources.QueueEntries,
+            entry.Id.ToString(),
+            now,
+            "{\"origin\":\"agenda\"}"));
+    }
+
+    /// <summary>Desfecho da agenda que fecha a entrada de fila vinculada.</summary>
+    private enum QueueOutcome
+    {
+        Attended,
+        Left,
+        Canceled,
+    }
+
     /// <summary>Nomes resolvidos para a montagem das respostas.</summary>
     private sealed record AgendaNames(
         IReadOnlyDictionary<Guid, string> Patients,
-        IReadOnlyDictionary<Guid, AppointmentTypeDescriptor> AppointmentTypes)
+        IReadOnlyDictionary<Guid, AppointmentTypeDescriptor> AppointmentTypes,
+        IReadOnlyDictionary<Guid, string> Rooms)
     {
         public static AgendaNames Empty { get; } = new(
             new Dictionary<Guid, string>(),
-            new Dictionary<Guid, AppointmentTypeDescriptor>());
+            new Dictionary<Guid, AppointmentTypeDescriptor>(),
+            new Dictionary<Guid, string>());
     }
 
     /// <summary>Classificação vigente do tipo de consulta usada na resposta do agendamento.</summary>

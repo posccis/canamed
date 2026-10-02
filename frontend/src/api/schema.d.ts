@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/agenda/close-day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CloseAgendaDay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/specialties": {
         parameters: {
             query?: never;
@@ -404,6 +420,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/queue/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["QueueCheckIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/queue/{id}/call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CallQueueEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/queue/{id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StartQueueEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/queue/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CompleteQueueEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/queue/{id}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LeaveQueueEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -638,6 +750,8 @@ export interface components {
             category: string;
             coverage: string;
             specialtyName: null | string;
+            roomId: null | string;
+            roomName: null | string;
             /** Format: date-time */
             startsAt: string;
             /** Format: date-time */
@@ -681,11 +795,37 @@ export interface components {
             currentPassword: string;
             newPassword: string;
         };
+        CheckInRequest: {
+            /** Format: uuid */
+            appointmentId: null | string;
+            /** Format: uuid */
+            patientId: null | string;
+            /** Format: uuid */
+            professionalId: null | string;
+            priority: null | string;
+        };
         ClinicSummary: {
             /** Format: uuid */
             id: string;
             name: string;
             role: string;
+        };
+        CloseDayRequest: {
+            /** Format: date */
+            date: string;
+            /** Format: uuid */
+            professionalId: null | string;
+        };
+        CloseDayResponse: {
+            /** Format: date */
+            date: string;
+            /** Format: int32 */
+            noShowAppointments: number | string;
+            /** Format: int32 */
+            leftQueueEntries: number | string;
+            /** Format: int32 */
+            stillInService: number | string;
+            noShowAppointmentIds: string[];
         };
         CreateAppointmentRequest: {
             /** Format: uuid */
@@ -696,6 +836,8 @@ export interface components {
             appointmentTypeId: string;
             /** Format: date-time */
             startsAt: string;
+            /** Format: uuid */
+            roomId?: null | string;
         };
         CreateAppointmentTypeRequest: {
             name: string;
@@ -789,12 +931,50 @@ export interface components {
             specialtyName: null | string;
             isActive: boolean;
         };
+        QueueDayResponse: {
+            /** Format: date */
+            date: string;
+            /** Format: uuid */
+            professionalId: null | string;
+            entries: components["schemas"]["QueueEntryResponse"][];
+        };
+        QueueEntryResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            appointmentId: null | string;
+            /** Format: uuid */
+            patientId: string;
+            patientName: string;
+            /** Format: uuid */
+            professionalId: string;
+            priority: string;
+            status: string;
+            /** Format: int32 */
+            position: null | number | string;
+            /** Format: date-time */
+            arrivedAt: string;
+            /** Format: date-time */
+            calledAt: null | string;
+            /** Format: date-time */
+            startedAt: null | string;
+            /** Format: date-time */
+            finishedAt: null | string;
+            /** Format: int32 */
+            waitingMinutes: number | string;
+            /** Format: int32 */
+            serviceMinutes: null | number | string;
+            /** Format: date-time */
+            appointmentStartsAt: null | string;
+        };
         RenameSpecialtyRequest: {
             name: string;
         };
         RescheduleAppointmentRequest: {
             /** Format: date-time */
             startsAt: string;
+            /** Format: uuid */
+            roomId?: null | string;
         };
         ResetUserPasswordRequest: {
             newPassword: string;
@@ -971,6 +1151,39 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CloseAgendaDay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseDayRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CloseDayResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1716,6 +1929,195 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppointmentResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    QueueCheckIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueEntryResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListQueue: {
+        parameters: {
+            query?: {
+                date?: string;
+                professionalId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueDayResponse"];
+                };
+            };
+        };
+    };
+    CallQueueEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueEntryResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    StartQueueEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueEntryResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CompleteQueueEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueEntryResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    LeaveQueueEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueEntryResponse"];
                 };
             };
             /** @description Conflict */

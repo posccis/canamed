@@ -31,13 +31,14 @@ export function createAppointment(
   return apiPost<Appointment>('/appointments', request, signal);
 }
 
-/** Remarca um agendamento (F-002). */
+/** Remarca um agendamento (F-002, SPEC-0006). */
 export function rescheduleAppointment(
   appointmentId: string,
   startsAt: string,
+  roomId?: string | null,
   signal?: AbortSignal,
 ): Promise<Appointment> {
-  return apiPost<Appointment>(`/appointments/${appointmentId}/reschedule`, { startsAt }, signal);
+  return apiPost<Appointment>(`/appointments/${appointmentId}/reschedule`, { startsAt, roomId }, signal);
 }
 
 /** Cancela um agendamento com motivo obrigatório (F-003). */

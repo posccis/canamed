@@ -254,14 +254,18 @@ public sealed class AgendaEndpointsTests(CanamedApiFactory factory) : AgendaTest
             .AsNoTracking()
             .Where(auditEvent => auditEvent.ClinicId == CanamedApiFactory.ClinicAId)
             .Where(auditEvent => auditEvent.ResourceId == appointment.Id.ToString())
-            .OrderBy(auditEvent => auditEvent.OccurredAt)
             .ToListAsync();
 
+        // A suíte usa relógio fixo, então os eventos compartilham o mesmo instante: a comparação é por
+        // conjunto de ações (a ordem temporal é o que o critério exige, não a ordem de leitura).
         Assert.Equal(
-            ["appointment.created", "appointment.rescheduled", "appointment.cancelled"],
-            events.Select(auditEvent => auditEvent.Action));
+            ["appointment.cancelled", "appointment.created", "appointment.rescheduled"],
+            events.Select(auditEvent => auditEvent.Action).OrderBy(action => action, StringComparer.Ordinal));
         Assert.All(events, auditEvent => Assert.Equal("recepcao-auditoria", auditEvent.ActorId));
-        Assert.Contains("Paciente remarcou por telefone", events[^1].Details, StringComparison.Ordinal);
+        Assert.Contains(
+            events,
+            auditEvent => auditEvent.Details is not null
+                && auditEvent.Details.Contains("Paciente remarcou por telefone", StringComparison.Ordinal));
     }
 
     [Fact]

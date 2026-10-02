@@ -502,3 +502,198 @@ Recomenda-se **rotacionar a senha do papel `canamed_app`** caso este registro se
 `ALTER ROLE canamed_app WITH PASSWORD '<nova>';` seguido da atualização do `.env`. A rotação não foi feita
 automaticamente porque alteração de credenciais exige autorização explícita e pode afetar outras
 ferramentas que usem a mesma senha.
+
+---
+
+### [2026-10-01] — Execução do backlog: SPEC-0005 (fila de espera e ciclo de atendimento)
+
+Segundo bloco da sequência sugerida do backlog (itens P-01 e P-02), sem dependência externa.
+
+#### Especificação
+- **AÇÃO**: Escrita e implementação da `specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md`
+  - **MOTIVO**: Próximo item da sequência do backlog, indicado pelo responsável pelo projeto.
+  - **LOCAL AFETADO**: `specs/0005-...md`, `specs/README.md`
+  - **RESULTADO**: SPEC com 16 regras de negócio, 5 fluxos, modelo de dados, contrato de API (7 rotas), 13 critérios de aceitação, 8 casos de erro, requisitos de segurança e legais (incluindo a preferência de atendimento da pessoa idosa) e 6 decisões registradas.
+
+#### Banco de dados
+- **AÇÃO**: Migration `AddWaitingQueue`
+  - **MOTIVO**: Persistir a fila do dia com prioridade, status e marcos de tempo.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/Persistence/Migrations`
+  - **RESULTADO**: Tabela `queue_entries` com restrições de verificação para prioridade e status e **índice único parcial** em `appointment_id` — garantindo no banco, inclusive sob concorrência, que um agendamento tenha apenas uma entrada aberta na fila (RN-003). Encaixes sem agendamento usam `appointment_id` nulo e não colidem.
+
+#### Backend
+- **AÇÃO**: Domínio da fila (`QueueEntry`, prioridade, status e ordenação) e casos de uso
+  - **MOTIVO**: Concentrar as regras no domínio, testáveis sem banco, e entregar os fluxos F-001 a F-005.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Agenda/QueueEntry.cs`, `backend/src/Canamed.Application/Queue`, `backend/src/Canamed.Infrastructure/Persistence/QueueRepository.cs`, `backend/src/Canamed.Api/Endpoints/QueueEndpoints.cs`
+  - **RESULTADO**: Check-in com e sem agendamento, ordenação (preferencial primeiro, depois chegada), transições validadas e idempotentes, cálculo de tempo de espera e de atendimento, e as sete rotas da seção 8 da SPEC. O repositório traduz a violação do índice único em `409 queue-entry-conflict`.
+- **AÇÃO**: Consistência bidirecional entre agenda e fila (RN-006 e RN-007)
+  - **MOTIVO**: As duas visões precisam contar a mesma história sem trabalho manual duplicado.
+  - **LOCAL AFETADO**: `AgendaService.cs`, `QueueService.cs`
+  - **RESULTADO**: Concluir a fila marca o agendamento como `atendido` na mesma transação; marcar `atendido`, `faltou` ou `cancelado` na agenda fecha a entrada de fila correspondente (`atendido`, `desistiu` ou `cancelado`), com auditoria indicando a origem.
+- **AÇÃO**: Fechamento do dia (`DayClosingService`)
+  - **MOTIVO**: A agenda acumulava agendamentos antigos sem desfecho.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Queue/DayClosingService.cs`
+  - **RESULTADO**: Marca como `faltou` os agendamentos ativos cujo horário já passou e como `desistiu` apenas quem ainda aguardava por um atendimento já encerrado; reporta o que continua em atendimento; é idempotente e recusa dia futuro. Durante a implementação a regra foi ajustada para não descartar quem ainda espera por um atendimento de hoje (encaixes sem agendamento nunca são fechados automaticamente).
+
+#### Frontend
+- **AÇÃO**: Nova aba **Recepção** com fila do dia, check-in e fechamento do dia
+  - **MOTIVO**: Seção 9 da SPEC-0005.
+  - **LOCAL AFETADO**: `frontend/src/features/queue`, `frontend/src/features/agenda/AgendaPage.tsx`, `frontend/src/features/auth/SessionBar.tsx`, `frontend/src/App.tsx`
+  - **RESULTADO**: Check-in por agendamento do dia ou por encaixe, fila ordenada com posição, tempo de espera, prioridade e status, ações de chamar/iniciar/finalizar/desistir e botão de fechamento com resumo. A agenda ganhou o atalho **Check-in** por agendamento e um indicador de quem já está na fila.
+
+#### Verificação
+- **AÇÃO**: Relógio determinístico na suíte de integração
+  - **MOTIVO**: Check-in e fechamento dependem do dia, e a suíte precisa rodar em qualquer horário sem falhas intermitentes.
+  - **LOCAL AFETADO**: `backend/tests/Canamed.IntegrationTests/TestClock.cs` (novo), `CanamedApiFactory.cs`
+  - **RESULTADO**: A API em teste passa a usar um relógio fixo no início do dia local (via `ConfigureTestServices`), e o cálculo de TOTP da suíte segue o mesmo relógio. Os 41 testes anteriores continuaram verdes após a mudança.
+- **AÇÃO**: Testes das regras e dos fluxos da fila
+  - **LOCAL AFETADO**: `backend/tests/Canamed.UnitTests/Queue`, `backend/tests/Canamed.IntegrationTests/Queue`, `frontend/src/features/queue/QueuePanel.test.tsx`, `frontend/e2e/fila.spec.ts`
+  - **RESULTADO**: 15 testes unitários (ordenação, posição, transições, idempotência, tempos), 13 de integração (CA-001 a CA-013, incluindo concorrência do índice único, consistência com a agenda, fechamento idempotente, isolamento por clínica e permissão do profissional), 4 de frontend e 2 de comportamento.
+- **AÇÃO**: Correções encontradas pela própria verificação
+  - **LOCAL AFETADO**: `TestDatabase.cs`, `AgendaEndpointsTests.cs`, `frontend/e2e/fila.spec.ts`
+  - **RESULTADO**: Corrigidos: (1) a limpeza do banco de testes precisava remover `queue_entries` antes de `appointments` (FK `RESTRICT`); (2) a asserção de auditoria comparava a ordem de eventos que, com relógio fixo, empatam no tempo — passou a comparar o conjunto de ações; (3) o cenário de fechamento do dia prepara a pendência de ontem pelo domínio, já que a API corretamente recusa agendamento no passado; (4) locators dos novos cenários de navegador.
+- **AÇÃO**: Execução da suíte completa
+  - **RESULTADO**: **198 testes aprovados e 0 falhas** — 108 unitários, 54 de integração, 24 de frontend (Vitest) e 12 de comportamento (Playwright). Build com 0 erros e 0 avisos.
+
+#### Situação do backlog
+
+| Item | Situação |
+| :--- | :--- |
+| Classificação das consultas e lacunas D-01 a D-03 | **Concluído** (SPEC-0004) |
+| P-01 fila de espera e P-02 ciclo de atendimento | **Concluído** (SPEC-0005) |
+| P-06 cadastro completo e horário de funcionamento | **Concluído** (SPEC-0006) |
+| P-05 dashboards gerenciais | **Concluído** (SPEC-0007) |
+| SPEC-UI-001 Design System & Layout Moderno | **Concluído** |
+| T-04 observabilidade, P-04 pagamentos, I-01 a I-03, P-03, P-07, P-08, B-01 a B-03 | Pendentes, conforme a sequência do backlog |
+
+---
+
+### [2026-10-01] — Execução do backlog: SPEC-0006, SPEC-0007 e Adaptação SPEC-UI-001
+
+Entrega simultânea da Gestão Operacional da Clínica (P-06), do Painel Gerencial & Indicadores Operacionais (P-05) e da reformulação completa da interface de usuário conforme o Design System oficial do CANAMED (SPEC-UI-001).
+
+#### 1. Gestão Operacional da Clínica (SPEC-0006 — P-06)
+- **AÇÃO**: Backend da SPEC-0006
+  - **MOTIVO**: Resolver P-06 e pendência P-005 da SPEC-0002.
+  - **LOCAL AFETADO**: `Canamed.Domain/Clinics`, `Canamed.Application/Clinics`, `Canamed.Infrastructure/Persistence`, `Canamed.Api/Endpoints/ClinicOperationEndpoints.cs`
+  - **RESULTADO**: Cadastro de convênios, salas, horários de funcionamento por dia da semana com múltiplos intervalos e feriados/exceções. Validação no agendamento e remarcação para impedir agendamento em feriados (`clinic-closed`), fora do horário de funcionamento (`outside-operating-hours`) e conflito de sala (`room-conflict`).
+- **AÇÃO**: Frontend da Operação da Clínica
+  - **LOCAL AFETADO**: `frontend/src/features/clinics/clinicsApi.ts`, `OperationPanel.tsx`, `AppointmentForm.tsx`, `AppointmentActions.tsx`, `AgendaPage.tsx`
+  - **RESULTADO**: Painel Operacional com abas de Convênios, Salas, Horário Semanal e Feriados. Seleção de sala física no agendamento e remarcação, e identificação da sala no cartão da agenda.
+
+#### 2. Painel Gerencial e Indicadores Operacionais (SPEC-0007 — P-05)
+- **AÇÃO**: Especificação e implementação da `specs/0007-spec-painel-gerencial-e-indicadores-operacionais.md`
+  - **MOTIVO**: Cumprir item P-05 do backlog e materializar o Dashboard exigido na seção 7 da SPEC-UI-001.
+  - **LOCAL AFETADO**: `specs/0007-...md`, `Canamed.Application/Dashboard`, `Canamed.Infrastructure/Persistence/DashboardRepository.cs`, `Canamed.Api/Endpoints/DashboardEndpoints.cs`
+  - **RESULTADO**: Rota `GET /api/v1/dashboard/summary?date=YYYY-MM-DD` com autorização `dashboard:read` e isolamento por clínica. Devolve métricas de agendamento (total, confirmados, atendidos, faltas, taxa de presença), pulso da fila (aguardando, em atendimento, tempo médio de espera), produção por profissional, ocupação por salas e lista de próximos atendimentos do dia.
+- **AÇÃO**: Tela `DashboardPanel.tsx` no frontend
+  - **LOCAL AFETADO**: `frontend/src/features/dashboard/`
+  - **RESULTADO**: Cards de KPI com visual moderno, alerta de tempo de espera elevado, tabela de produção por profissional, blocos de ocupação de salas e atalhos operacionais rápidos.
+
+#### 3. Adaptação Visual e Design System (SPEC-UI-001)
+- **AÇÃO**: Ativos oficiais e tipografia
+  - **LOCAL AFETADO**: `frontend/public/assets/brand/`, `frontend/index.html`, `frontend/src/styles/theme.css`
+  - **RESULTADO**: Ativos oficiais de marca copiados para o frontend. Inclusão da fonte oficial `Plus Jakarta Sans` e favicon com o símbolo oficial. Tokens de cor estritamente alinhados à identidade (`#008080`, `#005F6A`, `#66CDAA`, `#333333`, `#F7FAFC`, `#E2E8F0`, `#E6FFFA`), tokens de espaçamento, cantos arredondados e sombras.
+- **AÇÃO**: Layout Administrativo Moderno (Sidebar + Topbar)
+  - **LOCAL AFETADO**: `frontend/src/features/layout/Sidebar.tsx`, `Topbar.tsx`, `frontend/src/App.tsx`
+  - **RESULTADO**: Sidebar retrátil com logomarcas oficiais CANAMED, navegação modular (Dashboard, Agenda, Recepção, Operação, Catálogo, Usuários), estados ativos destacados e gaveta responsiva para mobile/tablet. Topbar com título contextual, identificação da clínica ativa, avatar com iniciais do usuário e botão de saída.
+
+#### 4. Verificação e Testes
+- **AÇÃO**: Execução das suítes de testes do backend e frontend
+  - **RESULTADO**:
+    - **Backend .NET:** 110 testes unitários aprovados + 67 testes de integração aprovados (Total: **177 testes .NET aprovados, 0 falhas**).
+    - **Frontend:** 27 testes unitários aprovados (Total: **27 testes React/Vitest aprovados, 0 falhas**).
+    - **Build:** `npm run build` executado com sucesso (zero erros de TypeScript e build Vite otimizado gerado).
+
+---
+
+### [2026-10-02] — Implementação de P-03 (Triagem), P-04 (Pagamentos no Balcão), B-01 (Exportação CSV), B-02 (Busca Global Ctrl+K) e Adaptação SPEC-UI-001
+
+Entrega ponta a ponta dos fluxos de Apoio à Triagem e Classificação de Risco (P-03 — SPEC-0009), Fluxo de Pagamento e Cobrança no Balcão (P-04 — SPEC-0008), Exportação de Dados Operacionais em CSV (B-01), Busca Global com atalho (`Ctrl+K`) (B-02) e conformidade integral com a especificação visual SPEC-UI-001.
+
+#### 1. Apoio à Triagem e Classificação de Risco (SPEC-0009 — P-03)
+- **AÇÃO**: Especificação e implementação de domínio, aplicação e API
+  - **MOTIVO**: Cumprir item P-03 do backlog respeitando integralmente a LGPD, o CFM e os limites regulatórios da ANVISA (RDC nº 657/2022 — triagem assistencial/operacional sem algoritmos automatizados de SaMD).
+  - **LOCAL AFETADO**: `specs/0009-spec-triagem-e-classificacao-de-risco.md`, `Canamed.Domain/Queue/TriageRecord.cs`, `Canamed.Application/Queue/TriageService.cs`, `Canamed.Infrastructure/Persistence/TriageRepository.cs`, `Canamed.Api/Endpoints/QueueEndpoints.cs`
+  - **RESULTADO**: Registro de sinais vitais (PA, FC, temperatura, saturação O2, glicemia, peso, altura), cálculo automático de IMC, queixa principal, alergias relatadas e classificação de risco baseada no Protocolo de Manchester (`vermelho`, `laranja`, `amarelo`, `verde`, `azul`). Pacientes classificados como de alta gravidade (`vermelho`/`laranja`) recebem prioridade preferencial na fila de espera. Trilha de auditoria com `TriageRecorded`.
+- **AÇÃO**: Interface de triagem no frontend
+  - **LOCAL AFETADO**: `frontend/src/features/queue/triageApi.ts`, `frontend/src/features/queue/TriageModal.tsx`, `frontend/src/features/queue/QueuePanel.tsx`
+  - **RESULTADO**: Modal de triagem com seleção visual das cores de Manchester, cálculo em tempo real do IMC, validação de faixas fisiológicas e integração com o painel de fila da recepção.
+
+#### 2. Fluxo de Pagamento e Cobrança no Balcão (SPEC-0008 — P-04)
+- **AÇÃO**: Especificação e implementação de domínio, aplicação e API
+  - **MOTIVO**: Cumprir item P-04 do backlog permitindo o registro de pagamentos antes ou após a consulta com rastreabilidade de operador, conformidade PCI-DSS/LGPD (sem armazenamento de PAN/CVV).
+  - **LOCAL AFETADO**: `specs/0008-spec-fluxo-de-pagamento-e-cobranca.md`, `Canamed.Domain/Payments/PaymentTransaction.cs`, `Canamed.Domain/Agenda/Appointment.cs`, `Canamed.Application/Payments/PaymentService.cs`, `Canamed.Infrastructure/Persistence/PaymentRepository.cs`, `Canamed.Api/Endpoints/PaymentEndpoints.cs`
+  - **RESULTADO**: Registro de transações financeiras nos métodos `dinheiro`, `pix`, `cartao_debito`, `cartao_credito`, `convenio_faturado`. Atualização atômica do status de pagamento do agendamento (`pago`, `isento`, `estornado`). Endpoints para registro de pagamento, estorno com justificativa obrigatória, consulta por agendamento e fechamento de resumo diário (`GET /api/v1/payments/summary`). Trilha de auditoria com `PaymentReceived` e `PaymentRefunded`.
+- **AÇÃO**: Interface de pagamento e emissão de recibo
+  - **LOCAL AFETADO**: `frontend/src/features/payments/paymentsApi.ts`, `frontend/src/features/payments/PaymentModal.tsx`, `frontend/src/features/agenda/AgendaPage.tsx`, `frontend/src/features/queue/QueuePanel.tsx`, `frontend/src/features/dashboard/DashboardPanel.tsx`
+  - **RESULTADO**: Modal de cobrança com seleção do método, preenchimento de bandeira e 4 últimos dígitos para cartão, emissão e impressão de comprovante/recibo (`window.print`), e integração de ação de cobrança direta na Agenda e na Recepção. Card "Caixa do Balcão" no Dashboard consolidando o total recebido do dia.
+
+#### 3. Exportação de Dados em CSV (B-01) e Busca Global Ctrl+K (B-02)
+- **AÇÃO**: Utilitário universal de exportação CSV
+  - **LOCAL AFETADO**: `frontend/src/utils/exportCsv.ts`
+  - **RESULTADO**: Utilitário com suporte a UTF-8 BOM, escape seguro de delimitadores e caracteres especiais para compatibilidade com Microsoft Excel e LibreOffice. Botões de exportação integrados na Fila de Espera, na Agenda de Consultas e no Painel Operacional/Dashboard.
+- **AÇÃO**: Modal de busca global com atalho de teclado (`Ctrl+K`)
+  - **LOCAL AFETADO**: `frontend/src/features/layout/GlobalSearchModal.tsx`, `Topbar.tsx`, `App.tsx`
+  - **RESULTADO**: Modal ativado via `Ctrl+K` ou botão de pesquisa na Topbar com navegação por teclado (`↑`/`↓`/`Enter`), filtragem instantânea de módulos e busca rápida de pacientes.
+- **AÇÃO**: Sistema de notificações Toast (SPEC-UI-001)
+  - **LOCAL AFETADO**: `frontend/src/features/layout/Toast.tsx`, `App.tsx`, `theme.css`
+  - **RESULTADO**: Contexto global `ToastProvider` e hook `useToast` com suporte a alertas acessíveis (`aria-live="polite"`), temporização automática e estilos oficiais da marca.
+
+#### 4. Verificação Global e Testes
+- **AÇÃO**: Execução da suíte completa de testes
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 128 testes unitários + 74 testes de integração = **202 testes aprovados, 0 falhas**.
+    - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
+    - **Build de Produção:** `npm run build` executado com sucesso (zero erros de tipagem TypeScript e bundles otimizados gerados).
+
+---
+
+### [2026-10-02] — Correção de Migração de Banco, Dashboard como Tela Inicial, Redesign do Login e Ajuste dos Logos da Sidebar
+
+Resolução de inconsistência de coluna no banco de dados, definição do Dashboard como tela inicial pós-autenticação, redesign completo da página de Login e ampliação dos logotipos na barra lateral (Sidebar).
+
+#### 1. Correção de Erro de Migração no Banco de Dados (`payment_status`)
+- **AÇÃO**: Aplicação das migrações pendentes no PostgreSQL e automação em ambiente de desenvolvimento
+  - **MOTIVO**: Erro `column a.payment_status does not exist` na rota `GET /api/v1/appointments` devido a migrações EF Core geradas mas ainda não executadas na instância local do PostgreSQL.
+  - **LOCAL AFETADO**: Banco PostgreSQL `canamed`, `backend/src/Canamed.Infrastructure/Development/DevelopmentDataSeeder.cs`
+  - **RESULTADO**: Migrações `20261002011727_AddClinicOperations` e `20261002020803_AddPaymentsAndTriage` aplicadas via `dotnet ef database update`. Adicionado `await dbContext.Database.MigrateAsync()` no seeder de desenvolvimento para sincronização automática contínua.
+
+#### 2. Dashboard como Página Inicial Pós-Login
+- **AÇÃO**: Alteração do estado inicial de navegação para `dashboard`
+  - **MOTIVO**: Solicitação do usuário para que o Painel Operacional/Dashboard seja a primeira visão do gestor/recepcionista após autenticação.
+  - **LOCAL AFETADO**: `frontend/src/App.tsx`, `frontend/src/App.test.tsx`
+  - **RESULTADO**: Usuário é direcionado imediatamente ao Dashboard com os indicadores operacionais do dia, resumo de atendimentos e métricas da clínica.
+
+#### 3. Redesign da Tela de Login com Logo Grande Oficial
+- **AÇÃO**: Redesenho completo do componente `LoginPage.tsx` e estilização em `theme.css`
+  - **MOTIVO**: Modernização da tela de login incorporando o ativo oficial grande com título da marca (`assets/brand/canadamed_logogrande_comtitulo-removebg-preview.png`), proporcionando experiência profissional e alinhada às diretrizes de UI/UX.
+  - **LOCAL AFETADO**: `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/styles/theme.css`
+  - **RESULTADO**:
+    - Logo oficial grande em destaque no cabeçalho do cartão com proporção visual nítida e centralizada.
+    - Tagline oficial: *"Eficiência para quem mais precisa."*
+    - Ícones temáticos para os campos de e-mail institucional e senha.
+    - Botão de alternância para exibição/ocultação de senha (show/hide password toggle).
+    - Estado de carregamento com animação suave (*spinner*) no botão de entrada.
+    - Rodapé de confiança destacando segurança e conformidade com a LGPD e o CFM.
+    - Preservação da acessibilidade via `visually-hidden` para heading de nível 1 (`<h1>CANA MED</h1>`).
+
+#### 4. Correção e Ampliação dos Logotipos na Sidebar (Modo Expandido e Recolhido)
+- **AÇÃO**: Diagnóstico e resolução do tamanho diminuto dos logos da barra lateral
+  - **MOTIVO**: Os arquivos PNG oficiais (`assets/brand/`) possuem canvas 677x369 com áreas transparentes ao redor do monograma e texto. Ao aplicar tamanhos fixos pequenos (`height: 38px` / `34px`), o elemento gráfico visível ficava reduzido a ~10-13px. Além disso, o texto grafite (`#333333`) sobre o fundo petróleo (`#005F6A`) da sidebar reduzia o contraste visual.
+  - **LOCAL AFETADO**: `frontend/src/features/layout/Sidebar.tsx`, `frontend/src/styles/theme.css`
+  - **RESULTADO**:
+    - Criação de containers dedicados com fundo branco e cantos arredondados (`.sidebar__logo-img-container` e `.sidebar__logo-icon-container`) em estrita conformidade com o Manual de Identidade Visual (`identidadevisual.html`), garantindo alto contraste e leitura perfeita.
+    - Recorte e escalonamento responsivo:
+      - Modo expandido: container de 52px de altura preenchendo a largura do cabeçalho da sidebar, exibindo o logo oficial grande com ~185px de largura visível.
+      - Modo recolhido: container quadrado de 52x52px perfeitamente centralizado na barra recolhida (72px), exibindo o monograma CM com ~51px de largura visível.
+    - Aumento da altura padrão do cabeçalho/topbar para 74px (`--topbar-height: 74px`), garantindo proporções elegantes e alinhamento milimétrico entre sidebar e conteúdo.
+
+#### 5. Verificação e Testes
+- **AÇÃO**: Execução das suítes de testes completas
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 128 testes unitários + 74 testes de integração = **202 testes aprovados, 0 falhas**.
+    - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
+    - **Build de Produção:** `npm run build` executado com sucesso (zero erros de tipagem TypeScript e bundles otimizados gerados).
+
+

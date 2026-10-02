@@ -11,6 +11,7 @@ import {
   type Professional,
 } from './agendaApi';
 import { describeError } from './agendaErrors';
+import { fetchRooms, type Room } from '../clinics/clinicsApi';
 
 /** Estado de carregamento de uma tela: vazio, carregando, erro e sucesso (seção 9 da SPEC-0001). */
 export type Loadable<T> =
@@ -22,6 +23,7 @@ export type Catalog = {
   professionals: Professional[];
   patients: Patient[];
   appointmentTypes: AppointmentType[];
+  rooms: Room[];
 };
 
 /** Carrega o cadastro mínimo necessário para agendar. */
@@ -38,13 +40,14 @@ export function useCatalog() {
       fetchProfessionals(controller.signal),
       fetchPatients(controller.signal),
       fetchAppointmentTypes(controller.signal),
+      fetchRooms(controller.signal).catch(() => [] as Room[]),
     ])
-      .then(([professionals, patients, appointmentTypes]) => {
+      .then(([professionals, patients, appointmentTypes, rooms]) => {
         if (controller.signal.aborted) {
           return;
         }
 
-        setState({ status: 'ready', data: { professionals, patients, appointmentTypes } });
+        setState({ status: 'ready', data: { professionals, patients, appointmentTypes, rooms } });
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) {

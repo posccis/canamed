@@ -279,6 +279,27 @@ ação **Desbloquear**.
 
 ### 6.4 Tela principal — agenda do dia
 
+#### Aba Recepção — fila de espera
+
+A aba **Recepção** organiza o que acontece entre a chegada e o fim do atendimento (SPEC-0005):
+
+1. **Check-in com hora marcada**: escolha o agendamento do dia e a prioridade (`Normal` ou `Preferencial`).
+   A partir da agenda também é possível fazer o check-in direto pelo botão **Check-in** de cada
+   agendamento.
+2. **Encaixe (sem agendamento)**: informe paciente, profissional e prioridade. O encaixe entra na mesma
+   fila e não cria agendamento — a agenda continua sendo a fonte da verdade dos horários.
+3. **Fila do dia**: mostra a posição, o tempo de espera, a prioridade e o status de cada paciente.
+   A ordem é **preferencial primeiro** e, dentro de cada prioridade, por ordem de chegada.
+4. **Ações**: `Chamar` (aguardando → chamado), `Iniciar` (chamado → em atendimento), `Finalizar`
+   (em atendimento → atendido) e `Desistiu`. Ao finalizar, o agendamento vinculado também passa a
+   `atendido`; ao cancelar ou marcar falta na agenda, a entrada da fila acompanha.
+5. **Fechar o dia**: marca como falta os agendamentos cujo horário já passou e como desistência quem
+   ainda aguardava por um atendimento que já terminou; mostra o resumo e o que continua em atendimento.
+   Rodar duas vezes é seguro — a segunda execução não altera nada.
+
+O profissional também enxerga a própria fila (permissão `agenda:read:own`) e pode chamar, iniciar e
+concluir os próprios pacientes.
+
 Objetivo da funcionalidade: a recepção agenda, remarca e cancela consultas sem sobreposição de horários,
 com trilha de auditoria de tudo que muda.
 
@@ -357,8 +378,16 @@ Base: `http://localhost:5080/api/v1`. Documento OpenAPI: `/api/v1/openapi.json` 
 | GET | `/appointments/{id}` | leitura de agenda ou `agenda:write` | Detalha agendamento |
 | POST | `/appointments/{id}/reschedule` | `agenda:write` | Remarca |
 | POST | `/appointments/{id}/cancel` | `agenda:write` | Cancela com motivo |
+| POST | `/appointments/{id}/attend` | `agenda:write` | Registra que o paciente foi atendido |
+| POST | `/appointments/{id}/no-show` | `agenda:write` | Registra a falta do paciente |
+| POST | `/queue/check-in` | `agenda:write` | Check-in por agendamento ou encaixe |
+| GET | `/queue?date=` | leitura de agenda | Fila do dia com posição e tempos |
+| POST | `/queue/{id}/call`, `/start`, `/complete`, `/leave` | `agenda:write` ou própria agenda | Ciclo do atendimento na fila |
+| POST | `/agenda/close-day` | `agenda:write` | Fechamento do dia com resumo |
 | POST | `/professionals/{id}/blocks` | `agenda:block` ou `agenda:write` | Bloqueia intervalo |
+| DELETE | `/professionals/{id}/blocks/{blockId}` | `agenda:block` ou `agenda:write` | Desbloqueia o intervalo |
 | GET | `/professionals/{id}/blocks?date=` | leitura de agenda ou `agenda:block` | Bloqueios do dia |
+| GET / POST | `/specialties` | leitura de agenda / `agenda:configure` | Especialidades da clínica |
 | GET / POST | `/professionals` | leitura de agenda / `agenda:write` | Cadastro mínimo de profissional |
 | GET / POST | `/patients` | leitura de agenda / `agenda:write` | Cadastro mínimo de paciente |
 | GET / POST | `/appointment-types` | leitura de agenda / `agenda:configure` | Tipos de atendimento e duração |
@@ -442,8 +471,8 @@ npm --prefix frontend run test -- --run
 $env:PLAYWRIGHT_BROWSERS_PATH='D:\Tools\ms-playwright'; npm --prefix frontend run test:e2e
 ```
 
-Estado verificado em 2026-10-01: **159 testes aprovados, 0 falhas** — 88 unitários do backend, 41 de
-integração do backend, 20 do frontend (Vitest) e 10 de comportamento (Playwright).
+Estado verificado em 2026-10-01: **198 testes aprovados, 0 falhas** — 108 unitários do backend, 54 de
+integração do backend, 24 do frontend (Vitest) e 12 de comportamento (Playwright).
 
 ### 9.0 Testes de comportamento (Playwright)
 

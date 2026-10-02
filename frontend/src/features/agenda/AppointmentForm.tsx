@@ -4,11 +4,13 @@ import { createAppointment, type AppointmentType, type Patient, type Professiona
 import { describeError, suggestedTimes } from './agendaErrors';
 import { localInputToUtcIso } from './agendaFormat';
 import { describeClassification } from '../catalog/catalogLabels';
+import type { Room } from '../clinics/clinicsApi';
 
 type AppointmentFormProps = {
   professionals: Professional[];
   patients: Patient[];
   appointmentTypes: AppointmentType[];
+  rooms?: Room[];
   defaultProfessionalId: string;
   defaultDate: string;
   onCreated: () => void;
@@ -16,11 +18,12 @@ type AppointmentFormProps = {
   onCancel: () => void;
 };
 
-/** Fluxo F-001: criar agendamento informando paciente, tipo de atendimento e horário. */
+/** Fluxo F-001: criar agendamento informando paciente, tipo de atendimento e horário (SPEC-0002/0006). */
 export function AppointmentForm({
   professionals,
   patients,
   appointmentTypes,
+  rooms = [],
   defaultProfessionalId,
   defaultDate,
   onCreated,
@@ -30,8 +33,10 @@ export function AppointmentForm({
   const [professionalId, setProfessionalId] = useState(defaultProfessionalId);
   const activePatients = patients.filter((patient) => patient.isActive);
   const activeTypes = appointmentTypes.filter((type) => type.isActive);
+  const activeRooms = rooms.filter((room) => room.isActive);
   const [patientId, setPatientId] = useState(activePatients[0]?.id ?? '');
   const [appointmentTypeId, setAppointmentTypeId] = useState(activeTypes[0]?.id ?? '');
+  const [roomId, setRoomId] = useState('');
   const [localStart, setLocalStart] = useState(`${defaultDate}T14:00`);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -54,7 +59,13 @@ export function AppointmentForm({
     setSuggestions([]);
 
     try {
-      await createAppointment({ professionalId, patientId, appointmentTypeId, startsAt });
+      await createAppointment({
+        professionalId,
+        patientId,
+        appointmentTypeId,
+        startsAt,
+        roomId: roomId ? roomId : null,
+      });
       onCreated();
     } catch (reason: unknown) {
       setError(describeError(reason));
@@ -123,6 +134,24 @@ export function AppointmentForm({
           ))}
         </select>
       </label>
+
+      {activeRooms.length > 0 ? (
+        <label className="field">
+          <span className="field__label">Sala (opcional)</span>
+          <select
+            className="field__input"
+            value={roomId}
+            onChange={(event) => setRoomId(event.target.value)}
+          >
+            <option value="">Nenhuma sala selecionada</option>
+            {activeRooms.map((room) => (
+              <option key={room.id} value={room.id}>
+                {room.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       <label className="field">
         <span className="field__label">Data e hora (horário de Brasília/Fortaleza)</span>

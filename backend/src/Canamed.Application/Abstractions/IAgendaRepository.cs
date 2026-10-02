@@ -24,8 +24,33 @@ public interface IAgendaRepository
     /// <summary>Obtém um agendamento da clínica, ou <c>null</c> quando não existir no escopo.</summary>
     Task<Appointment?> FindAppointmentAsync(Guid appointmentId, Guid clinicId, CancellationToken cancellationToken);
 
+    /// <summary>Lista agendamentos específicos da clínica.</summary>
+    Task<IReadOnlyList<Appointment>> ListAppointmentsByIdsAsync(
+        Guid clinicId,
+        IReadOnlyCollection<Guid> appointmentIds,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Lista agendamentos de um período **rastreados para alteração** (usado pelo fechamento do dia).
+    /// </summary>
+    Task<IReadOnlyList<Appointment>> ListAppointmentsForUpdateAsync(
+        Guid clinicId,
+        Guid? professionalId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        CancellationToken cancellationToken);
+
     /// <summary>Verifica se o profissional existe na clínica.</summary>
     Task<bool> ProfessionalExistsAsync(Guid clinicId, Guid professionalId, CancellationToken cancellationToken);
+
+    /// <summary>Indica se a sala já está ocupada por agendamento ativo no intervalo (RN-011 da SPEC-0006).</summary>
+    Task<bool> RoomHasOverlappingAppointmentAsync(
+        Guid clinicId,
+        Guid roomId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        Guid? exceptAppointmentId,
+        CancellationToken cancellationToken);
 
     /// <summary>Adiciona um agendamento ao contexto de persistência.</summary>
     void AddAppointment(Appointment appointment);

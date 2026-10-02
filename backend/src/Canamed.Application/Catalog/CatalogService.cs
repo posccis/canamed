@@ -13,6 +13,7 @@ namespace Canamed.Application.Catalog;
 /// </summary>
 public sealed class CatalogService(
     ICatalogRepository catalogRepository,
+    IClinicOperationRepository clinicOperationRepository,
     IAuditRepository auditRepository,
     IUnitOfWork unitOfWork,
     ICurrentActorAccessor actorAccessor,
@@ -150,9 +151,15 @@ public sealed class CatalogService(
         var name = RequireName(request.Name, "Informe o nome do profissional.");
         var specialtyId = await ValidateSpecialtyAsync(actor.ClinicId, request.SpecialtyId, cancellationToken)
             .ConfigureAwait(false);
+        var registrationNumber = ValidateRegistrationNumber(request.RegistrationNumber);
 
         var now = timeProvider.GetUtcNow();
-        var professional = Professional.Create(actor.ClinicId, name, now, specialtyId: specialtyId);
+        var professional = Professional.Create(
+            actor.ClinicId,
+            name,
+            now,
+            specialtyId: specialtyId,
+            registrationNumber: registrationNumber);
 
         catalogRepository.AddProfessional(professional);
 
@@ -178,10 +185,11 @@ public sealed class CatalogService(
         var name = RequireName(request.Name, "Informe o nome do profissional.");
         var specialtyId = await ValidateSpecialtyAsync(actor.ClinicId, request.SpecialtyId, cancellationToken)
             .ConfigureAwait(false);
+        var registrationNumber = ValidateRegistrationNumber(request.RegistrationNumber);
 
         var now = timeProvider.GetUtcNow();
 
-        professional.Update(name, specialtyId, now);
+        professional.Update(name, specialtyId, registrationNumber, now);
 
         await CommitAsync(actor, professional.Id, AuditActions.ProfessionalUpdated, AuditResources.Professionals, now, cancellationToken)
             .ConfigureAwait(false);
@@ -230,7 +238,12 @@ public sealed class CatalogService(
             .ListPatientsAsync(actor.ClinicId, cancellationToken)
             .ConfigureAwait(false);
 
-        return [.. patients.Select(Map)];
+        var healthPlanNames = await LoadHealthPlanNamesAsync(
+            actor.ClinicId,
+            patients.Select(static patient => patient.HealthPlanId),
+            cancellationToken).ConfigureAwait(false);
+
+        return [.. patients.Select(patient => Map(patient, healthPlanNames))];
     }
 
     /// <summary>Cadastra um paciente na clínica.</summary>
@@ -244,13 +257,23 @@ public sealed class CatalogService(
         var name = RequireName(request.Name, "Informe o nome do paciente.");
         var phone = RequirePhone(request.Phone);
         var email = ValidateEmail(request.Email);
+        var healthPlanId = await ValidateHealthPlanAsync(actor.ClinicId, request.HealthPlanId, cancellationToken)
+            .ConfigureAwait(false);
         var now = timeProvider.GetUtcNow();
 
         Patient patient;
 
         try
         {
-            patient = Patient.Create(actor.ClinicId, name, phone, now, email: email, birthDate: request.BirthDate);
+            patient = Patient.Create(
+                actor.ClinicId,
+                name,
+                phone,
+                now,
+                email: email,
+                birthDate: request.BirthDate,
+                document: request.Document,
+                healthPlanId: healthPlanId);
         }
         catch (ArgumentException exception)
         {
@@ -266,7 +289,9 @@ public sealed class CatalogService(
         await CommitAsync(actor, patient.Id, AuditActions.PatientCreated, AuditResources.Patients, now, cancellationToken)
             .ConfigureAwait(false);
 
-        return Map(patient);
+        var names = await LoadHealthPlanNamesAsync(actor.ClinicId, [healthPlanId], cancellationToken).ConfigureAwait(false);
+
+        return Map(patient, names);
     }
 
     /// <summary>Edita os dados cadastrais do paciente (RN-009).</summary>
@@ -282,11 +307,13 @@ public sealed class CatalogService(
         var name = RequireName(request.Name, "Informe o nome do paciente.");
         var phone = RequirePhone(request.Phone);
         var email = ValidateEmail(request.Email);
+        var healthPlanId = await ValidateHealthPlanAsync(actor.ClinicId, request.HealthPlanId, cancellationToken)
+            .ConfigureAwait(false);
         var now = timeProvider.GetUtcNow();
 
         try
         {
-            patient.Update(name, phone, email, request.BirthDate, now);
+            patient.Update(name, phone, email, request.BirthDate, request.Document, healthPlanId, now);
         }
         catch (ArgumentException exception)
         {
@@ -300,7 +327,9 @@ public sealed class CatalogService(
         await CommitAsync(actor, patient.Id, AuditActions.PatientUpdated, AuditResources.Patients, now, cancellationToken)
             .ConfigureAwait(false);
 
-        return Map(patient);
+        var names = await LoadHealthPlanNamesAsync(actor.ClinicId, [healthPlanId], cancellationToken).ConfigureAwait(false);
+
+        return Map(patient, names);
     }
 
     /// <summary>Desativa o paciente (RN-006).</summary>
@@ -551,6 +580,53 @@ public sealed class CatalogService(
         return specialty.Id;
     }
 
+    private async Task<Guid?> ValidateHealthPlanAsync(
+        Guid clinicId,
+        Guid? healthPlanId,
+        CancellationToken cancellationToken)
+    {
+        if (healthPlanId is null)
+        {
+            return null;
+        }
+
+        var healthPlan = await clinicOperationRepository
+            .FindHealthPlanAsync(clinicId, healthPlanId.Value, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (healthPlan is null || !healthPlan.IsActive)
+        {
+            throw new CanamedException(
+                ProblemKind.Validation,
+                "Convênio inválido",
+                "O convênio informado não está disponível nesta clínica.",
+                "invalid-health-plan");
+        }
+
+        return healthPlan.Id;
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, string>> LoadHealthPlanNamesAsync(
+        Guid clinicId,
+        IEnumerable<Guid?> healthPlanIds,
+        CancellationToken cancellationToken)
+    {
+        var ids = healthPlanIds.Where(static id => id is not null).Select(static id => id!.Value).Distinct().ToArray();
+
+        if (ids.Length is 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var plans = await clinicOperationRepository
+            .ListHealthPlansAsync(clinicId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return plans
+            .Where(plan => ids.Contains(plan.Id))
+            .ToDictionary(static plan => plan.Id, static plan => plan.Name);
+    }
+
     private async Task EnsureSpecialtyNameIsFreeAsync(
         Guid clinicId,
         string name,
@@ -606,10 +682,22 @@ public sealed class CatalogService(
             professional.SpecialtyId is not null && names.TryGetValue(professional.SpecialtyId.Value, out var name)
                 ? name
                 : null,
+            professional.RegistrationNumber,
             professional.IsActive);
 
-    private static PatientResponse Map(Patient patient) =>
-        new(patient.Id, patient.Name, patient.Phone, patient.Email, patient.BirthDate, patient.IsActive);
+    private static PatientResponse Map(Patient patient, IReadOnlyDictionary<Guid, string> healthPlanNames) =>
+        new(
+            patient.Id,
+            patient.Name,
+            patient.Phone,
+            patient.Email,
+            patient.BirthDate,
+            patient.Document,
+            patient.HealthPlanId,
+            patient.HealthPlanId is not null && healthPlanNames.TryGetValue(patient.HealthPlanId.Value, out var planName)
+                ? planName
+                : null,
+            patient.IsActive);
 
     private static AppointmentTypeResponse Map(AppointmentType type, IReadOnlyDictionary<Guid, string> names) =>
         new(
@@ -697,6 +785,27 @@ public sealed class CatalogService(
         }
 
         return name.Trim();
+    }
+
+    private static string? ValidateRegistrationNumber(string? registrationNumber)
+    {
+        if (string.IsNullOrWhiteSpace(registrationNumber))
+        {
+            return null;
+        }
+
+        var trimmed = registrationNumber.Trim();
+
+        if (trimmed.Length > 40)
+        {
+            throw new CanamedException(
+                ProblemKind.Validation,
+                "Registro profissional inválido",
+                "O registro profissional deve ter no máximo 40 caracteres.",
+                "invalid-registration-number");
+        }
+
+        return trimmed;
     }
 
     private static CanamedException NotFound() =>

@@ -44,7 +44,7 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /^Agenda$/ })).not.toBeInTheDocument();
   });
 
-  it('mostra a agenda quando a sessão está ativa', async () => {
+  it('mostra o painel operacional quando a sessão está ativa', async () => {
     mocks.apiGet.mockImplementation(async (path: string) => {
       if (path === '/auth/session') {
         return {
@@ -61,6 +61,26 @@ describe('App', () => {
         };
       }
 
+      if (path.startsWith('/dashboard/summary')) {
+        return {
+          date: '2026-10-01',
+          totalAppointments: 0,
+          scheduledCount: 0,
+          confirmedCount: 0,
+          attendedCount: 0,
+          noShowCount: 0,
+          cancelledCount: 0,
+          attendanceRate: 0,
+          queueWaitingCount: 0,
+          queueInServiceCount: 0,
+          queueCompletedCount: 0,
+          averageWaitMinutes: 0,
+          professionals: [],
+          rooms: [],
+          upcomingAppointments: [],
+        };
+      }
+
       if (path.startsWith('/appointments')) {
         return { date: '2026-10-01', professionalId: null, appointments: [], blocks: [] };
       }
@@ -70,8 +90,8 @@ describe('App', () => {
 
     render(<App />);
 
-    expect(await screen.findByRole('button', { name: /^Agenda$/ })).toBeInTheDocument();
-    expect(await screen.findByText('Nenhum agendamento para esta data.')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Dashboard$/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Painel Operacional' })).toBeInTheDocument();
     expect(screen.getByText(/Clínica Teste/)).toBeInTheDocument();
   });
 });

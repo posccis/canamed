@@ -34,6 +34,11 @@ public static class DevelopmentDataSeeder
             var dbContext = scope.ServiceProvider.GetRequiredService<CanamedDbContext>();
             var now = TimeProvider.System.GetUtcNow();
 
+            if (dbContext.Database.IsRelational())
+            {
+                await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             await SeedCatalogAsync(dbContext, now, logger, cancellationToken).ConfigureAwait(false);
             await SeedFirstUserAsync(scope.ServiceProvider, dbContext, now, logger, cancellationToken)
                 .ConfigureAwait(false);

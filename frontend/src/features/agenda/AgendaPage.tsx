@@ -11,6 +11,11 @@ import { formatDayLabel, formatTimeRange, todayIso } from './agendaFormat';
 import { QuickRegistrationPanel } from './QuickRegistrationPanel';
 import { StatusBadge } from './StatusBadge';
 import { useAgendaDay, useCatalog } from './useAgendaData';
+import { checkInFromAppointment, fetchQueue, type QueueEntry } from '../queue/queueApi';
+import { queueStatusLabels } from '../queue/queueLabels';
+import { PaymentModal } from '../payments/PaymentModal';
+import { exportToCsv } from '../../utils/exportCsv';
+import { useToast } from '../layout/Toast';
 
 type Dialog =
   | { kind: 'none' }
@@ -27,6 +32,10 @@ export function AgendaPage() {
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
   const [cadastroAberto, setCadastroAberto] = useState(false);
+  const [queueByAppointment, setQueueByAppointment] = useState<Record<string, QueueEntry>>({});
+  const [queueToken, setQueueToken] = useState(0);
+  const [paymentAppointment, setPaymentAppointment] = useState<{ id: string; patientName: string; appointmentTypeName?: string } | null>(null);
+  const toast = useToast();
 
   const catalog = useCatalog();
   const agenda = useAgendaDay(date, professionalId || undefined);
@@ -34,6 +43,7 @@ export function AgendaPage() {
   const professionals = catalog.state.status === 'ready' ? catalog.state.data.professionals : [];
   const patients = catalog.state.status === 'ready' ? catalog.state.data.patients : [];
   const appointmentTypes = catalog.state.status === 'ready' ? catalog.state.data.appointmentTypes : [];
+  const rooms = catalog.state.status === 'ready' ? catalog.state.data.rooms : [];
 
   useEffect(() => {
     if (!professionalId && professionals.length > 0) {
@@ -44,7 +54,29 @@ export function AgendaPage() {
   function reloadAll() {
     agenda.reload();
     catalog.reload();
+    setQueueToken((value) => value + 1);
   }
+
+  // Indicador de fila: mostra quem já fez check-in e evita check-in duplicado.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetchQueue(date, professionalId || undefined, controller.signal)
+      .then((day) => {
+        const map: Record<string, QueueEntry> = {};
+
+        for (const entry of day.entries) {
+          if (entry.appointmentId) {
+            map[entry.appointmentId] = entry;
+          }
+        }
+
+        setQueueByAppointment(map);
+      })
+      .catch(() => setQueueByAppointment({}));
+
+    return () => controller.abort();
+  }, [date, professionalId, queueToken]);
 
   function handleDone(message: string) {
     setDialog({ kind: 'none' });
@@ -74,6 +106,18 @@ export function AgendaPage() {
     try {
       await removeBlock(block.professionalId, block.id);
       setMensagem('Horário desbloqueado.');
+      reloadAll();
+    } catch (reason: unknown) {
+      setErroAcao(describeError(reason));
+    }
+  }
+
+  async function handleCheckIn(appointment: Appointment) {
+    setErroAcao(null);
+
+    try {
+      await checkInFromAppointment(appointment.id, 'normal');
+      setMensagem('Check-in registrado. O paciente está na fila.');
       reloadAll();
     } catch (reason: unknown) {
       setErroAcao(describeError(reason));
@@ -150,6 +194,33 @@ export function AgendaPage() {
             </button>
             <button
               type="button"
+              className="button button--ghost"
+              onClick={() => {
+                const appts = agenda.state.status === 'ready' ? agenda.state.data.appointments : [];
+                if (appts.length === 0) {
+                  toast.showInfo('Não há agendamentos nesta data para exportar.');
+                  return;
+                }
+                exportToCsv(
+                  `agenda-${date}.csv`,
+                  appts.map((item) => ({
+                    Horario: formatTimeRange(item.startsAt, item.endsAt),
+                    Paciente: item.patientName,
+                    Tipo: item.appointmentTypeName,
+                    Status: item.status,
+                    Categoria: item.category,
+                    Custeio: item.coverage,
+                    Especialidade: item.specialtyName ?? '',
+                    Sala: item.roomName ?? '',
+                  }))
+                );
+                toast.showSuccess('Agenda exportada com sucesso (CSV).');
+              }}
+            >
+              Exportar CSV
+            </button>
+            <button
+              type="button"
               className="button button--secondary"
               onClick={() => setBloqueioAberto(true)}
               disabled={!professionalId}
@@ -195,6 +266,16 @@ export function AgendaPage() {
             onAttend={(appointment) => void handleLifecycle(appointment, 'atendido')}
             onNoShow={(appointment) => void handleLifecycle(appointment, 'faltou')}
             onUnblock={(block) => void handleUnblock(block)}
+            onCheckIn={(appointment) => void handleCheckIn(appointment)}
+            onPay={(appointment) =>
+              setPaymentAppointment({
+                id: appointment.id,
+                patientName: appointment.patientName,
+                appointmentTypeName: appointment.appointmentTypeName,
+              })
+            }
+            queueByAppointment={queueByAppointment}
+            isToday={date === todayIso()}
           />
         ) : null}
       </section>
@@ -205,6 +286,7 @@ export function AgendaPage() {
             professionals={professionals}
             patients={patients}
             appointmentTypes={appointmentTypes}
+            rooms={rooms}
             defaultProfessionalId={professionalId || professionals[0]?.id || ''}
             defaultDate={date}
             onCreated={() => handleDone('Agendamento criado.')}
@@ -222,6 +304,7 @@ export function AgendaPage() {
           <AppointmentActions
             appointment={dialog.appointment}
             mode="reschedule"
+            rooms={rooms}
             onDone={() => handleDone('Agendamento remarcado.')}
             onClose={() => setDialog({ kind: 'none' })}
           />
@@ -249,6 +332,20 @@ export function AgendaPage() {
           />
         </Modal>
       ) : null}
+
+      {paymentAppointment ? (
+        <PaymentModal
+          isOpen={true}
+          appointmentId={paymentAppointment.id}
+          patientName={paymentAppointment.patientName}
+          appointmentTypeName={paymentAppointment.appointmentTypeName}
+          onClose={() => setPaymentAppointment(null)}
+          onSuccess={() => {
+            toast.showSuccess(`Pagamento de ${paymentAppointment.patientName} registrado.`);
+            reloadAll();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -261,6 +358,10 @@ type AgendaListProps = {
   onAttend: (appointment: Appointment) => void;
   onNoShow: (appointment: Appointment) => void;
   onUnblock: (block: { id: string; professionalId: string }) => void;
+  onCheckIn: (appointment: Appointment) => void;
+  onPay?: (appointment: Appointment) => void;
+  queueByAppointment: Record<string, QueueEntry>;
+  isToday: boolean;
 };
 
 function AgendaList({
@@ -271,6 +372,10 @@ function AgendaList({
   onAttend,
   onNoShow,
   onUnblock,
+  onCheckIn,
+  onPay,
+  queueByAppointment,
+  isToday,
 }: AgendaListProps) {
   const ativos = appointments.filter((appointment) => appointment.status !== 'cancelado');
   const cancelados = appointments.filter((appointment) => appointment.status === 'cancelado');
@@ -290,10 +395,39 @@ function AgendaList({
               <p className="agenda__meta">
                 {appointment.appointmentTypeName} • {Number(appointment.durationMinutes)} min •{' '}
                 {describeClassification(appointment.category, appointment.coverage, appointment.specialtyName)}
+                {appointment.roomName ? ` • Sala: ${appointment.roomName}` : ''}
               </p>
             </div>
             <StatusBadge status={appointment.status} />
+            {queueByAppointment[appointment.id] ? (
+              <span className="badge badge--agendado">
+                {queueStatusLabels[queueByAppointment[appointment.id].status] ?? 'Na fila'}
+              </span>
+            ) : null}
             <div className="agenda__actions">
+              {appointment.status !== 'atendido'
+                && appointment.status !== 'faltou'
+                && appointment.status !== 'cancelado'
+                && !queueByAppointment[appointment.id]
+                && isToday ? (
+                  <button
+                    type="button"
+                    className="button button--link"
+                    onClick={() => onCheckIn(appointment)}
+                  >
+                    Check-in
+                  </button>
+                ) : null}
+              {appointment.status !== 'cancelado' && onPay ? (
+                <button
+                  type="button"
+                  className="button button--link"
+                  onClick={() => onPay(appointment)}
+                  title="Registrar pagamento no balcão (SPEC-0008)"
+                >
+                  Cobrar
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="button button--link"

@@ -8,10 +8,10 @@
 > ([`specs/README.md`](../specs/README.md)). A ordem abaixo é uma recomendação técnica de dependências;
 > a priorização comercial é decisão do responsável pelo projeto.
 
-- **Versão:** 1.1
+- **Versão:** 1.2
 - **Data:** 2026-10-01
-- **Estado do produto:** fundação (SPEC-0001), agenda (SPEC-0002), autenticação (SPEC-0003) e catálogo
-  assistencial (SPEC-0004) implementadas
+- **Estado do produto:** fundação (SPEC-0001), agenda (SPEC-0002), autenticação (SPEC-0003), catálogo
+  assistencial (SPEC-0004) e fila de espera (SPEC-0005) implementadas
 
 ## Progresso desta rodada
 
@@ -21,7 +21,14 @@
 | D-01 Desbloquear horário | **Implementado** na SPEC-0004 |
 | D-02 Editar e desativar tipo de consulta | **Implementado** na SPEC-0004 |
 | D-03 Editar dados do paciente | **Implementado** na SPEC-0004 |
-| P-01 a P-08, T-04 a T-06, I-01 a I-06, D-04 a D-07 | Pendentes — seguem na sequência sugerida abaixo |
+| P-01 Fila de espera e P-02 Ciclo de atendimento | **Implementados** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
+| P-05 Dashboards gerenciais | **Implementado** — [SPEC-0007](../specs/0007-spec-painel-gerencial-e-indicadores-operacionais.md) |
+| P-06 Gestão operacional da clínica | **Implementado** — [SPEC-0006](../specs/0006-spec-gestao-operacional-da-clinica.md) |
+| P-03 Apoio à triagem e classificação de risco (Manchester) | **Implementado** — [SPEC-0009](../specs/0009-spec-triagem-e-classificacao-de-risco.md) |
+| P-04 Fluxo de pagamento e cobrança no balcão | **Implementado** — [SPEC-0008](../specs/0008-spec-fluxo-de-pagamento-e-cobranca.md) |
+| B-01 Exportação de dados operacionais (CSV) | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
+| B-02 Busca global de pacientes (`Ctrl+K`) | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
+| P-07, P-08, T-04 a T-06, I-01 a I-06, B-03 a B-06, D-04 a D-07 | Pendentes — seguem na sequência sugerida abaixo |
 
 ## Como ler esforço e complexidade
 
@@ -62,14 +69,20 @@ dependências externas — não apenas linhas de código.
 
 | # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| P-01 | Fila de espera | Registrar a chegada do paciente, ordenar a espera por chegada/prioridade e mostrar tempo de espera para recepção e paciente | M | Média | SPEC-0002 (origem do agendamento) e SPEC-0003 (permissões) — ambas prontas |
-| P-02 | Ciclo de atendimento completo | Marcar início e fim do atendimento, registrar observações administrativas e fechar o dia da agenda | P | Baixa | P-01; hoje só existem `atendido`/`faltou` |
-| P-03 | Apoio à triagem | Registrar sinais vitais e classificação de risco administrativa, encaminhando o paciente para o atendimento | M | Alta | P-01; exige avaliação de impacto clínico/ANVISA (RDC nº 657/2022) |
-| P-04 | Pagamento antes da consulta | Registrar cobrança e pagamento no balcão (dinheiro, cartão, PIX manual), com status financeiro do agendamento | M | Alta | P-01; decisão sobre gateway/maquininha e `Idempotency-Key` (SPEC-0001, seção 8) |
-| P-05 | Dashboards gerenciais | Indicadores de ocupação, faltas, cancelamentos e produção por profissional | M | Média | P-01 a P-04; depende de dados confiáveis do ciclo de atendimento |
-| P-06 | Gestão operacional da clínica | Cadastro completo de profissionais e pacientes, convênios, salas, horários de funcionamento e feriados | G | Média | Resolve pendências P-005 da SPEC-0002 (horário comercial) |
+| P-01 | Fila de espera | Registrar a chegada do paciente, ordenar a espera por chegada/prioridade e mostrar tempo de espera para recepção e paciente | M | Média | **Implementado** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
+| P-02 | Ciclo de atendimento completo | Marcar início e fim do atendimento, registrar observações administrativas e fechar o dia da agenda | P | Baixa | **Implementado** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
+| P-03 | Apoio à triagem | Registrar sinais vitais e classificação de risco administrativa (Manchester) na fila | M | Média | **Implementado** — [SPEC-0009](../specs/0009-spec-triagem-e-classificacao-de-risco.md) |
+| P-04 | Pagamento antes da consulta | Registrar cobrança e pagamento no balcão (dinheiro, cartão, PIX, convênio), com status financeiro | M | Média | **Implementado** — [SPEC-0008](../specs/0008-spec-fluxo-de-pagamento-e-cobranca.md) |
+| P-05 | Dashboards gerenciais | Indicadores de ocupação, faltas, cancelamentos, fila de espera e produção por profissional | M | Média | **Implementado** — [SPEC-0007](../specs/0007-spec-painel-gerencial-e-indicadores-operacionais.md) |
+| P-06 | Gestão operacional da clínica | Cadastro completo de profissionais e pacientes, convênios, salas, horários de funcionamento e feriados | G | Média | **Implementado** — [SPEC-0006](../specs/0006-spec-gestao-operacional-da-clinica.md) |
 | P-07 | Notificações ao paciente | Lembrete e confirmação de consulta por WhatsApp/e-mail, com registro de consentimento | G | Alta | Conta em provedor externo, LGPD (base legal e opt-out) e SPEC própria |
 | P-08 | Prontuário eletrônico | Registro clínico com assinatura, imutabilidade e guarda de 20 anos | G | Alta | Lei nº 13.787/2018, CFM/NGS2, ICP-Brasil; exige ADR e SPEC dedicada |
+| B-01 | Exportação de dados operacionais | Exportação de relatórios gerenciais e listagens em formato CSV e visualização para impressão | P | Baixa | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
+| B-02 | Busca global de pacientes (`Ctrl+K`) | Atalho de teclado para busca instantânea de pacientes, agendamentos e navegação rápida | P | Baixa | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
+| B-03 | Atualização em tempo real da recepção | Atualização automática da fila de espera e chamadas via SSE/polling adaptativo | M | Média | P-01 / P-05 |
+| B-04 | Fechamento de caixa diário por operador | Relatório discriminado por operador com conferência de sangria e valores físicos vs sistema | P | Baixa | P-04 / SPEC-0008 |
+| B-05 | Impressão de ficha de triagem / comprovante | Impressão A4 estilizada para prontuário físico e acompanhamento assistencial | P | Baixa | P-03 / SPEC-UI-001 |
+
 
 ## 4. Dívidas funcionais herdadas das SPECs atuais
 
@@ -88,7 +101,7 @@ dependências externas — não apenas linhas de código.
 ## Sequência sugerida
 
 1. ~~**D-01, D-02, D-03**~~ — **concluído** na [SPEC-0004](../specs/0004-spec-catalogo-e-classificacao-das-consultas.md), junto da classificação das consultas.
-2. **P-01 + P-02** — fila de espera e ciclo de atendimento: maior ganho operacional imediato, sem dependência externa.
+2. ~~**P-01 + P-02**~~ — **concluído** na [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md): check-in, prioridade de atendimento, chamada, ciclo do atendimento e fechamento do dia.
 3. **P-06** — cadastro completo e horários de funcionamento: reduz retrabalho e destrava agenda por período.
 4. **T-04** — observabilidade (T-01 a T-03 estão suspensos por decisão do responsável: hospedagem, backups e CI).
 5. **P-04 e P-05** — pagamento e dashboards: dependem de decisão de negócio e de dados confiáveis.

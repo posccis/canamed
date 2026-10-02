@@ -13,6 +13,7 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
         builder.ToTable("professionals");
         builder.HasKey(professional => professional.Id);
         builder.Property(professional => professional.Name).HasMaxLength(200).IsRequired();
+        builder.Property(professional => professional.RegistrationNumber).HasMaxLength(40);
         builder.HasIndex(professional => professional.ClinicId);
 
         builder.HasOne<Specialty>()

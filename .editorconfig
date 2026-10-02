@@ -22,5 +22,9 @@ dotnet_style_readonly_field = true:warning
 [*.md]
 trim_trailing_whitespace = false
 
+# Código gerado pelo EF Core Migrations (scaffolding): não é avaliado pelas regras de estilo do projeto.
+[backend/src/Canamed.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true
+
 [*.{json,yml,yaml}]
 indent_size = 2

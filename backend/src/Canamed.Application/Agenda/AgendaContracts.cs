@@ -5,10 +5,11 @@ public sealed record CreateAppointmentRequest(
     Guid ProfessionalId,
     Guid PatientId,
     Guid AppointmentTypeId,
-    DateTimeOffset StartsAt);
+    DateTimeOffset StartsAt,
+    Guid? RoomId = null);
 
-/// <summary>Pedido de remarcação.</summary>
-public sealed record RescheduleAppointmentRequest(DateTimeOffset StartsAt);
+/// <summary>Pedido de remarcação. <c>RoomId</c> nulo mantém a sala atual (SPEC-0006).</summary>
+public sealed record RescheduleAppointmentRequest(DateTimeOffset StartsAt, Guid? RoomId = null);
 
 /// <summary>Pedido de cancelamento. O motivo é obrigatório (RN-006).</summary>
 public sealed record CancelAppointmentRequest(string Reason);
@@ -27,6 +28,8 @@ public sealed record AppointmentResponse(
     string Category,
     string Coverage,
     string? SpecialtyName,
+    Guid? RoomId,
+    string? RoomName,
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
     int DurationMinutes,

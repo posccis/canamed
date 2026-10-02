@@ -31,6 +31,10 @@ internal static class TestDatabase
     {
         using var context = new CanamedDbContext(Options);
 
+        // A fila e os pagamentos referenciam agendamentos (RESTRICT): precisam sair antes deles.
+        context.Database.ExecuteSqlRaw("DELETE FROM triage_records");
+        context.Database.ExecuteSqlRaw("DELETE FROM queue_entries");
+        context.Database.ExecuteSqlRaw("DELETE FROM payment_transactions");
         context.Database.ExecuteSqlRaw("DELETE FROM appointments");
         context.Database.ExecuteSqlRaw("DELETE FROM professional_blocks");
     }
@@ -68,7 +72,11 @@ internal static class TestDatabase
         context.Database.ExecuteSqlRaw("DELETE FROM user_sessions");
         context.Database.ExecuteSqlRaw("DELETE FROM clinic_memberships");
         context.Database.ExecuteSqlRaw("DELETE FROM users");
+        context.Database.ExecuteSqlRaw("DELETE FROM clinic_closures");
+        context.Database.ExecuteSqlRaw("DELETE FROM operating_hours");
         context.Database.ExecuteSqlRaw("DELETE FROM patients");
+        context.Database.ExecuteSqlRaw("DELETE FROM health_plans");
+        context.Database.ExecuteSqlRaw("DELETE FROM rooms");
         context.Database.ExecuteSqlRaw("DELETE FROM appointment_types");
         context.Database.ExecuteSqlRaw("DELETE FROM professionals");
         context.Database.ExecuteSqlRaw("DELETE FROM specialties");

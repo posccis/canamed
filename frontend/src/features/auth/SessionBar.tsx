@@ -2,8 +2,8 @@ import type { Session } from './authApi';
 
 type SessionBarProps = {
   session: Session;
-  view: 'agenda' | 'catalog' | 'users';
-  onChangeView: (view: 'agenda' | 'catalog' | 'users') => void;
+  view: 'agenda' | 'queue' | 'catalog' | 'users';
+  onChangeView: (view: 'agenda' | 'queue' | 'catalog' | 'users') => void;
   onSignOut: () => void;
 };
 
@@ -11,6 +11,8 @@ type SessionBarProps = {
 export function SessionBar({ session, view, onChangeView, onSignOut }: SessionBarProps) {
   const canManageUsers = session.permissions.includes('users:manage');
   const canConfigureAgenda = session.permissions.includes('agenda:configure');
+  const canOperateQueue =
+    session.permissions.includes('agenda:write') || session.permissions.includes('agenda:read:own');
 
   return (
     <header className="session-bar">
@@ -29,6 +31,15 @@ export function SessionBar({ session, view, onChangeView, onSignOut }: SessionBa
         >
           Agenda
         </button>
+        {canOperateQueue ? (
+          <button
+            type="button"
+            className={`button ${view === 'queue' ? 'button--primary' : 'button--ghost'}`}
+            onClick={() => onChangeView('queue')}
+          >
+            Recepção
+          </button>
+        ) : null}
         {canManageUsers ? (
           <button
             type="button"

@@ -20,6 +20,9 @@ public sealed class Appointment : Entity
 
     public Guid AppointmentTypeId { get; private set; }
 
+    /// <summary>Sala do atendimento, opcional (SPEC-0006, RN-010).</summary>
+    public Guid? RoomId { get; private set; }
+
     /// <summary>Início do atendimento, em UTC (RN-010).</summary>
     public DateTimeOffset StartsAt { get; private set; }
 
@@ -30,6 +33,9 @@ public sealed class Appointment : Entity
     public int DurationMinutes { get; private set; }
 
     public AppointmentStatus Status { get; private set; }
+
+    /// <summary>Status financeiro da consulta (pendente, pago, isento, estornado) — SPEC-0008.</summary>
+    public string PaymentStatus { get; private set; } = "pendente";
 
     /// <summary>Motivo do cancelamento, obrigatório na operação (RN-006).</summary>
     public string? CancellationReason { get; private set; }
@@ -51,7 +57,8 @@ public sealed class Appointment : Entity
         Guid appointmentTypeId,
         DateTimeOffset startsAt,
         int durationMinutes,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        Guid? roomId = null)
     {
         if (clinicId == Guid.Empty)
         {
@@ -82,6 +89,7 @@ public sealed class Appointment : Entity
             ProfessionalId = professionalId,
             PatientId = patientId,
             AppointmentTypeId = appointmentTypeId,
+            RoomId = roomId,
             StartsAt = range.StartsAt,
             EndsAt = range.EndsAt,
             DurationMinutes = durationMinutes,
@@ -103,6 +111,15 @@ public sealed class Appointment : Entity
 
         StartsAt = range.StartsAt;
         EndsAt = range.EndsAt;
+        MarkUpdated(now);
+    }
+
+    /// <summary>Define ou remove a sala do atendimento (SPEC-0006).</summary>
+    public void ChangeRoom(Guid? roomId, DateTimeOffset now)
+    {
+        EnsureChangeable();
+
+        RoomId = roomId;
         MarkUpdated(now);
     }
 
@@ -165,6 +182,27 @@ public sealed class Appointment : Entity
         }
 
         DeletedAt = now;
+        MarkUpdated(now);
+    }
+
+    /// <summary>Atualiza o status de pagamento para pago (SPEC-0008).</summary>
+    public void MarkPaid(DateTimeOffset now)
+    {
+        PaymentStatus = "pago";
+        MarkUpdated(now);
+    }
+
+    /// <summary>Atualiza o status de pagamento para isento ou conveniado (SPEC-0008).</summary>
+    public void MarkExempt(DateTimeOffset now)
+    {
+        PaymentStatus = "isento";
+        MarkUpdated(now);
+    }
+
+    /// <summary>Atualiza o status de pagamento para estornado (SPEC-0008).</summary>
+    public void MarkPaymentRefunded(DateTimeOffset now)
+    {
+        PaymentStatus = "estornado";
         MarkUpdated(now);
     }
 

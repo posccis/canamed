@@ -22,9 +22,23 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<Specialty> Specialties => Set<Specialty>();
 
+    public DbSet<HealthPlan> HealthPlans => Set<HealthPlan>();
+
+    public DbSet<Room> Rooms => Set<Room>();
+
+    public DbSet<OperatingHour> OperatingHours => Set<OperatingHour>();
+
+    public DbSet<ClinicClosure> ClinicClosures => Set<ClinicClosure>();
+
     public DbSet<Appointment> Appointments => Set<Appointment>();
 
     public DbSet<ProfessionalBlock> ProfessionalBlocks => Set<ProfessionalBlock>();
+
+    public DbSet<QueueEntry> QueueEntries => Set<QueueEntry>();
+
+    public DbSet<Canamed.Domain.Payments.PaymentTransaction> PaymentTransactions => Set<Canamed.Domain.Payments.PaymentTransaction>();
+
+    public DbSet<Canamed.Domain.Queue.TriageRecord> TriageRecords => Set<Canamed.Domain.Queue.TriageRecord>();
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 

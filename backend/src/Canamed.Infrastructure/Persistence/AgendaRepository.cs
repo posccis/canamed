@@ -72,6 +72,66 @@ public sealed class AgendaRepository(CanamedDbContext dbContext) : IAgendaReposi
             professional => professional.Id == professionalId && professional.ClinicId == clinicId,
             cancellationToken);
 
+    public Task<bool> RoomHasOverlappingAppointmentAsync(
+        Guid clinicId,
+        Guid roomId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        Guid? exceptAppointmentId,
+        CancellationToken cancellationToken) =>
+        dbContext.Appointments.AnyAsync(
+            appointment => appointment.ClinicId == clinicId
+                && appointment.RoomId == roomId
+                && appointment.DeletedAt == null
+                && (appointment.Status == AppointmentStatus.Scheduled
+                    || appointment.Status == AppointmentStatus.Confirmed)
+                && appointment.StartsAt < toUtc
+                && appointment.EndsAt > fromUtc
+                && (exceptAppointmentId == null || appointment.Id != exceptAppointmentId),
+            cancellationToken);
+
+    public async Task<IReadOnlyList<Appointment>> ListAppointmentsByIdsAsync(
+        Guid clinicId,
+        IReadOnlyCollection<Guid> appointmentIds,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(appointmentIds);
+
+        if (appointmentIds.Count is 0)
+        {
+            return [];
+        }
+
+        return await dbContext.Appointments
+            .AsNoTracking()
+            .Where(appointment => appointment.ClinicId == clinicId && appointmentIds.Contains(appointment.Id))
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<Appointment>> ListAppointmentsForUpdateAsync(
+        Guid clinicId,
+        Guid? professionalId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Appointments
+            .Where(appointment => appointment.ClinicId == clinicId)
+            .Where(appointment => appointment.DeletedAt == null)
+            .Where(appointment => appointment.StartsAt < toUtc && appointment.EndsAt > fromUtc);
+
+        if (professionalId is not null)
+        {
+            query = query.Where(appointment => appointment.ProfessionalId == professionalId);
+        }
+
+        return await query
+            .OrderBy(appointment => appointment.StartsAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public void AddAppointment(Appointment appointment) => dbContext.Appointments.Add(appointment);
 
     public void AddBlock(ProfessionalBlock block) => dbContext.ProfessionalBlocks.Add(block);

@@ -12,6 +12,14 @@ public static class AuditActions
     public const string ProfessionalBlockRemoved = "professional_block.removed";
     public const string ClinicAccessDenied = "clinic.access_denied";
 
+    public const string QueueCheckedIn = "queue.checked_in";
+    public const string QueueCalled = "queue.called";
+    public const string QueueStarted = "queue.started";
+    public const string QueueCompleted = "queue.completed";
+    public const string QueueLeft = "queue.left";
+    public const string QueueCanceled = "queue.canceled";
+    public const string AgendaDayClosed = "agenda.day_closed";
+
     public const string SpecialtyCreated = "specialty.created";
     public const string SpecialtyUpdated = "specialty.updated";
     public const string SpecialtyDeactivated = "specialty.deactivated";
@@ -29,6 +37,18 @@ public static class AuditActions
     public const string PatientDeactivated = "patient.deactivated";
     public const string PatientActivated = "patient.activated";
 
+    public const string HealthPlanCreated = "health_plan.created";
+    public const string HealthPlanUpdated = "health_plan.updated";
+    public const string HealthPlanDeactivated = "health_plan.deactivated";
+    public const string HealthPlanActivated = "health_plan.activated";
+    public const string RoomCreated = "room.created";
+    public const string RoomUpdated = "room.updated";
+    public const string RoomDeactivated = "room.deactivated";
+    public const string RoomActivated = "room.activated";
+    public const string OperatingHoursReplaced = "operating_hours.replaced";
+    public const string ClinicClosureCreated = "clinic_closure.created";
+    public const string ClinicClosureRemoved = "clinic_closure.removed";
+
     public const string LoginSucceeded = "auth.login_succeeded";
     public const string LoginFailed = "auth.login_failed";
     public const string LoginBlocked = "auth.login_blocked";
@@ -43,6 +63,10 @@ public static class AuditActions
     public const string UserPasswordReset = "user.password_reset";
     public const string UserDeactivated = "user.deactivated";
     public const string UserSessionsRevoked = "user.sessions_revoked";
+
+    public const string PaymentReceived = "payment.received";
+    public const string PaymentRefunded = "payment.refunded";
+    public const string TriageRecorded = "triage.recorded";
 }
 
 /// <summary>Tipos de recurso da trilha de auditoria.</summary>
@@ -57,4 +81,12 @@ public static class AuditResources
     public const string AppointmentTypes = "appointment_types";
     public const string Professionals = "professionals";
     public const string Patients = "patients";
+    public const string QueueEntries = "queue_entries";
+    public const string Agenda = "agenda";
+    public const string HealthPlans = "health_plans";
+    public const string Rooms = "rooms";
+    public const string OperatingHours = "operating_hours";
+    public const string ClinicClosures = "clinic_closures";
+    public const string Payments = "payments";
+    public const string Triage = "triage";
 }

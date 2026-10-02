@@ -24,6 +24,30 @@ public static class Permissions
     /// <summary>Administra os usuários da clínica (SPEC-0003).</summary>
     public const string UsersManage = "users:manage";
 
+    /// <summary>Consulta convênios, salas, funcionamento e feriados (SPEC-0006).</summary>
+    public const string ClinicRead = "clinic:read";
+
+    /// <summary>Mantém convênios, salas, funcionamento e feriados (SPEC-0006).</summary>
+    public const string ClinicManage = "clinic:manage";
+
+    /// <summary>Consulta o painel gerencial e indicadores operacionais (SPEC-0007).</summary>
+    public const string DashboardRead = "dashboard:read";
+
+    /// <summary>Consulta pagamentos e fechamento de caixa (SPEC-0008).</summary>
+    public const string PaymentsRead = "payments:read";
+
+    /// <summary>Registra recebimentos e emite recibos no balcão (SPEC-0008).</summary>
+    public const string PaymentsWrite = "payments:write";
+
+    /// <summary>Estorna transações de pagamento (SPEC-0008).</summary>
+    public const string PaymentsRefund = "payments:refund";
+
+    /// <summary>Consulta dados e histórico de triagem (SPEC-0009).</summary>
+    public const string TriageRead = "triage:read";
+
+    /// <summary>Registra sinais vitais e classificação de risco na triagem (SPEC-0009).</summary>
+    public const string TriageWrite = "triage:write";
+
     /// <summary>Todas as permissões conhecidas, na ordem de declaração.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
@@ -33,5 +57,13 @@ public static class Permissions
         AgendaBlock,
         AgendaConfigure,
         UsersManage,
+        ClinicRead,
+        ClinicManage,
+        DashboardRead,
+        PaymentsRead,
+        PaymentsWrite,
+        PaymentsRefund,
+        TriageRead,
+        TriageWrite,
     ];
 }

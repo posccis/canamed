@@ -6,7 +6,9 @@ using Canamed.Domain.Identity;
 using Canamed.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Canamed.IntegrationTests;
 
@@ -86,7 +88,21 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
 
         // A suíte faz muitas tentativas de login; o limite de produção é validado por critério próprio.
         builder.UseSetting("Canamed:RateLimiting:LoginPermitLimit", "1000");
+
+        // Relógio fixo no início do dia local: torna determinísticos os cenários que dependem do dia
+        // (fila de espera, fechamento do dia) em qualquer horário de execução.
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton(TestClock.Instance);
+        });
     }
+
+    /// <summary>Instante fixo usado pela suíte: 00:00 (America/Fortaleza) do dia da execução.</summary>
+    public static DateTimeOffset FixedNow { get; } =
+        Canamed.Application.Agenda.AgendaTimeZone
+            .LocalDayToUtcRange(DateOnly.FromDateTime(DateTime.Now))
+            .StartUtc;
 
     /// <summary>Cria um contexto apontando para o banco de testes.</summary>
     public static CanamedDbContext CreateDbContext() => new(TestDatabase.Options);
@@ -128,10 +144,13 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
         return new TestUser(user.Id, email, password, secret, targetClinic, role);
     }
 
-    /// <summary>Calcula o código TOTP correspondente ao segredo, no instante informado.</summary>
+    /// <summary>
+    /// Calcula o código TOTP correspondente ao segredo, no instante informado. O padrão é o relógio fixo
+    /// da suíte, que é o mesmo usado pela API em teste.
+    /// </summary>
     public string ComputeTotp(string secret, DateTimeOffset? moment = null) =>
         Services.GetRequiredService<ITotpService>()
-            .ComputeCode(secret, moment ?? DateTimeOffset.UtcNow);
+            .ComputeCode(secret, moment ?? FixedNow);
 
     private static void Seed(IPasswordHasher hasher)
     {

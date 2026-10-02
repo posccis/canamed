@@ -9,11 +9,11 @@ public sealed record CreateSpecialtyRequest(string Name);
 /// <summary>Renomeação de especialidade.</summary>
 public sealed record RenameSpecialtyRequest(string Name);
 
-/// <summary>Cadastro mínimo de profissional (necessário para agendar).</summary>
-public sealed record CreateProfessionalRequest(string Name, Guid? SpecialtyId);
+/// <summary>Cadastro de profissional (necessário para agendar).</summary>
+public sealed record CreateProfessionalRequest(string Name, Guid? SpecialtyId, string? RegistrationNumber = null);
 
 /// <summary>Alteração de profissional.</summary>
-public sealed record UpdateProfessionalRequest(string Name, Guid? SpecialtyId);
+public sealed record UpdateProfessionalRequest(string Name, Guid? SpecialtyId, string? RegistrationNumber = null);
 
 /// <summary>Profissional da clínica.</summary>
 public sealed record ProfessionalResponse(
@@ -21,13 +21,26 @@ public sealed record ProfessionalResponse(
     string Name,
     Guid? SpecialtyId,
     string? SpecialtyName,
+    string? RegistrationNumber,
     bool IsActive);
 
 /// <summary>Cadastro de paciente com os dados necessários para agendar e contatar.</summary>
-public sealed record CreatePatientRequest(string Name, string Phone, string? Email, DateOnly? BirthDate);
+public sealed record CreatePatientRequest(
+    string Name,
+    string Phone,
+    string? Email,
+    DateOnly? BirthDate,
+    string? Document = null,
+    Guid? HealthPlanId = null);
 
 /// <summary>Alteração de dados cadastrais do paciente.</summary>
-public sealed record UpdatePatientRequest(string Name, string Phone, string? Email, DateOnly? BirthDate);
+public sealed record UpdatePatientRequest(
+    string Name,
+    string Phone,
+    string? Email,
+    DateOnly? BirthDate,
+    string? Document = null,
+    Guid? HealthPlanId = null);
 
 /// <summary>Paciente da clínica.</summary>
 public sealed record PatientResponse(
@@ -36,6 +49,9 @@ public sealed record PatientResponse(
     string Phone,
     string? Email,
     DateOnly? BirthDate,
+    string? Document,
+    Guid? HealthPlanId,
+    string? HealthPlanName,
     bool IsActive);
 
 /// <summary>

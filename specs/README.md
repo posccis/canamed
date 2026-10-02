@@ -66,6 +66,12 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0002](0002-spec-agenda-de-consultas.md) | Agenda de Consultas | Implementada | 2026-09-30 |
 | [0003](0003-spec-autenticacao-autorizacao-e-auditoria.md) | Autenticação, Autorização e Auditoria | Implementada | 2026-10-01 |
 | [0004](0004-spec-catalogo-e-classificacao-das-consultas.md) | Catálogo Assistencial e Classificação das Consultas | Implementada | 2026-10-01 |
+| [0005](0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) | Fila de Espera e Ciclo de Atendimento | Implementada | 2026-10-01 |
+| [0006](0006-spec-gestao-operacional-da-clinica.md) | Gestão Operacional da Clínica (Convênios, Salas, Horários e Feriados) | Implementada | 2026-10-01 |
+| [0007](0007-spec-painel-gerencial-e-indicadores-operacionais.md) | Painel Gerencial e Indicadores Operacionais (Dashboard) | Implementada | 2026-10-01 |
+| [0008](0008-spec-fluxo-de-pagamento-e-cobranca.md) | Fluxo de Pagamento e Cobrança no Balcão | Implementada | 2026-10-01 |
+| [0009](0009-spec-triagem-e-classificacao-de-risco.md) | Apoio ao Processo de Triagem e Classificação de Risco | Implementada | 2026-10-01 |
+| [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
 Está implementada, com P-002 (migrations) e P-003 (tipos do frontend gerados a partir do OpenAPI)

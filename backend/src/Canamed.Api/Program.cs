@@ -104,7 +104,11 @@ api.MapHealthChecks("/health/ready", new HealthCheckOptions { ResponseWriter = R
     .WithName("HealthReady");
 
 api.MapCatalogEndpoints();
+api.MapClinicOperationEndpoints();
 api.MapAgendaEndpoints();
+api.MapQueueEndpoints();
+api.MapDashboardEndpoints();
+api.MapPaymentEndpoints();
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 

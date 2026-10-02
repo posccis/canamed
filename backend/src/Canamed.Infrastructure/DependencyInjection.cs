@@ -58,7 +58,12 @@ public static class DependencyInjection
         services.AddSingleton<IMfaPolicy, ConfigurationMfaPolicy>();
         services.AddScoped<ICurrentActorAccessor, CurrentActorAccessor>();
         services.AddScoped<IAgendaRepository, AgendaRepository>();
+        services.AddScoped<IQueueRepository, QueueRepository>();
         services.AddScoped<ICatalogRepository, CatalogRepository>();
+        services.AddScoped<IClinicOperationRepository, ClinicOperationRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<ITriageRepository, TriageRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IAuditTrail, AuditTrail>();
         services.AddScoped<IIdentityRepository, IdentityRepository>();
