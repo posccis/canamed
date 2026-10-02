@@ -77,6 +77,11 @@ public static class DevelopmentDataSeeder
             now,
             DevelopmentDefaults.DemoClinicId));
 
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        await EnsureDemoClassificationAsync(dbContext, DevelopmentDefaults.DemoClinicId, now, cancellationToken)
+            .ConfigureAwait(false);
+
         dbContext.Professionals.Add(Professional.Create(
             DevelopmentDefaults.DemoClinicId,
             "Dra. Ana Ribeiro (sintética)",
@@ -120,9 +125,6 @@ public static class DevelopmentDataSeeder
                 id: DevelopmentDefaults.DemoAssessmentTypeId));
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        await EnsureDemoClassificationAsync(dbContext, DevelopmentDefaults.DemoClinicId, now, cancellationToken)
-            .ConfigureAwait(false);
 
         logger.LogInformation(
             "Dados sintéticos de desenvolvimento criados para a clínica {ClinicId}.",
