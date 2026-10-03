@@ -912,6 +912,210 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("user_sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.MedicalDocuments.MedicalDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cancellation_reason");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<string>("Cid10Code")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("cid10_code");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<string>("ContentPayload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("content_payload");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("doctor_id");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("document_type");
+
+                    b.Property<Guid?>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<bool>("PatientConsentedCid")
+                        .HasColumnType("boolean")
+                        .HasColumnName("patient_consented_cid");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("PublicToken")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("public_token");
+
+                    b.Property<string>("SignatureHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("signature_hash");
+
+                    b.Property<DateTimeOffset?>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.HasIndex("PublicToken")
+                        .IsUnique();
+
+                    b.HasIndex("ClinicId", "PatientId", "CreatedAt");
+
+                    b.ToTable("medical_documents", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<string>("Assessment")
+                        .HasColumnType("text")
+                        .HasColumnName("assessment");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<string>("ClinicalNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("clinical_notes");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("doctor_id");
+
+                    b.Property<DateTimeOffset?>("FinalizedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finalized_at");
+
+                    b.Property<Guid?>("FinalizedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finalized_by");
+
+                    b.Property<string>("Objective")
+                        .HasColumnType("text")
+                        .HasColumnName("objective");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("Plan")
+                        .HasColumnType("text")
+                        .HasColumnName("plan");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subjective")
+                        .HasColumnType("text")
+                        .HasColumnName("subjective");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ClinicId", "PatientId", "CreatedAt");
+
+                    b.ToTable("medical_records", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecordAddendum", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("doctor_id");
+
+                    b.Property<string>("Justification")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("justification");
+
+                    b.Property<Guid>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.ToTable("medical_record_addenda", (string)null);
+                });
+
             modelBuilder.Entity("Canamed.Domain.Payments.PaymentTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1315,6 +1519,15 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecordAddendum", b =>
+                {
+                    b.HasOne("Canamed.Domain.MedicalRecords.MedicalRecord", null)
+                        .WithMany("Addenda")
+                        .HasForeignKey("MedicalRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Canamed.Domain.Payments.PaymentTransaction", b =>
                 {
                     b.HasOne("Canamed.Domain.Agenda.Appointment", null)
@@ -1355,6 +1568,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasForeignKey("QueueEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecord", b =>
+                {
+                    b.Navigation("Addenda");
                 });
 #pragma warning restore 612, 618
         }

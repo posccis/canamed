@@ -40,6 +40,12 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<Canamed.Domain.Queue.TriageRecord> TriageRecords => Set<Canamed.Domain.Queue.TriageRecord>();
 
+    public DbSet<Canamed.Domain.MedicalRecords.MedicalRecord> MedicalRecords => Set<Canamed.Domain.MedicalRecords.MedicalRecord>();
+
+    public DbSet<Canamed.Domain.MedicalRecords.MedicalRecordAddendum> MedicalRecordAddenda => Set<Canamed.Domain.MedicalRecords.MedicalRecordAddendum>();
+
+    public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocument> MedicalDocuments => Set<Canamed.Domain.MedicalDocuments.MedicalDocument>();
+
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     public DbSet<User> Users => Set<User>();
