@@ -17,6 +17,9 @@ const VIEW_TITLES: Record<AppView, string> = {
   operation: 'Gestão Operacional',
   catalog: 'Catálogo Assistencial',
   users: 'Gestão de Usuários',
+  portal: 'Portal do Paciente & Agendamento',
+  kiosk: 'Totem de Autoatendimento',
+  privacy: 'Privacidade & LGPD',
 };
 
 export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch }: TopbarProps) {

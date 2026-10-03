@@ -1,6 +1,6 @@
 import type { Session } from '../auth/authApi';
 
-export type AppView = 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users' | 'workspace';
+export type AppView = 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users' | 'workspace' | 'portal' | 'kiosk' | 'privacy';
 
 type SidebarProps = {
   session: Session;
@@ -201,6 +201,56 @@ export function Sidebar({
             {!collapsed && <span className="sidebar__item-label">Usuários</span>}
           </button>
         ) : null}
+
+        {/* Divisor Visão do Paciente */}
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
+
+        {/* Portal do Paciente */}
+        <button
+          type="button"
+          className={`sidebar__item ${view === 'portal' ? 'sidebar__item--active' : ''}`}
+          onClick={() => handleNav('portal')}
+          title="Portal do Paciente e Agendamento Online"
+        >
+          <span className="sidebar__item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </span>
+          {!collapsed && <span className="sidebar__item-label">Portal Paciente</span>}
+        </button>
+
+        {/* Totem de Autoatendimento */}
+        <button
+          type="button"
+          className={`sidebar__item ${view === 'kiosk' ? 'sidebar__item--active' : ''}`}
+          onClick={() => handleNav('kiosk')}
+          title="Totem de Autoatendimento e Check-in"
+        >
+          <span className="sidebar__item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+              <line x1="12" y1="18" x2="12.01" y2="18" />
+            </svg>
+          </span>
+          {!collapsed && <span className="sidebar__item-label">Totem Check-in</span>}
+        </button>
+
+        {/* Privacidade LGPD */}
+        <button
+          type="button"
+          className={`sidebar__item ${view === 'privacy' ? 'sidebar__item--active' : ''}`}
+          onClick={() => handleNav('privacy')}
+          title="Autonomia e Privacidade (LGPD)"
+        >
+          <span className="sidebar__item-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </span>
+          {!collapsed && <span className="sidebar__item-label">Privacidade (LGPD)</span>}
+        </button>
       </nav>
 
       <div className="sidebar__footer">

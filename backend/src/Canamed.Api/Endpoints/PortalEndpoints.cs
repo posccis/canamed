@@ -1,6 +1,8 @@
+using Canamed.Application.Abstractions;
 using Canamed.Application.MedicalDocuments;
 using Canamed.Application.Portal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Canamed.Api.Endpoints;
 
@@ -11,6 +13,11 @@ public static class PortalEndpoints
         ArgumentNullException.ThrowIfNull(api);
 
         var group = api.MapGroup("/portal");
+
+        group.MapGet("/meta", GetPortalMetaAsync)
+            .WithName("PortalGetMeta")
+            .Produces<PortalMetaResponse>(StatusCodes.Status200OK)
+            .AllowAnonymous();
 
         group.MapPost("/auth/request-otp", RequestOtpAsync)
             .WithName("PortalRequestOtp")
@@ -196,6 +203,29 @@ public static class PortalEndpoints
 
         return Results.Ok(dtos);
     }
+
+    private static async Task<IResult> GetPortalMetaAsync(
+        ICatalogRepository catalogRepository,
+        Canamed.Infrastructure.Persistence.CanamedDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var clinic = await dbContext.Clinics.FirstOrDefaultAsync(cancellationToken);
+        if (clinic is null)
+        {
+            return Results.NotFound(new { message = "Nenhuma clínica cadastrada." });
+        }
+
+        var specialties = await catalogRepository.ListSpecialtiesAsync(clinic.Id, cancellationToken);
+        var professionals = await catalogRepository.ListProfessionalsAsync(clinic.Id, cancellationToken);
+
+        var specDtos = specialties.Where(s => s.IsActive).Select(s => new PortalSpecialtyItem(s.Id, s.Name)).ToList();
+        var profDtos = professionals.Where(p => p.IsActive).Select(p => new PortalProfessionalItem(p.Id, p.Name, p.SpecialtyId)).ToList();
+
+        return Results.Ok(new PortalMetaResponse(clinic.Id, clinic.Name, specDtos, profDtos));
+    }
 }
 
 public sealed record CancelAppointmentPayload(string Reason);
+public sealed record PortalMetaResponse(Guid ClinicId, string ClinicName, IReadOnlyList<PortalSpecialtyItem> Specialties, IReadOnlyList<PortalProfessionalItem> Professionals);
+public sealed record PortalSpecialtyItem(Guid Id, string Name);
+public sealed record PortalProfessionalItem(Guid Id, string Name, Guid? SpecialtyId);

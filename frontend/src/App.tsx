@@ -14,6 +14,9 @@ import { Topbar } from './features/layout/Topbar';
 import { ToastProvider } from './features/layout/Toast';
 import { GlobalSearchModal } from './features/layout/GlobalSearchModal';
 import { DoctorWorkspace } from './features/medical/DoctorWorkspace';
+import { PatientPortal } from './features/patient/PatientPortal';
+import { KioskMode } from './features/patient/KioskMode';
+import { PrivacyPortal } from './features/patient/PrivacyPortal';
 
 export function App() {
   const { state, reload, end } = useSession();
@@ -97,6 +100,12 @@ export function App() {
               <QueuePanel />
             ) : view === 'workspace' ? (
               <DoctorWorkspace />
+            ) : view === 'portal' ? (
+              <PatientPortal />
+            ) : view === 'kiosk' ? (
+              <KioskMode />
+            ) : view === 'privacy' ? (
+              <PrivacyPortal />
             ) : (
               <AgendaPage />
             )}
