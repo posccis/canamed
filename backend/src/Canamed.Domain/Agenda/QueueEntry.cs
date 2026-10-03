@@ -131,8 +131,20 @@ public sealed class QueueEntry : Entity
 
     public DateTimeOffset? FinishedAt { get; private set; }
 
+    /// <summary>Origem do check-in: desk, kiosk ou mobile_qrcode (SPEC-0017).</summary>
+    public string CheckInOrigin { get; private set; } = "desk";
+
+    /// <summary>Senha alfanumérica sequencial (ex: N-001, P-002) — SPEC-0017.</summary>
+    public string? TicketCode { get; private set; }
+
     /// <summary>Indica se a entrada ainda ocupa a fila (RN-003).</summary>
     public bool IsOpen => Status is QueueStatus.Waiting or QueueStatus.Called or QueueStatus.InService;
+
+    public void AssignTicket(string ticketCode, string origin)
+    {
+        TicketCode = ticketCode;
+        CheckInOrigin = origin;
+    }
 
     /// <summary>Registra a chegada do paciente.</summary>
     public static QueueEntry CheckIn(
