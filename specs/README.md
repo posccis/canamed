@@ -75,6 +75,11 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0011](0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md) | Prescrição Eletrônica, Atestados e Exames (ICP-Brasil) | Implementada | 2026-10-02 |
 | [0012](0012-spec-consultorio-virtual-e-workspace-medico.md) | Consultório Virtual e Workspace Médico Integrado | Implementada | 2026-10-02 |
 | [0013](0013-spec-gestao-de-retornos-e-prazos-assistenciais.md) | Gestão de Retornos e Prazos Assistenciais (CFM 1.958/2010) | Rascunho | 2026-10-02 |
+| [0014](0014-spec-notificacoes-e-lembretes-ativos-whatsapp-sms.md) | Notificações e Lembretes Ativos (WhatsApp / SMS) | Rascunho | 2026-10-03 |
+| [0015](0015-spec-agendamento-online-e-portal-do-paciente.md) | Agendamento Online e Portal do Paciente (OTP) | Rascunho | 2026-10-03 |
+| [0016](0016-spec-carteira-digital-e-acesso-a-documentos-clinicos.md) | Carteira Digital e Acesso a Documentos Clínicos | Rascunho | 2026-10-03 |
+| [0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) | Check-in Autônomo na Recepção (Totem / QR Code) | Rascunho | 2026-10-03 |
+| [0018](0018-spec-portal-de-autonomia-e-direitos-do-titular-lgpd.md) | Portal de Autonomia e Direitos do Titular (LGPD) | Rascunho | 2026-10-03 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
