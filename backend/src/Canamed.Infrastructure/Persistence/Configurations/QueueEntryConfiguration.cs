@@ -37,6 +37,8 @@ internal sealed class QueueEntryConfiguration : IEntityTypeConfiguration<QueueEn
             .HasMaxLength(20)
             .IsRequired();
         builder.Property(entry => entry.QueueDate).HasColumnType("date").IsRequired();
+        builder.Property(entry => entry.TicketCode).HasMaxLength(20);
+        builder.Property(entry => entry.CheckInOrigin).HasMaxLength(30);
         builder.HasIndex(entry => new { entry.ClinicId, entry.QueueDate, entry.ProfessionalId });
 
         // RN-003 garantida no banco: uma única entrada aberta por agendamento (encaixes sem

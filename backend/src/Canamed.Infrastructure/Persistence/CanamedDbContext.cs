@@ -56,6 +56,20 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<LoginChallenge> LoginChallenges => Set<LoginChallenge>();
 
+    public DbSet<Canamed.Domain.Notifications.AppointmentNotification> AppointmentNotifications => Set<Canamed.Domain.Notifications.AppointmentNotification>();
+
+    public DbSet<Canamed.Domain.Notifications.PatientCommunicationPreference> PatientCommunicationPreferences => Set<Canamed.Domain.Notifications.PatientCommunicationPreference>();
+
+    public DbSet<Canamed.Domain.Portal.PatientOtpCode> PatientOtpCodes => Set<Canamed.Domain.Portal.PatientOtpCode>();
+
+    public DbSet<Canamed.Domain.Portal.PatientPortalSession> PatientPortalSessions => Set<Canamed.Domain.Portal.PatientPortalSession>();
+
+    public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog> MedicalDocumentAccessLogs => Set<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog>();
+
+    public DbSet<Canamed.Domain.Privacy.PrivacyRequest> PrivacyRequests => Set<Canamed.Domain.Privacy.PrivacyRequest>();
+
+    public DbSet<Canamed.Domain.Privacy.PrivacyConsent> PrivacyConsents => Set<Canamed.Domain.Privacy.PrivacyConsent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);

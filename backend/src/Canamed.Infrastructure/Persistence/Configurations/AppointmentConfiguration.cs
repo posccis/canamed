@@ -31,6 +31,7 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
             .HasDefaultValue("pendente")
             .IsRequired();
         builder.Property(appointment => appointment.CancellationReason).HasMaxLength(500);
+        builder.Property(appointment => appointment.Origin).HasMaxLength(30).HasDefaultValue("desk").IsRequired();
         builder.Property(appointment => appointment.DurationMinutes).IsRequired();
         builder.HasIndex(appointment => new { appointment.ProfessionalId, appointment.StartsAt });
         builder.HasIndex(appointment => new { appointment.ClinicId, appointment.StartsAt });
