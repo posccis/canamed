@@ -16,16 +16,25 @@ internal static class DotEnvConfiguration
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(environment);
 
-        if (!environment.IsDevelopment())
-        {
-            return;
-        }
-
         var path = FindFile(environment.ContentRootPath, Directory.GetCurrentDirectory());
 
         if (path is null)
         {
             return;
+        }
+
+        var parsed = Parse(path).ToList();
+        var envInFile = parsed.FirstOrDefault(p => string.Equals(p.Key, "ASPNETCORE_ENVIRONMENT", StringComparison.OrdinalIgnoreCase)).Value;
+
+        if (!environment.IsDevelopment() && !string.Equals(envInFile, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        // Se o .env declarou Development mas o runtime ainda não, atualiza a variável de processo
+        if (!environment.IsDevelopment() && string.Equals(envInFile, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
         }
 
         // O separador "__" representa ":" nas chaves hierárquicas, igual às variáveis de ambiente do .NET.

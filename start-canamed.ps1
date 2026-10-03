@@ -39,7 +39,10 @@ $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $RepoRoot
 
 function Write-BrandHeader {
-    Clear-Host
+    param([switch]$Clear)
+    if ($Clear) {
+        try { Clear-Host } catch {}
+    }
     Write-Host ""
     Write-Host "  ================================================================" -ForegroundColor Cyan
     Write-Host "    C A N A M E D  -  Plataforma de Gestao Clinica Integrada" -ForegroundColor Green
@@ -95,6 +98,21 @@ if (-not (Test-Path "$RepoRoot\.env")) {
 } else {
     Write-Success "Arquivo .env configurado."
 }
+
+# Carrega as variaveis do .env para a sessao do processo
+Write-Step "Carregando variaveis de ambiente locais..."
+Get-Content "$RepoRoot\.env" | ForEach-Object {
+    $line = $_.Trim()
+    if ($line -and -not $line.StartsWith("#")) {
+        $parts = $line -split "=", 2
+        if ($parts.Length -eq 2) {
+            $varName = $parts[0].Trim()
+            $varVal = $parts[1].Trim().Trim('"').Trim("'")
+            [System.Environment]::SetEnvironmentVariable($varName, $varVal, "Process")
+        }
+    }
+}
+$env:ASPNETCORE_ENVIRONMENT = "Development"
 
 # 2. Verificacao e Inicializacao do PostgreSQL
 Write-Step "Verificando conectividade com o PostgreSQL (127.0.0.1:5432)..."
@@ -185,6 +203,7 @@ if (-not (Test-Path "$RepoRoot\frontend\node_modules")) {
 Write-Step "Iniciando servicos da aplicacao..."
 
 # Configura URLs das variaveis de ambiente para a sessao
+$env:ASPNETCORE_ENVIRONMENT = "Development"
 $env:ASPNETCORE_URLS = "http://localhost:$PortBackend"
 $env:VITE_API_BASE_URL = "http://localhost:$PortBackend/api/v1"
 
@@ -192,7 +211,7 @@ $env:VITE_API_BASE_URL = "http://localhost:$PortBackend/api/v1"
 $backendLog = "$RepoRoot\backend.log"
 $backendProc = Start-Process `
     -FilePath "dotnet" `
-    -ArgumentList "run --project `"$RepoRoot\backend\src\Canamed.Api`" --no-launch-profile" `
+    -ArgumentList "run --project `"$RepoRoot\backend\src\Canamed.Api`" --launch-profile http" `
     -WorkingDirectory "$RepoRoot\backend\src\Canamed.Api" `
     -RedirectStandardOutput $backendLog `
     -RedirectStandardError "$RepoRoot\backend.err.log" `
@@ -218,7 +237,7 @@ $elapsed = 0
 while ($elapsed -lt $timeout) {
     if (-not $backendReady) {
         try {
-            $resp = Invoke-WebRequest -Uri "http://localhost:$PortBackend/live" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+            $resp = Invoke-WebRequest -Uri "http://localhost:$PortBackend/api/v1/health/live" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
             if ($resp.StatusCode -eq 200) { $backendReady = $true }
         } catch {}
     }
@@ -234,11 +253,25 @@ while ($elapsed -lt $timeout) {
 
     # Verifica se algum processo morreu prematuramente
     if ($backendProc.HasExited) {
-        Write-ErrorMsg "Backend encerrou inesperadamente. Verifique o log em 'backend.err.log'."
+        Write-ErrorMsg "Backend encerrou inesperadamente com codigo de saida $($backendProc.ExitCode)."
+        if (Test-Path "$RepoRoot\backend.err.log") {
+            $errContent = (Get-Content "$RepoRoot\backend.err.log" -Raw).Trim()
+            if ($errContent) {
+                Write-Host "       Detalhes do erro:" -ForegroundColor Red
+                Write-Host $errContent -ForegroundColor Red
+            }
+        }
         break
     }
     if ($frontendProc.HasExited) {
-        Write-ErrorMsg "Frontend encerrou inesperadamente. Verifique o log em 'frontend.err.log'."
+        Write-ErrorMsg "Frontend encerrou inesperadamente com codigo de saida $($frontendProc.ExitCode)."
+        if (Test-Path "$RepoRoot\frontend.err.log") {
+            $errContent = (Get-Content "$RepoRoot\frontend.err.log" -Raw).Trim()
+            if ($errContent) {
+                Write-Host "       Detalhes do erro:" -ForegroundColor Red
+                Write-Host $errContent -ForegroundColor Red
+            }
+        }
         break
     }
 
@@ -247,7 +280,7 @@ while ($elapsed -lt $timeout) {
 }
 
 # Painel de Status
-Write-BrandHeader
+Write-BrandHeader -Clear
 
 Write-Host "  Status dos Servicos:" -ForegroundColor White
 Write-Host "  ----------------------------------------------------------------" -ForegroundColor DarkGray
@@ -298,20 +331,38 @@ if (-not $NoBrowser) {
 try {
     while ($true) {
         if ($backendProc.HasExited) {
-            Write-ErrorMsg "O processo do Backend foi encerrado. Encerrando aplicacao..."
+            Write-ErrorMsg "O processo do Backend foi encerrado com codigo de saida $($backendProc.ExitCode)."
+            if (Test-Path "$RepoRoot\backend.err.log") {
+                $errContent = (Get-Content "$RepoRoot\backend.err.log" -Raw).Trim()
+                if ($errContent) {
+                    Write-Host "       Detalhes do erro:" -ForegroundColor Red
+                    Write-Host $errContent -ForegroundColor Red
+                }
+            }
             break
         }
         if ($frontendProc.HasExited) {
-            Write-ErrorMsg "O processo do Frontend foi encerrado. Encerrando aplicacao..."
+            Write-ErrorMsg "O processo do Frontend foi encerrado com codigo de saida $($frontendProc.ExitCode)."
+            if (Test-Path "$RepoRoot\frontend.err.log") {
+                $errContent = (Get-Content "$RepoRoot\frontend.err.log" -Raw).Trim()
+                if ($errContent) {
+                    Write-Host "       Detalhes do erro:" -ForegroundColor Red
+                    Write-Host $errContent -ForegroundColor Red
+                }
+            }
             break
         }
 
-        if ([Console]::KeyAvailable) {
-            $key = [Console]::ReadKey($true)
-            if ($key.Key -eq [ConsoleKey]::Q) {
-                Write-Step "Comando 'Q' recebido. Encerrando servicos..."
-                break
+        try {
+            if ([Console]::KeyAvailable) {
+                $key = [Console]::ReadKey($true)
+                if ($key.Key -eq [ConsoleKey]::Q) {
+                    Write-Step "Comando 'Q' recebido. Encerrando servicos..."
+                    break
+                }
             }
+        } catch {
+            # Ignora excecoes de KeyAvailable caso o console nao tenha entrada interativa
         }
         Start-Sleep -Milliseconds 500
     }
