@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0025 |
 | **Título** | Políticas Parametrizáveis de Encaixes (Overbooking), Cotas Diárias e Prazos de Cancelamento |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

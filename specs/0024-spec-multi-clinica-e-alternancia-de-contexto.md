@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0024 |
 | **Título** | Alternância Dinâmica de Contexto de Clínica Ativa para Redes e Múltiplas Filiais |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

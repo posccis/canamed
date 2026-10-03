@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0022 |
 | **Título** | Controle de Estoque de Insumos, Materiais Médicos, Medicamentos e Descartáveis |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

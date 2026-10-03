@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0023 |
 | **Título** | Painel de Gestão do Encarregado de Dados (DPO), Atendimento de Requisições e Governança LGPD |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

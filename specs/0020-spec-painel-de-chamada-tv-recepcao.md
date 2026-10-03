@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0020 |
 | **Título** | Painel de Chamada de Pacientes em Tempo Real para TV/Monitor na Recepção |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

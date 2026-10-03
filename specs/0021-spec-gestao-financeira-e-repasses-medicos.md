@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0021 |
 | **Título** | Gestão Financeira da Clínica, Contas a Pagar/Receber e Cálculo Automatizado de Repasse Médico |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |

@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0019 |
 | **Título** | Fechamento e Conferência de Caixa Diário por Operador e Turno com Sangria e Conciliação |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
