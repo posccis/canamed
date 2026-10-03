@@ -69,6 +69,16 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
     public DbSet<Canamed.Domain.Privacy.PrivacyRequest> PrivacyRequests => Set<Canamed.Domain.Privacy.PrivacyRequest>();
 
     public DbSet<Canamed.Domain.Privacy.PrivacyConsent> PrivacyConsents => Set<Canamed.Domain.Privacy.PrivacyConsent>();
+    public DbSet<Canamed.Domain.CashRegister.CashSession> CashSessions => Set<Canamed.Domain.CashRegister.CashSession>();
+    public DbSet<Canamed.Domain.CashRegister.CashMovement> CashMovements => Set<Canamed.Domain.CashRegister.CashMovement>();
+    public DbSet<Canamed.Domain.Queue.QueueCallEvent> QueueCallEvents => Set<Canamed.Domain.Queue.QueueCallEvent>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutContract> MedicalPayoutContracts => Set<Canamed.Domain.Financial.MedicalPayoutContract>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutBatch> MedicalPayoutBatches => Set<Canamed.Domain.Financial.MedicalPayoutBatch>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutItem> MedicalPayoutItems => Set<Canamed.Domain.Financial.MedicalPayoutItem>();
+    public DbSet<Canamed.Domain.Financial.FinancialTransaction> FinancialTransactions => Set<Canamed.Domain.Financial.FinancialTransaction>();
+    public DbSet<Canamed.Domain.Inventory.InventoryItem> InventoryItems => Set<Canamed.Domain.Inventory.InventoryItem>();
+    public DbSet<Canamed.Domain.Inventory.InventoryMovement> InventoryMovements => Set<Canamed.Domain.Inventory.InventoryMovement>();
+    public DbSet<Canamed.Domain.Clinics.ClinicPolicy> ClinicPolicies => Set<Canamed.Domain.Clinics.ClinicPolicy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
