@@ -47,6 +47,14 @@ public static class Roles
                 Permissions.WorkspaceAccess,
                 Permissions.NotificationsManage,
                 Permissions.PrivacyManage,
+                Permissions.CashierManage,
+                Permissions.CashierViewAll,
+                Permissions.FinancialAdmin,
+                Permissions.PayoutManage,
+                Permissions.InventoryRead,
+                Permissions.InventoryManage,
+                Permissions.DpoManage,
+                Permissions.PolicyManage,
             },
             Receptionist => new HashSet<string>(StringComparer.Ordinal)
             {
@@ -59,6 +67,9 @@ public static class Roles
                 Permissions.TriageRead,
                 Permissions.TriageWrite,
                 Permissions.DocumentsPrint,
+                Permissions.CashierManage,
+                Permissions.InventoryRead,
+                Permissions.InventoryManage,
             },
             Professional => new HashSet<string>(StringComparer.Ordinal)
             {
@@ -80,6 +91,8 @@ public static class Roles
                 Permissions.DocumentsCancel,
                 Permissions.DocumentsPrint,
                 Permissions.WorkspaceAccess,
+                Permissions.PayoutViewOwn,
+                Permissions.InventoryRead,
             },
             _ => new HashSet<string>(StringComparer.Ordinal),
         };
