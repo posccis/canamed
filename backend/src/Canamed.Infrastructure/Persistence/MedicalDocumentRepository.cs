@@ -26,6 +26,20 @@ public sealed class MedicalDocumentRepository(CanamedDbContext dbContext) : IMed
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<MedicalDocument>> GetByPatientIdOnlyAsync(Guid patientId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.MedicalDocuments
+            .Where(d => d.PatientId == patientId)
+            .OrderByDescending(d => d.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task LogAccessAsync(MedicalDocumentAccessLog accessLog, CancellationToken cancellationToken = default)
+    {
+        await dbContext.MedicalDocumentAccessLogs.AddAsync(accessLog, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task AddAsync(MedicalDocument document, CancellationToken cancellationToken = default)
     {
         await dbContext.MedicalDocuments.AddAsync(document, cancellationToken);

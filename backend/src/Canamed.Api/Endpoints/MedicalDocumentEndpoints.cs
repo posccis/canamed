@@ -1,6 +1,8 @@
 using Canamed.Api.Authorization;
+using Canamed.Application.Abstractions;
 using Canamed.Application.Identity;
 using Canamed.Application.MedicalDocuments;
+using Canamed.Domain.MedicalDocuments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Canamed.Api.Endpoints;
@@ -55,6 +57,19 @@ public static class MedicalDocumentEndpoints
         api.MapGet("/public/validate-document/{publicToken}", ValidatePublicDocumentAsync)
             .WithName("ValidatePublicMedicalDocument")
             .Produces<PublicDocumentValidationResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        api.MapPost("/public/validate-document/{publicToken}/unlock", UnlockPublicDocumentAsync)
+            .WithName("UnlockPublicMedicalDocument")
+            .Produces<MedicalDocumentResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        api.MapGet("/public/validate-document/{publicToken}/download", DownloadPublicDocumentAsync)
+            .WithName("DownloadPublicMedicalDocument")
+            .Produces(StatusCodes.Status200OK, contentType: "application/pdf")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
@@ -125,4 +140,88 @@ public static class MedicalDocumentEndpoints
         var result = await service.ValidatePublicTokenAsync(publicToken, cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
     }
+
+    private static async Task<IResult> UnlockPublicDocumentAsync(
+        IMedicalDocumentRepository documentRepository,
+        ICatalogRepository catalogRepository,
+        string publicToken,
+        [FromBody] UnlockChallengeRequest challenge,
+        HttpContext httpContext,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var doc = await documentRepository.GetByPublicTokenAsync(publicToken.Trim(), cancellationToken);
+        if (doc is null)
+        {
+            return Results.NotFound(new { message = "Documento não encontrado." });
+        }
+
+        var patient = await catalogRepository.FindPatientAsync(doc.ClinicId, doc.PatientId, cancellationToken);
+        if (patient is null)
+        {
+            return Results.NotFound(new { message = "Paciente associado não encontrado." });
+        }
+
+        var birthYearMatch = patient.BirthDate.HasValue &&
+            challenge.Answer.Trim() == patient.BirthDate.Value.Year.ToString();
+
+        var cpfMatch = !string.IsNullOrEmpty(patient.Document) &&
+            challenge.Answer.Trim() == new string(patient.Document.Where(char.IsDigit).Take(3).ToArray());
+
+        if (!birthYearMatch && !cpfMatch)
+        {
+            return Results.BadRequest(new { message = "Resposta do desafio de segurança incorreta." });
+        }
+
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+        await documentRepository.LogAccessAsync(
+            MedicalDocumentAccessLog.Record(doc.Id, "challenge_unlocked", timeProvider.GetUtcNow(), ip, userAgent),
+            cancellationToken);
+
+        return Results.Ok(new MedicalDocumentResponse(
+            doc.Id,
+            doc.ClinicId,
+            doc.PatientId,
+            doc.DoctorId,
+            doc.MedicalRecordId,
+            doc.DocumentType,
+            doc.Status,
+            doc.ContentPayload,
+            doc.Cid10Code,
+            doc.PatientConsentedCid,
+            doc.SignatureHash,
+            doc.PublicToken,
+            doc.CancellationReason,
+            doc.SignedAt,
+            doc.CancelledAt,
+            doc.CreatedAt));
+    }
+
+    private static async Task<IResult> DownloadPublicDocumentAsync(
+        IMedicalDocumentRepository documentRepository,
+        string publicToken,
+        HttpContext httpContext,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var doc = await documentRepository.GetByPublicTokenAsync(publicToken.Trim(), cancellationToken);
+        if (doc is null)
+        {
+            return Results.NotFound();
+        }
+
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+        await documentRepository.LogAccessAsync(
+            MedicalDocumentAccessLog.Record(doc.Id, "pdf_downloaded", timeProvider.GetUtcNow(), ip, userAgent),
+            cancellationToken);
+
+        var pdfBytes = System.Text.Encoding.UTF8.GetBytes(
+            $"%PDF-1.4\n1 0 obj\n<< /Title (Documento Clinico CANAMED) /Subject ({doc.DocumentType}) /Author (CANAMED) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF");
+
+        return Results.File(pdfBytes, "application/pdf", $"canamed-{doc.DocumentType.ToLowerInvariant()}-{doc.PublicToken[..8]}.pdf");
+    }
 }
+
+public sealed record UnlockChallengeRequest(string Answer);

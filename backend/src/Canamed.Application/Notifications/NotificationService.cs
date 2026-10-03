@@ -223,6 +223,25 @@ public sealed class NotificationService(
         return new IncomingWebhookResult(true, "UnrecognizedText", "Mensagem recebida sem ação correspondente.");
     }
 
+    public async Task SetPatientOptOutAsync(string phone, string? reason, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var pref = await notificationRepository.GetPreferenceByPhoneAsync(phone, cancellationToken);
+        if (pref is not null)
+        {
+            pref.OptOut(reason ?? "Opt-out solicitado", now);
+            await unitOfWork.ExecuteInTransactionAsync(async token =>
+            {
+                await notificationRepository.SavePreferenceAsync(pref, token);
+                return true;
+            }, cancellationToken);
+        }
+    }
+
+    public async Task<PatientCommunicationPreference?> GetPreferenceAsync(Guid patientId, CancellationToken cancellationToken = default)
+    {
+        return await notificationRepository.GetPreferenceByPatientIdAsync(patientId, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<AppointmentNotificationResponse>> GetAppointmentHistoryAsync(
         Guid appointmentId,
         CancellationToken cancellationToken = default)
