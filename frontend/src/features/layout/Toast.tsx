@@ -10,6 +10,7 @@ export interface ToastItem {
 
 interface ToastContextValue {
   showToast: (message: string, type?: ToastType) => void;
+  addToast: (message: string, type?: ToastType) => void;
   showSuccess: (message: string) => void;
   showError: (message: string) => void;
   showInfo: (message: string) => void;
@@ -38,7 +39,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const showInfo = useCallback((message: string) => showToast(message, 'info'), [showToast]);
 
   return (
-    <ToastContext.Provider value={{ showToast, showSuccess, showError, showInfo }}>
+    <ToastContext.Provider value={{ showToast, addToast: showToast, showSuccess, showError, showInfo }}>
       {children}
       <div
         className="toast-container"
@@ -133,6 +134,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 const fallbackToast: ToastContextValue = {
   showToast: () => {},
+  addToast: () => {},
   showSuccess: () => {},
   showError: () => {},
   showInfo: () => {},

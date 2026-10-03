@@ -1,6 +1,6 @@
 import type { Session } from '../auth/authApi';
 
-export type AppView = 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users';
+export type AppView = 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users' | 'workspace';
 
 type SidebarProps = {
   session: Session;
@@ -26,6 +26,11 @@ export function Sidebar({
   const canReadClinic = session.permissions.includes('clinic:read');
   const canOperateQueue =
     session.permissions.includes('agenda:write') || session.permissions.includes('agenda:read:own');
+  const canAccessWorkspace =
+    session.permissions.includes('workspace:access') ||
+    session.permissions.includes('records:read') ||
+    session.role === 'profissional' ||
+    session.role === 'gestor';
 
   function handleNav(target: AppView) {
     onChangeView(target);
@@ -103,6 +108,25 @@ export function Sidebar({
           </span>
           {!collapsed && <span className="sidebar__item-label">Agenda</span>}
         </button>
+
+        {/* Meu Consultório (SPEC-0010, SPEC-0011, SPEC-0012) */}
+        {canAccessWorkspace ? (
+          <button
+            type="button"
+            className={`sidebar__item ${view === 'workspace' ? 'sidebar__item--active' : ''}`}
+            onClick={() => handleNav('workspace')}
+            title="Meu Consultório Virtual e Prontuário Eletrônico (PEP)"
+          >
+            <span className="sidebar__item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 3v5a5 5 0 0 0 10 0V3" />
+                <path d="M9 13v3a4 4 0 0 0 8 0v-2" />
+                <circle cx="17" cy="14" r="2" />
+              </svg>
+            </span>
+            {!collapsed && <span className="sidebar__item-label">Consultório</span>}
+          </button>
+        ) : null}
 
         {/* Recepção / Fila */}
         {canOperateQueue ? (

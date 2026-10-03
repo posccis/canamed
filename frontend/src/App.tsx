@@ -13,6 +13,7 @@ import { Sidebar, type AppView } from './features/layout/Sidebar';
 import { Topbar } from './features/layout/Topbar';
 import { ToastProvider } from './features/layout/Toast';
 import { GlobalSearchModal } from './features/layout/GlobalSearchModal';
+import { DoctorWorkspace } from './features/medical/DoctorWorkspace';
 
 export function App() {
   const { state, reload, end } = useSession();
@@ -94,6 +95,8 @@ export function App() {
               <OperationPanel />
             ) : view === 'queue' ? (
               <QueuePanel />
+            ) : view === 'workspace' ? (
+              <DoctorWorkspace />
             ) : (
               <AgendaPage />
             )}

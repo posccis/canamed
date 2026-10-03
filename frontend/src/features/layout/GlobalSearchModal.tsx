@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Patient } from '../agenda/agendaApi';
+import type { AppView } from './Sidebar';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (view: 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users') => void;
+  onNavigate: (view: AppView) => void;
   patients?: Patient[];
 }
 
@@ -68,6 +69,16 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
       description: 'Marcar, remarcar, cancelar e consultar horários',
       action: () => {
         onNavigate('agenda');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-workspace',
+      category: 'Navegação',
+      title: 'Meu Consultório & PEP',
+      description: 'Consultório virtual, fila médica, prontuário SOAP e emissão de documentos',
+      action: () => {
+        onNavigate('workspace');
         onClose();
       }
     },

@@ -13,6 +13,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   dashboard: 'Painel Operacional',
   agenda: 'Agenda de Consultas',
   queue: 'Recepção e Fila de Espera',
+  workspace: 'Consultório Médico & PEP',
   operation: 'Gestão Operacional',
   catalog: 'Catálogo Assistencial',
   users: 'Gestão de Usuários',
