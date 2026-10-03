@@ -121,6 +121,96 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
         onNavigate('users');
         onClose();
       }
+    },
+    {
+      id: 'nav-cashier',
+      category: 'Navegação',
+      title: 'Frente de Caixa & Fechamento',
+      description: 'Controle de gaveta, sangrias, suprimentos e conferência cega de turno',
+      action: () => {
+        onNavigate('cashier');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-tv',
+      category: 'Navegação',
+      title: 'Painel TV da Recepção',
+      description: 'Display de chamada de senhas com sintetizador de voz e áudio',
+      action: () => {
+        onNavigate('tv');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-financial',
+      category: 'Navegação',
+      title: 'Financeiro & Repasses Médicos',
+      description: 'Contratos de comissão, fechamento de produção e DRE simplificado',
+      action: () => {
+        onNavigate('financial');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-inventory',
+      category: 'Navegação',
+      title: 'Estoque & Insumos Médicos',
+      description: 'Controle de insumos, lotes, estoque mínimo e validade ANVISA',
+      action: () => {
+        onNavigate('inventory');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-dpo',
+      category: 'Navegação',
+      title: 'Painel do DPO & Governança LGPD',
+      description: 'Atendimento a titulares de dados (SLA 15 dias) e inventário ROPA',
+      action: () => {
+        onNavigate('dpo');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-policies',
+      category: 'Navegação',
+      title: 'Políticas de Agendamento & Encaixes',
+      description: 'Cota diária de overbooking e prazos de cancelamento/marcação',
+      action: () => {
+        onNavigate('policies');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-portal',
+      category: 'Navegação',
+      title: 'Portal do Paciente',
+      description: 'Agendamento online sem atrito e confirmações',
+      action: () => {
+        onNavigate('portal');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-kiosk',
+      category: 'Navegação',
+      title: 'Totem de Autoatendimento',
+      description: 'Check-in rápido na chegada à clínica e emissão de senha',
+      action: () => {
+        onNavigate('kiosk');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-privacy',
+      category: 'Navegação',
+      title: 'Privacidade & LGPD do Titular',
+      description: 'Solicitações de direitos e histórico de consentimentos',
+      action: () => {
+        onNavigate('privacy');
+        onClose();
+      }
     }
   ];
 

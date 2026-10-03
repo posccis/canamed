@@ -68,3 +68,9 @@ export function deactivateUser(userId: string, signal?: AbortSignal): Promise<vo
 export function revokeUserSessions(userId: string, signal?: AbortSignal): Promise<void> {
   return apiPost<void>(`/users/${userId}/sessions/revoke`, undefined, signal);
 }
+
+/** SPEC-0024 — Troca a clínica ativa no contexto da sessão. */
+export function switchClinic(clinicId: string, signal?: AbortSignal): Promise<Session> {
+  return apiPost<Session>('/auth/clinic', { clinicId }, signal);
+}
+

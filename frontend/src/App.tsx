@@ -17,6 +17,12 @@ import { DoctorWorkspace } from './features/medical/DoctorWorkspace';
 import { PatientPortal } from './features/patient/PatientPortal';
 import { KioskMode } from './features/patient/KioskMode';
 import { PrivacyPortal } from './features/patient/PrivacyPortal';
+import { CashRegisterPanel } from './features/admin/CashRegisterPanel';
+import { TvDisplay } from './features/admin/TvDisplay';
+import { FinancialPanel } from './features/admin/FinancialPanel';
+import { InventoryPanel } from './features/admin/InventoryPanel';
+import { DpoWorkspace } from './features/admin/DpoWorkspace';
+import { ClinicPolicyPanel } from './features/admin/ClinicPolicyPanel';
 
 export function App() {
   const { state, reload, end } = useSession();
@@ -85,6 +91,7 @@ export function App() {
             onToggleMobile={() => setMobileOpen((value) => !value)}
             onSignOut={() => void end()}
             onOpenSearch={() => setSearchOpen(true)}
+            onReloadSession={reload}
           />
 
           <main className="app-main">
@@ -106,6 +113,18 @@ export function App() {
               <KioskMode />
             ) : view === 'privacy' ? (
               <PrivacyPortal />
+            ) : view === 'cashier' ? (
+              <CashRegisterPanel />
+            ) : view === 'tv' ? (
+              <TvDisplay />
+            ) : view === 'financial' ? (
+              <FinancialPanel />
+            ) : view === 'inventory' ? (
+              <InventoryPanel />
+            ) : view === 'dpo' ? (
+              <DpoWorkspace />
+            ) : view === 'policies' ? (
+              <ClinicPolicyPanel />
             ) : (
               <AgendaPage />
             )}
