@@ -48,6 +48,39 @@ public static class Permissions
     /// <summary>Registra sinais vitais e classificação de risco na triagem (SPEC-0009).</summary>
     public const string TriageWrite = "triage:write";
 
+    /// <summary>Consulta registros clínicos e histórico de prontuário (SPEC-0010).</summary>
+    public const string RecordsRead = "records:read";
+
+    /// <summary>Inicia rascunho de prontuário clínico (SPEC-0010).</summary>
+    public const string RecordsCreate = "records:create";
+
+    /// <summary>Atualiza rascunho de prontuário clínico em andamento (SPEC-0010).</summary>
+    public const string RecordsUpdate = "records:update";
+
+    /// <summary>Finaliza formalmente prontuário clínico (SPEC-0010).</summary>
+    public const string RecordsFinalize = "records:finalize";
+
+    /// <summary>Adiciona adendo justificativo a prontuário finalizado (SPEC-0010).</summary>
+    public const string RecordsAddendum = "records:addendum";
+
+    /// <summary>Consulta documentos médicos assinados e emitidos (SPEC-0011).</summary>
+    public const string DocumentsRead = "documents:read";
+
+    /// <summary>Cria rascunho de prescrições, atestados e exames (SPEC-0011).</summary>
+    public const string DocumentsCreate = "documents:create";
+
+    /// <summary>Assina digitalmente documento médico (SPEC-0011).</summary>
+    public const string DocumentsSign = "documents:sign";
+
+    /// <summary>Revoga/cancela formalmente documento médico com justificativa (SPEC-0011).</summary>
+    public const string DocumentsCancel = "documents:cancel";
+
+    /// <summary>Imprime documentos clínicos assinados no balcão (SPEC-0011).</summary>
+    public const string DocumentsPrint = "documents:print";
+
+    /// <summary>Acessa o consultório virtual e opera a fila do profissional (SPEC-0012).</summary>
+    public const string WorkspaceAccess = "workspace:access";
+
     /// <summary>Todas as permissões conhecidas, na ordem de declaração.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
@@ -65,5 +98,16 @@ public static class Permissions
         PaymentsRefund,
         TriageRead,
         TriageWrite,
+        RecordsRead,
+        RecordsCreate,
+        RecordsUpdate,
+        RecordsFinalize,
+        RecordsAddendum,
+        DocumentsRead,
+        DocumentsCreate,
+        DocumentsSign,
+        DocumentsCancel,
+        DocumentsPrint,
+        WorkspaceAccess,
     ];
 }

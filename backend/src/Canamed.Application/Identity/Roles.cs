@@ -41,6 +41,10 @@ public static class Roles
                 Permissions.PaymentsRefund,
                 Permissions.TriageRead,
                 Permissions.TriageWrite,
+                Permissions.RecordsRead,
+                Permissions.DocumentsRead,
+                Permissions.DocumentsPrint,
+                Permissions.WorkspaceAccess,
             },
             Receptionist => new HashSet<string>(StringComparer.Ordinal)
             {
@@ -52,6 +56,7 @@ public static class Roles
                 Permissions.PaymentsWrite,
                 Permissions.TriageRead,
                 Permissions.TriageWrite,
+                Permissions.DocumentsPrint,
             },
             Professional => new HashSet<string>(StringComparer.Ordinal)
             {
@@ -62,6 +67,17 @@ public static class Roles
                 Permissions.PaymentsRead,
                 Permissions.TriageRead,
                 Permissions.TriageWrite,
+                Permissions.RecordsRead,
+                Permissions.RecordsCreate,
+                Permissions.RecordsUpdate,
+                Permissions.RecordsFinalize,
+                Permissions.RecordsAddendum,
+                Permissions.DocumentsRead,
+                Permissions.DocumentsCreate,
+                Permissions.DocumentsSign,
+                Permissions.DocumentsCancel,
+                Permissions.DocumentsPrint,
+                Permissions.WorkspaceAccess,
             },
             _ => new HashSet<string>(StringComparer.Ordinal),
         };

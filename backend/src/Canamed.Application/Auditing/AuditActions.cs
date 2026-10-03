@@ -67,6 +67,17 @@ public static class AuditActions
     public const string PaymentReceived = "payment.received";
     public const string PaymentRefunded = "payment.refunded";
     public const string TriageRecorded = "triage.recorded";
+
+    public const string MedicalRecordCreated = "medical_record.created";
+    public const string MedicalRecordDraftUpdated = "medical_record.draft_updated";
+    public const string MedicalRecordFinalized = "medical_record.finalized";
+    public const string MedicalRecordViewed = "medical_record.viewed";
+    public const string MedicalRecordAddendumAdded = "medical_record.addendum_added";
+
+    public const string MedicalDocumentCreated = "medical_document.created";
+    public const string MedicalDocumentSigned = "medical_document.signed";
+    public const string MedicalDocumentCancelled = "medical_document.cancelled";
+    public const string MedicalDocumentViewed = "medical_document.viewed";
 }
 
 /// <summary>Tipos de recurso da trilha de auditoria.</summary>
@@ -89,4 +100,6 @@ public static class AuditResources
     public const string ClinicClosures = "clinic_closures";
     public const string Payments = "payments";
     public const string Triage = "triage";
+    public const string MedicalRecords = "medical_records";
+    public const string MedicalDocuments = "medical_documents";
 }
