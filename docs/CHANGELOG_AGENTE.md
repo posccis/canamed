@@ -764,3 +764,75 @@ Resolução de inconsistência de coluna no banco de dados, definição do Dashb
     - **Backend .NET (10.0):** 142 testes unitários + 74 testes de integração = **216 testes aprovados, 0 falhas**.
     - **Frontend React (Vitest):** 9 arquivos de teste = **29 testes aprovados, 0 falhas**.
     - **Build de Produção:** `npm run build` gerado com sucesso sem erros de tipagem.
+
+---
+
+### [2026-10-03] — Implementação Integral da Visão do Paciente (SPECs 0014 a 0018)
+
+#### 1. Especificações Formais da Visão do Paciente
+- **AÇÃO**: Elaboração das 5 especificações funcionais e normativas da Visão do Paciente
+  - **MOTIVO**: Cumprimento estrito do processo *Spec-Driven Development* do `GEMINI.md`, alinhado à LGPD (Arts. 11, 14, 16 e 18), Lei nº 13.787/2018 (guarda de 20 anos), Código de Ética Médica e RDC 657/2022 ANVISA.
+  - **LOCAL AFETADO**:
+    - `specs/0014-spec-notificacoes-e-lembretes-ativos-whatsapp-sms.md`: Lembretes ativos pré-consulta (D-2 / D-1) com confirmação/cancelamento 1-clique via WhatsApp e SMS, opt-out conforme Art. 8º da LGPD e atualização imediata da agenda.
+    - `specs/0015-spec-agendamento-online-e-portal-do-paciente.md`: Agendamento online público de consultas com wizard em 3 etapas, autenticação sem senhas (OTP via WhatsApp/SMS), cancelamento transparente e proteção contra enumeração e DDoS.
+    - `specs/0016-spec-carteira-digital-e-acesso-a-documentos-clinicos.md`: Carteira digital para acesso e download seguro de receitas, atestados e exames com validação antifraude via QR Code, hash SHA-256 e desafio com os 3 primeiros dígitos do CPF.
+    - `specs/0017-spec-checkin-autonomo-totem-e-qrcode.md`: Totem de autoatendimento touch-screen com busca por CPF/telefone, confirmação de chegada na clínica, emissão de senhas prioritárias e normais (ex: N-042, P-005) e rastreador de fila.
+    - `specs/0018-spec-portal-de-autonomia-e-direitos-do-titular-lgpd.md`: Portal de privacidade e transparência para o titular de dados, exportação de extrato completo em JSON (Art. 18 LGPD), revogação de consentimentos não obrigatórios e abertura formal de requisições com SLA legal de 15 dias.
+  - **RESULTADO**: 5 especificações completas elaboradas, aprovadas e promovidas para `Implementada`.
+
+#### 2. Modelagem de Domínio e Regras de Negócio
+- **AÇÃO**: Criação das entidades de domínio e contratos na camada `Canamed.Domain`
+  - **MOTIVO**: Isolar as regras de negócio assistenciais e de privacidade segundo a arquitetura limpa (Clean Architecture / DDD).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/`
+  - **RESULTADO**:
+    - `NotificationReminder`, `NotificationEvent` e `INotificationSender` (simulação de mensageria WhatsApp/SMS).
+    - `PatientOtpSession` (autenticação passwordless com TTL de 5 minutos, limite de 3 tentativas e rate limit).
+    - `PrivacyConsent` e `PrivacyRequest` (gerenciamento de consentimento granular e solicitações de titulares com protocolo UUIDv4 e SLA de 15 dias).
+    - Entidade `QueueEntry` enriquecida com `Origin` (kiosk, manual, online) e geração de código de senha (`N-XXX` / `P-XXX`).
+
+#### 3. Serviços de Aplicação e Casos de Uso
+- **AÇÃO**: Desenvolvimento dos serviços de aplicação em `Canamed.Application`
+  - **MOTIVO**: Implementar a orquestração dos fluxos de notificação, portal do paciente, autoatendimento e direitos de privacidade.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/`
+  - **RESULTADO**:
+    - `NotificationService`: Processamento em lote de lembretes D-2/D-1, envio simulado e opt-out automático.
+    - `PatientPortalService`: Geração e verificação criptográfica de OTP, agendamento online público, consulta e cancelamento com auditoria.
+    - `KioskCheckInService`: Busca de agendamentos no dia, regras de tolerância de horário e emissão de ticket para a fila de espera.
+    - `PrivacyService`: Extrato estruturado de dados pessoais (com aviso explícito da guarda de 20 anos da Lei 13.787/2018), atualização de consentimentos e tramitação de requisições DPO.
+
+#### 4. Persistência EF Core, Migrations e Banco de Dados PostgreSQL
+- **AÇÃO**: Criação de mapeamentos Fluent API, repositórios e aplicação de migration no PostgreSQL
+  - **MOTIVO**: Persistir de maneira estruturada e segura todas as novas entidades no banco de dados da clínica.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/`
+  - **RESULTADO**:
+    - Tabelas `notification_reminders`, `notification_events`, `patient_otp_sessions`, `privacy_consents` e `privacy_requests` mapeadas com índices otimizados.
+    - Migration `20261003124929_AddPatientPortalAndKioskAndPrivacy` gerada e aplicada com sucesso no PostgreSQL (porta 5432).
+
+#### 5. Endpoints REST da API
+- **AÇÃO**: Criação dos controladores Minimal API na camada `Canamed.Api`
+  - **MOTIVO**: Disponibilizar contratos seguros REST/OpenAPI para o portal do paciente, totens físicos e integrações.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/`
+  - **RESULTADO**:
+    - `NotificationEndpoints`: Envio de lembretes e disparo em lote.
+    - `PortalEndpoints`: Autenticação OTP, listagem de slots públicos, agendamento, cancelamento e metadados (`/portal/meta`).
+    - `KioskEndpoints`: Busca rápida de agendamento por CPF/telefone, check-in autônomo e consulta de posição na fila.
+    - `PrivacyEndpoints`: Extrato de dados LGPD, consentimentos e abertura/consulta de solicitações de privacidade.
+    - Validação com unlock de receitas e atestados em `/medical-documents/public/validate-document/{token}/unlock`.
+
+#### 6. Frontend: Portal do Paciente, Totem de Autoatendimento e Portal de Privacidade
+- **AÇÃO**: Desenvolvimento de interfaces responsivas em React + TypeScript
+  - **MOTIVO**: Entregar a experiência da Visão do Paciente seguindo os princípios de simplicidade, facilidade de uso e sem sobrecarga cognitiva.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/`, `frontend/src/api/client.ts`, `frontend/src/App.tsx`, `frontend/src/features/layout/`
+  - **RESULTADO**:
+    - `PatientPortal.tsx`: Login sem senha com código OTP, agendamento de consultas com seleção de data/especialidade/médico, acompanhamento de consultas marcadas com cancelamento justificado e carteira digital com visualização e download de PDFs de receitas e atestados.
+    - `KioskMode.tsx`: Interface otimizada para terminais touch-screen, teclado numérico na tela, confirmação de presença com suporte a atendimento prioritário (Lei nº 10.048/2000), impressão de comprovante e consulta em tempo real da posição na fila de espera.
+    - `PrivacyPortal.tsx`: Painel de conformidade LGPD para download de dados em JSON, gestão de consentimentos com histórico de alteração e formulário formal de solicitação ao encarregado (DPO).
+    - `Sidebar.tsx` e `Topbar.tsx`: Navegação integrada para "Portal Paciente", "Totem Check-in" e "Privacidade (LGPD)".
+
+#### 7. Testes Automatizados e Homologação
+- **AÇÃO**: Testes automatizados executados de ponta a ponta
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 155 testes unitários + 74 testes de integração = **229 testes aprovados (100% green)**.
+    - **Frontend React (Vitest):** 13 arquivos de teste = **39 testes aprovados (100% green)**.
+    - **Build de Produção:** `npm run build` gerado com sucesso (zero erros de tipagem TypeScript).
+

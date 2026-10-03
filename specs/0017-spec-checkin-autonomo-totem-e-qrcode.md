@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0017 |
 | **Título** | Check-in Autônomo na Recepção via Totem de Autoatendimento e QR Code Mobile |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |

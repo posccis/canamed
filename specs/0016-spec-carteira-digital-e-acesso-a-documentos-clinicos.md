@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0016 |
 | **Título** | Carteira Digital e Acesso Seguro a Receitas, Atestados e Exames Assinados Digitalmente |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |

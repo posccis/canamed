@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0018 |
 | **Título** | Portal de Autonomia e Exercício dos Direitos do Titular de Dados (Art. 18 da LGPD) |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |

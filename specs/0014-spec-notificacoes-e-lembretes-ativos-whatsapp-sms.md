@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0014 |
 | **Título** | Notificações e Lembretes Ativos de Consulta com Confirmação e Cancelamento via WhatsApp e SMS |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |
