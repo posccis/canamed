@@ -40,6 +40,9 @@ public sealed class Appointment : Entity
     /// <summary>Motivo do cancelamento, obrigatório na operação (RN-006).</summary>
     public string? CancellationReason { get; private set; }
 
+    /// <summary>Origem do agendamento (desk, online, etc.) — SPEC-0015.</summary>
+    public string Origin { get; private set; } = "desk";
+
     /// <summary>Preenchido na exclusão lógica (RN-012); registros excluídos não bloqueiam a agenda.</summary>
     public DateTimeOffset? DeletedAt { get; private set; }
 
@@ -58,7 +61,8 @@ public sealed class Appointment : Entity
         DateTimeOffset startsAt,
         int durationMinutes,
         DateTimeOffset now,
-        Guid? roomId = null)
+        Guid? roomId = null,
+        string origin = "desk")
     {
         if (clinicId == Guid.Empty)
         {
@@ -94,6 +98,7 @@ public sealed class Appointment : Entity
             EndsAt = range.EndsAt,
             DurationMinutes = durationMinutes,
             Status = AppointmentStatus.Scheduled,
+            Origin = origin,
         };
 
         appointment.MarkCreated(now);

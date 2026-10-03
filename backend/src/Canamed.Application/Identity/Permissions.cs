@@ -81,6 +81,12 @@ public static class Permissions
     /// <summary>Acessa o consultório virtual e opera a fila do profissional (SPEC-0012).</summary>
     public const string WorkspaceAccess = "workspace:access";
 
+    /// <summary>Configura mensageria, lembretes ativos e templates (SPEC-0014).</summary>
+    public const string NotificationsManage = "notifications:manage";
+
+    /// <summary>Gerencia requisições de titulares de dados e governança LGPD (SPEC-0018).</summary>
+    public const string PrivacyManage = "privacy:manage";
+
     /// <summary>Todas as permissões conhecidas, na ordem de declaração.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
@@ -109,5 +115,7 @@ public static class Permissions
         DocumentsCancel,
         DocumentsPrint,
         WorkspaceAccess,
+        NotificationsManage,
+        PrivacyManage,
     ];
 }

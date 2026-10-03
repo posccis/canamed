@@ -45,6 +45,8 @@ public static class Roles
                 Permissions.DocumentsRead,
                 Permissions.DocumentsPrint,
                 Permissions.WorkspaceAccess,
+                Permissions.NotificationsManage,
+                Permissions.PrivacyManage,
             },
             Receptionist => new HashSet<string>(StringComparer.Ordinal)
             {
