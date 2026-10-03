@@ -33,6 +33,12 @@ public static class DependencyInjection
         services.AddScoped<Canamed.Application.Portal.OnlineBookingService>();
         services.AddScoped<Canamed.Application.Kiosk.KioskCheckInService>();
         services.AddScoped<Canamed.Application.Privacy.PrivacyService>();
+        services.AddScoped<Canamed.Application.CashRegister.CashRegisterService>();
+        services.AddScoped<Canamed.Application.Queue.QueueCallService>();
+        services.AddScoped<Canamed.Application.Financial.FinancialService>();
+        services.AddScoped<Canamed.Application.Inventory.InventoryService>();
+        services.AddScoped<Canamed.Application.DpoGovernance.DpoGovernanceService>();
+        services.AddScoped<Canamed.Application.Clinics.ClinicPolicyService>();
 
         return services;
     }

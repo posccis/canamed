@@ -118,6 +118,12 @@ api.MapNotificationEndpoints();
 api.MapPortalEndpoints();
 api.MapKioskEndpoints();
 api.MapPrivacyEndpoints();
+api.MapCashRegisterEndpoints();
+api.MapTvDisplayEndpoints();
+api.MapFinancialEndpoints();
+api.MapInventoryEndpoints();
+api.MapDpoGovernanceEndpoints();
+api.MapClinicPolicyEndpoints();
 
 // Dados sintéticos de demonstração, apenas em desenvolvimento (ADR-0003).
 // Pode ser desativado com Canamed:SeedDevelopmentData=false (usado pelos testes de integração).
