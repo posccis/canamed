@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0010 |
 | **Título** | Prontuário Eletrônico do Paciente (PEP) — Registro Clínico SOAP, Histórico Contínuo, Imutabilidade e Guarda Legal |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-02 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |
@@ -342,6 +342,7 @@ A interface segue rigorosamente a identidade oficial do CANAMED (verde petróleo
 | Versão | Data | Autor | Alteração |
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-10-02 | Antigravity AI | Versão inicial completa da especificação de Prontuário Eletrônico do Paciente. |
+| 1.0 | 2026-10-03 | Antigravity AI | Implementação concluída com entidades de domínio, repositórios, serviços de ciclo de vida SOAP, imutabilidade pós-finalização, adendos, controle estrito de visualização (auditoria), endpoints REST e cobertura completa por testes. |
 
 ---
 
@@ -350,4 +351,4 @@ A interface segue rigorosamente a identidade oficial do CANAMED (verde petróleo
 | Papel | Nome | Data | Status |
 | :--- | :--- | :--- | :--- |
 | **Autor** | Antigravity AI | 2026-10-02 | Elaborada |
-| **Aprovador** | Responsável pelo Projeto | Pendente | Aguardando revisão |
+| **Aprovador** | Responsável pelo Projeto | 2026-10-03 | Aprovada e Implementada |

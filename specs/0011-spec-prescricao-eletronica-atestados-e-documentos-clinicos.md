@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0011 |
 | **Título** | Prescrição Eletrônica, Atestados e Solicitações de Exames com Assinatura Digital ICP-Brasil |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-02 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |
@@ -347,6 +347,7 @@ flowchart TD
 | Versão | Data | Autor | Alteração |
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-10-02 | Antigravity AI | Versão inicial da especificação de Prescrição Eletrônica e Documentos Clínicos. |
+| 1.0 | 2026-10-03 | Antigravity AI | Implementação concluída com modelo de dados para receitas, atestados e exames, validação pública por token seguro, consentimento explícito para CID-10 (Art. 73 CEM), provedor de assinatura digital e interface modal de emissão e impressão. |
 
 ---
 
@@ -355,4 +356,4 @@ flowchart TD
 | Papel | Nome | Data | Status |
 | :--- | :--- | :--- | :--- |
 | **Autor** | Antigravity AI | 2026-10-02 | Elaborada |
-| **Aprovador** | Responsável pelo Projeto | Pendente | Aguardando revisão |
+| **Aprovador** | Responsável pelo Projeto | 2026-10-03 | Aprovada e Implementada |

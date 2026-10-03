@@ -71,9 +71,9 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0007](0007-spec-painel-gerencial-e-indicadores-operacionais.md) | Painel Gerencial e Indicadores Operacionais (Dashboard) | Implementada | 2026-10-01 |
 | [0008](0008-spec-fluxo-de-pagamento-e-cobranca.md) | Fluxo de Pagamento e Cobrança no Balcão | Implementada | 2026-10-01 |
 | [0009](0009-spec-triagem-e-classificacao-de-risco.md) | Apoio ao Processo de Triagem e Classificação de Risco | Implementada | 2026-10-01 |
-| [0010](0010-spec-prontuario-eletronico-do-paciente.md) | Prontuário Eletrônico do Paciente (PEP) | Rascunho | 2026-10-02 |
-| [0011](0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md) | Prescrição Eletrônica, Atestados e Exames (ICP-Brasil) | Rascunho | 2026-10-02 |
-| [0012](0012-spec-consultorio-virtual-e-workspace-medico.md) | Consultório Virtual e Workspace Médico Integrado | Rascunho | 2026-10-02 |
+| [0010](0010-spec-prontuario-eletronico-do-paciente.md) | Prontuário Eletrônico do Paciente (PEP) | Implementada | 2026-10-02 |
+| [0011](0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md) | Prescrição Eletrônica, Atestados e Exames (ICP-Brasil) | Implementada | 2026-10-02 |
+| [0012](0012-spec-consultorio-virtual-e-workspace-medico.md) | Consultório Virtual e Workspace Médico Integrado | Implementada | 2026-10-02 |
 | [0013](0013-spec-gestao-de-retornos-e-prazos-assistenciais.md) | Gestão de Retornos e Prazos Assistenciais (CFM 1.958/2010) | Rascunho | 2026-10-02 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 

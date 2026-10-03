@@ -4,8 +4,8 @@
 | :--- | :--- |
 | **ID** | SPEC-0012 |
 | **Título** | Consultório Virtual e Workspace Médico Integrado |
-| **Status** | Rascunho |
-| **Versão** | 0.1 |
+| **Status** | Implementada |
+| **Versão** | 1.0 |
 | **Data** | 2026-10-02 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |
@@ -315,6 +315,7 @@ Componentes com contraste refinado, fonte `Plus Jakarta Sans`, badges de alerta 
 | Versão | Data | Autor | Alteração |
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-10-02 | Antigravity AI | Versão inicial da especificação de Consultório Virtual e Workspace Médico Integrado. |
+| 1.0 | 2026-10-03 | Antigravity AI | Implementação concluída com visão unificada 'Meu Consultório', fila lateral com triagem Manchester, chamada com um clique, alerta persistente de alergia/comorbidades, formulário estruturado SOAP com auto-rascunho e atalhos diretos para receitas e histórico. |
 
 ---
 
@@ -323,4 +324,4 @@ Componentes com contraste refinado, fonte `Plus Jakarta Sans`, badges de alerta 
 | Papel | Nome | Data | Status |
 | :--- | :--- | :--- | :--- |
 | **Autor** | Antigravity AI | 2026-10-02 | Elaborada |
-| **Aprovador** | Responsável pelo Projeto | Pendente | Aguardando revisão |
+| **Aprovador** | Responsável pelo Projeto | 2026-10-03 | Aprovada e Implementada |

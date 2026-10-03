@@ -717,3 +717,50 @@ Resolução de inconsistência de coluna no banco de dados, definição do Dashb
 - **AÇÃO**: Atualização do índice de especificações
   - **LOCAL AFETADO**: `specs/README.md`
   - **RESULTADO**: Adicionadas as entradas para as SPECs 0010, 0011, 0012 e 0013.
+
+---
+
+### [2026-10-03] — Implementação da Tríade Médica (SPECs 0010, 0011 e 0012) e Refinamento do Logotipo
+
+#### 1. Ajuste Visual de Marca e Sidebar
+- **AÇÃO**: Remoção do fundo branco dos containers do logotipo na barra lateral
+  - **MOTIVO**: Solicitação do usuário para deixar a logo integrada sobre o fundo escuro da sidebar, eliminando a caixa branca de fundo.
+  - **LOCAL AFETADO**: `frontend/src/styles/theme.css`
+  - **RESULTADO**: Contêineres de logo ajustados com `background: transparent` e sombras removidas; preservada a exibição do logotipo oficial grande na tela de login (`LoginPage.tsx`).
+
+#### 2. Domínio e Regras de Negócio Médicas (SPEC-0010 e SPEC-0011)
+- **AÇÃO**: Criação das entidades `MedicalRecord`, `MedicalRecordAddendum`, `MedicalDocument` e abstração `IDigitalSignatureProvider`
+  - **MOTIVO**: Alicerce do Prontuário Eletrônico do Paciente (PEP) e emissão de documentos clínicos (receitas, atestados, exames), respeitando as leis nº 13.787/2018 (guarda e imutabilidade de prontuários), CFM nº 1.821/2007, CFM nº 2.217/2018 (Art. 73 - consentimento para CID em atestados) e MP 2.200-2/2001 (ICP-Brasil).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/`
+  - **RESULTADO**: Modelo de dados clínico com ciclo de vida SOAP (rascunho -> finalizado imutável), registro de adendos obrigatórios com justificativa e documentos assinados com hash SHA-256 e token de validação pública.
+
+#### 3. Serviços de Aplicação e Permissões Granulares
+- **AÇÃO**: Criação de `MedicalRecordService`, `MedicalDocumentService`, `DoctorWorkspaceService` e extensão do sistema RBAC
+  - **MOTIVO**: Orquestrar operações de atendimento clínico, criação de rascunhos SOAP, finalização, validação de permissões e agregação do estado do consultório.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/`
+  - **RESULTADO**: Serviços implementados com registro de auditoria (`MedicalRecordCreated`, `MedicalRecordFinalized`, `MedicalDocumentSigned`, `MedicalRecordViewed`, etc.); perfis `profissional` e `gestor` atualizados com novas permissões de PEP e prescrição.
+
+#### 4. Persistência EF Core, Migrations e Provedor de Assinatura
+- **AÇÃO**: Mapeamento de tabelas `medical_records`, `medical_record_addenda` e `medical_documents`, criação e aplicação de migration no PostgreSQL
+  - **MOTIVO**: Garantir integridade referencial, índices para busca por paciente/médico e persistência estruturada dos atendimentos.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/`
+  - **RESULTADO**: Migration `AddMedicalRecordsAndDocuments` aplicada com sucesso no PostgreSQL via `postgres.exe` em execução contínua; `SimulatedSignatureProvider` gerando hashes e metadados de certificado digital ICP-Brasil.
+
+#### 5. Endpoints REST da API
+- **AÇÃO**: Criação de `MedicalRecordEndpoints`, `MedicalDocumentEndpoints` e `DoctorWorkspaceEndpoints`
+  - **MOTIVO**: Expor contratos de API seguros e documentados via OpenAPI para o frontend.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/`
+  - **RESULTADO**: Rotas mapeadas e protegidas por autenticação JWT e autorização por permissão; endpoint público `/api/medical-documents/validate/{token}` acessível sem autenticação para farmácias e validação de atestados por terceiros.
+
+#### 6. Frontend: Consultório Virtual Integrado, Editor SOAP e Emissão de Documentos
+- **AÇÃO**: Desenvolvimento da interface `DoctorWorkspace`, modais `DocumentModal` e `PatientHistoryModal`, e integração com shell da aplicação
+  - **MOTIVO**: Permitir que o médico conduza o atendimento em uma tela única (fila de espera com classificação Manchester, alerta persistente de alergia, editor SOAP com rascunho automático, emissão e impressão de receitas/atestados e histórico pregresso de consultas).
+  - **LOCAL AFETADO**: `frontend/src/features/medical/`, `frontend/src/features/layout/`, `frontend/src/App.tsx`
+  - **RESULTADO**: Interface clínica responsiva, fluida e consistente com o design system CANAMED. Adicionado item "Consultório" no Sidebar e atalho no modal de busca global (Ctrl+K).
+
+#### 7. Testes Automatizados e Homologação
+- **AÇÃO**: Execução e ampliação de testes automatizados no backend e frontend
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 142 testes unitários + 74 testes de integração = **216 testes aprovados, 0 falhas**.
+    - **Frontend React (Vitest):** 9 arquivos de teste = **29 testes aprovados, 0 falhas**.
+    - **Build de Produção:** `npm run build` gerado com sucesso sem erros de tipagem.
