@@ -111,6 +111,9 @@ api.MapDashboardEndpoints();
 api.MapPaymentEndpoints();
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
+api.MapMedicalRecordEndpoints();
+api.MapMedicalDocumentEndpoints();
+api.MapDoctorWorkspaceEndpoints();
 
 // Dados sintéticos de demonstração, apenas em desenvolvimento (ADR-0003).
 // Pode ser desativado com Canamed:SeedDevelopmentData=false (usado pelos testes de integração).
