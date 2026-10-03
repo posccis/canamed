@@ -1,133 +1,119 @@
 # Backlog de Próximas Funcionalidades — CANAMED
 
-> Lista consolidada e priorizada do que ainda **não** existe no produto. Reúne três fontes antes
-> dispersas: os pilares em [`docs/visao-produto.md`](visao-produto.md) e [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md)
-> (seção 8), as pendências das SPECs e a seção 13 do [`guia de uso e execução`](guia-de-uso-e-execucao.md).
+> Lista consolidada e priorizada do que ainda **não** existe no produto. Reúne as diretrizes estratégicas de [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md) e [`GEMINI.md`](../GEMINI.md), as pendências regulatórias (CFM, LGPD, ANVISA, Lei nº 13.787/2018) e as necessidades operacionais de clínicas de saúde.
 >
-> **Regra que vale para todo item:** nenhum entra em implementação sem SPEC aprovada
-> ([`specs/README.md`](../specs/README.md)). A ordem abaixo é uma recomendação técnica de dependências;
-> a priorização comercial é decisão do responsável pelo projeto.
+> **Regra fundamental:** nenhum item entra em implementação sem SPEC aprovada ([`specs/README.md`](../specs/README.md)). A priorização abaixo segue a ordem estratégica definida para o produto: **1º Visão do Médico**, **2º Visão do Paciente**, **3º Visão da Administração** e **4º Infraestrutura**.
 
-- **Versão:** 1.2
-- **Data:** 2026-10-01
-- **Estado do produto:** fundação (SPEC-0001), agenda (SPEC-0002), autenticação (SPEC-0003), catálogo
-  assistencial (SPEC-0004) e fila de espera (SPEC-0005) implementadas
+- **Versão:** 2.0
+- **Data:** 2026-10-02
+- **Estado atual do produto:** Fundação (SPEC-0001), Agenda de Consultas (SPEC-0002), Autenticação & Auditoria (SPEC-0003), Catálogo Assistencial (SPEC-0004), Fila de Espera & Atendimento (SPEC-0005), Gestão Operacional da Clínica (SPEC-0006), Painel Gerencial & Dashboards (SPEC-0007), Pagamento no Balcão (SPEC-0008), Apoio à Triagem & Manchester (SPEC-0009) e Design System UI/UX (SPEC-UI-001) **implementadas e testadas**.
 
-## Progresso desta rodada
+---
 
-| Item | Situação |
-| :--- | :--- |
-| Classificação das consultas: natureza (avulsa, acompanhamento), custeio (particular, plano de saúde) e especialidade | **Implementado** — [SPEC-0004](../specs/0004-spec-catalogo-e-classificacao-das-consultas.md) |
-| D-01 Desbloquear horário | **Implementado** na SPEC-0004 |
-| D-02 Editar e desativar tipo de consulta | **Implementado** na SPEC-0004 |
-| D-03 Editar dados do paciente | **Implementado** na SPEC-0004 |
-| P-01 Fila de espera e P-02 Ciclo de atendimento | **Implementados** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
-| P-05 Dashboards gerenciais | **Implementado** — [SPEC-0007](../specs/0007-spec-painel-gerencial-e-indicadores-operacionais.md) |
-| P-06 Gestão operacional da clínica | **Implementado** — [SPEC-0006](../specs/0006-spec-gestao-operacional-da-clinica.md) |
-| P-03 Apoio à triagem e classificação de risco (Manchester) | **Implementado** — [SPEC-0009](../specs/0009-spec-triagem-e-classificacao-de-risco.md) |
-| P-04 Fluxo de pagamento e cobrança no balcão | **Implementado** — [SPEC-0008](../specs/0008-spec-fluxo-de-pagamento-e-cobranca.md) |
-| B-01 Exportação de dados operacionais (CSV) | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
-| B-02 Busca global de pacientes (`Ctrl+K`) | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
-| P-07, P-08, T-04 a T-06, I-01 a I-06, B-03 a B-06, D-04 a D-07 | Pendentes — seguem na sequência sugerida abaixo |
+## Progresso Atual (Funcionalidades Concluídas)
 
-## Como ler esforço e complexidade
+| Item | Descrição | Situação |
+| :--- | :--- | :--- |
+| **SPEC-0001** | Fundação do monorepo .NET 10 + React, PostgreSQL, migrations e health checks | **Implementado** |
+| **SPEC-0002** | Gestão de agenda (criar, listar, remarcar, cancelar com motivo e bloqueio) | **Implementado** |
+| **SPEC-0003** | Autenticação por cookies seguros, RBAC multi-clínica, MFA TOTP e auditoria append-only | **Implementado** |
+| **SPEC-0004** | Catálogo assistencial (natureza, custeio, especialidade) e gestão de pacientes (D-01 a D-03) | **Implementado** |
+| **SPEC-0005** | Fila de espera, prioridades (normal/preferencial), chamada e ciclo de atendimento | **Implementado** |
+| **SPEC-0006** | Gestão de convênios, salas físicas, horários semanais e calendário de feriados | **Implementado** |
+| **SPEC-0007** | Painel gerencial / Dashboard com métricas de ocupação, espera, salas e produção médica | **Implementado** |
+| **SPEC-0008** | Fluxo de pagamento no balcão (dinheiro, PIX, débito, crédito, convênio), estorno e recibo | **Implementado** |
+| **SPEC-0009** | Apoio à triagem com sinais vitais completos, IMC e Protocolo de Manchester na fila | **Implementado** |
+| **SPEC-UI-001** | Design System oficial CANAMED, sidebar retrátil, busca global (`Ctrl+K`) e exportação CSV | **Implementado** |
+
+---
+
+## Escala de Esforço e Complexidade
 
 | Escala | Esforço | Complexidade |
 | :--- | :--- | :--- |
-| **P / Baixa** | até 1 dia de trabalho | regra simples, sem integração externa, sem dado sensível novo |
-| **M / Média** | 2 a 5 dias | várias telas ou regras, exige testes de integração, alguma decisão de produto |
-| **G / Alta** | 1 a 3 semanas ou mais | integração externa, dado sensível, requisito legal, concorrência ou risco de segurança |
-
-Complexidade considera regra de negócio, risco de segurança, impacto legal (LGPD/CFM/ANVISA) e
-dependências externas — não apenas linhas de código.
+| **P / Baixa** | até 1 dia | regra simples, sem integração externa, sem dado sensível novo |
+| **M / Média** | 2 a 5 dias | múltiplos fluxos/telas, testes de integração/E2E, decisão de produto |
+| **G / Alta** | 1 a 3 semanas | integração externa, dado sensível de saúde (LGPD), requisito legal (CFM/ICP-Brasil), concorrência ou segurança |
 
 ---
 
-## 1. Fundação técnica (destrava todo o resto)
+## 1. Visão do Médico (Prioridade 1)
 
-| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| T-01 | Hospedagem e região dos dados | Definir provedor, região brasileira, criptografia em repouso gerenciada e política de retenção física dos dados | M | Alta | ADR novo (LGPD); bloqueia a ida a produção |
-| T-02 | Backups automatizados e teste de restauração | Rotina de backup do PostgreSQL com retenção definida e restauração verificada periodicamente | M | Média | T-01 |
-| T-03 | Pipeline de CI hospedada | Executar `npm run build`, `npm run test` e `npm run test:e2e` em cada alteração | M | Média | Acesso a um serviço de CI (exige decisão e conta externa) |
-| T-04 | Observabilidade de produção | Coleta de logs estruturados, métricas, alertas de erro e correlação por `traceId` | M | Média | T-01 |
-| T-05 | Atualização do Node.js e dependências | Sair do Node 20.10 e reavaliar a vulnerabilidade aceita em `vitest` | P | Baixa | Janela de manutenção do ambiente |
-| T-06 | Limite de requisições nas demais rotas | Estender o rate limiting hoje restrito ao login e registrar bloqueios | P | Baixa | SPEC de observabilidade |
+Foco em capacitar o profissional de saúde a realizar o atendimento clínico com agilidade, segurança jurídica e conformidade ética e regulatória, minimizando tempo em burocracia e maximizando o cuidado ao paciente.
 
-## 2. Identidade e acesso (continuação da SPEC-0003)
-
-| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| I-01 | Recuperação de senha por e-mail | Fluxo de "esqueci minha senha" com token de uso único e expiração curta | M | Média | Serviço de e-mail (conta externa) e SPEC de notificações |
-| I-02 | Convite de usuário por e-mail | Criar usuário sem senha inicial, com convite para definir a própria credencial | P | Média | I-01 |
-| I-03 | Códigos de recuperação de MFA | Códigos de uso único para acesso quando o autenticador é perdido | P | Média | Decisão de produto sobre armazenamento (hash) e revogação |
-| I-04 | Interface de troca de clínica ativa | Selecionar a clínica da sessão quando o usuário tem mais de um vínculo (API já existe) | P | Baixa | Uso real de multi-clínica |
-| I-05 | Auditoria de sessões para o usuário | Tela em que a pessoa vê e encerra as próprias sessões ativas | P | Baixa | — |
-| I-06 | SSO / federação corporativa | Login com provedor de identidade de grandes redes de clínicas | G | Alta | Decisão de arquitetura (novo ADR) e negociação comercial |
-
-## 3. Pilares de produto (visão do produto, seção 5)
-
-| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| P-01 | Fila de espera | Registrar a chegada do paciente, ordenar a espera por chegada/prioridade e mostrar tempo de espera para recepção e paciente | M | Média | **Implementado** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
-| P-02 | Ciclo de atendimento completo | Marcar início e fim do atendimento, registrar observações administrativas e fechar o dia da agenda | P | Baixa | **Implementado** — [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
-| P-03 | Apoio à triagem | Registrar sinais vitais e classificação de risco administrativa (Manchester) na fila | M | Média | **Implementado** — [SPEC-0009](../specs/0009-spec-triagem-e-classificacao-de-risco.md) |
-| P-04 | Pagamento antes da consulta | Registrar cobrança e pagamento no balcão (dinheiro, cartão, PIX, convênio), com status financeiro | M | Média | **Implementado** — [SPEC-0008](../specs/0008-spec-fluxo-de-pagamento-e-cobranca.md) |
-| P-05 | Dashboards gerenciais | Indicadores de ocupação, faltas, cancelamentos, fila de espera e produção por profissional | M | Média | **Implementado** — [SPEC-0007](../specs/0007-spec-painel-gerencial-e-indicadores-operacionais.md) |
-| P-06 | Gestão operacional da clínica | Cadastro completo de profissionais e pacientes, convênios, salas, horários de funcionamento e feriados | G | Média | **Implementado** — [SPEC-0006](../specs/0006-spec-gestao-operacional-da-clinica.md) |
-| P-07 | Notificações ao paciente | Lembrete e confirmação de consulta por WhatsApp/e-mail, com registro de consentimento | G | Alta | Conta em provedor externo, LGPD (base legal e opt-out) e SPEC própria |
-| P-08 | Prontuário eletrônico | Registro clínico com assinatura, imutabilidade e guarda de 20 anos | G | Alta | Lei nº 13.787/2018, CFM/NGS2, ICP-Brasil; exige ADR e SPEC dedicada |
-| B-01 | Exportação de dados operacionais | Exportação de relatórios gerenciais e listagens em formato CSV e visualização para impressão | P | Baixa | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
-| B-02 | Busca global de pacientes (`Ctrl+K`) | Atalho de teclado para busca instantânea de pacientes, agendamentos e navegação rápida | P | Baixa | **Implementado** — [SPEC-UI-001](../specs/UI/SPEC-UI-001.md) |
-| B-03 | Atualização em tempo real da recepção | Atualização automática da fila de espera e chamadas via SSE/polling adaptativo | M | Média | P-01 / P-05 |
-| B-04 | Fechamento de caixa diário por operador | Relatório discriminado por operador com conferência de sangria e valores físicos vs sistema | P | Baixa | P-04 / SPEC-0008 |
-| B-05 | Impressão de ficha de triagem / comprovante | Impressão A4 estilizada para prontuário físico e acompanhamento assistencial | P | Baixa | P-03 / SPEC-UI-001 |
-
-
-## 4. Dívidas funcionais herdadas das SPECs atuais
-
-| # | Item | Descrição curta | Esforço | Complexidade | Origem |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| ~~D-01~~ | ~~Desbloquear horário da agenda~~ | **Concluído** pela [SPEC-0004](../specs/0004-spec-catalogo-e-classificacao-das-consultas.md) | P | Baixa | — |
-| ~~D-02~~ | ~~Editar e desativar tipo de atendimento~~ | **Concluído** pela SPEC-0004, agora com natureza, custeio e especialidade | P | Baixa | — |
-| ~~D-03~~ | ~~Editar dados do paciente~~ | **Concluído** pela SPEC-0004 (nome, telefone, e-mail, nascimento e inativação) | P | Baixa | — |
-| D-04 | Encaixe/overbooking com justificativa | Reavaliar a decisão Q-002 da SPEC-0002 com dados reais de uso | M | Média | Revisão da SPEC-0002 ou nova SPEC |
-| D-05 | Antecedência mínima de cancelamento | Reavaliar a decisão Q-003 da SPEC-0002 com dados reais de uso | P | Baixa | Revisão da SPEC-0002 |
-| D-06 | Paginação das listas | Padronizar paginação quando as coleções crescerem (pacientes, agendamentos por período) | P | Baixa | Pendência P-001 da SPEC-0002 e seção 8 da SPEC-0001 |
-| D-07 | Direitos do titular (LGPD) | Exportação e eliminação de dados pessoais a pedido do titular, com registro | M | Alta | SPEC de privacidade; ADR-0003 |
+| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências / Requisitos | SPEC |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **M-01** | Prontuário Eletrônico do Paciente (PEP) | Registro clínico estruturado (modelo SOAP: Subjetivo, Objetivo, Avaliação, Plano), histórico cronológico contínuo de atendimentos, imutabilidade após finalização com adendos justificados e retenção mínima de 20 anos. | G | Alta | Lei nº 13.787/2018, CFM NGS2, LGPD Art. 11 (dados sensíveis). | [SPEC-0010](../specs/0010-spec-prontuario-eletronico-do-paciente.md) |
+| **M-02** | Prescrição Eletrônica, Atestados e Exames | Emissão estruturada de receitas médicas, atestados com consentimento para CID-10, laudos e pedidos de exames com assinatura digital padrão ICP-Brasil (PAdES/A1/A3) e QR Code de validação pública. | G | Alta | MP 2.200-2/2001, Lei 14.063/2020, CFM, farmácias digitais. | [SPEC-0011](../specs/0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md) |
+| **M-03** | Consultório Virtual / Workspace Médico | Tela de trabalho unificada para o médico: visualização em tempo real da fila de espera do profissional, chamada integrada do próximo paciente, acesso instantâneo aos sinais vitais da triagem e alertas persistentes de alergias/comorbidades. | M | Média | SPEC-0005, SPEC-0009, M-01. | [SPEC-0012](../specs/0012-spec-consultorio-virtual-e-workspace-medico.md) |
+| **M-04** | Gestão de Retornos e Prazos Assistenciais | Regras de carência configuráveis por clínica e especialidade (ex: 15, 21 ou 30 dias corridos), identificação automática no agendamento e atendimento, e validação de continuidade do tratamento conforme Resolução CFM nº 1.958/2010. | P | Média | SPEC-0002, SPEC-0004, SPEC-0008. | [SPEC-0013](../specs/0013-spec-gestao-de-retornos-e-prazos-assistenciais.md) |
 
 ---
 
-## Sequência sugerida
+## 2. Visão do Paciente (Prioridade 2)
 
-1. ~~**D-01, D-02, D-03**~~ — **concluído** na [SPEC-0004](../specs/0004-spec-catalogo-e-classificacao-das-consultas.md), junto da classificação das consultas.
-2. ~~**P-01 + P-02**~~ — **concluído** na [SPEC-0005](../specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md): check-in, prioridade de atendimento, chamada, ciclo do atendimento e fechamento do dia.
-3. **P-06** — cadastro completo e horários de funcionamento: reduz retrabalho e destrava agenda por período.
-4. **T-04** — observabilidade (T-01 a T-03 estão suspensos por decisão do responsável: hospedagem, backups e CI).
-5. **P-04 e P-05** — pagamento e dashboards: dependem de decisão de negócio e de dados confiáveis.
-6. **I-01 a I-03** — autoatendimento de senha e MFA: reduzem chamados de suporte.
-7. **P-03, P-07 e P-08** — triagem, notificações e prontuário: exigem decisões regulatórias e integrações externas.
+Foco em autonomia, redução do tempo de espera, engajamento e redução de faltas (*no-show*), além do acesso transparente aos seus registros assistenciais e respeito à sua privacidade.
 
-## Integrações externas previstas e o que será mockado
+| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências / Requisitos | SPEC Prevista |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **C-01** | Notificações e Lembretes Ativos (WhatsApp/SMS) | Disparo automatizado de mensagens de lembrete de consulta (48h e 24h antes) com confirmação ou cancelamento ativo pelo paciente via WhatsApp, refletindo instantaneamente na agenda da clínica. | G | Alta | Provedor de mensageria (WhatsApp Business API), LGPD (consentimento e opt-out). | SPEC-0014 |
+| **C-02** | Agendamento Online / Portal do Paciente | Interface pública ou portal autenticado via link mágico/SMS para o próprio paciente selecionar especialidade, médico, horário disponível e realizar pré-agendamento ou pagamento online. | G | Média | SPEC-0002, gateway de pagamento online. | SPEC-0015 |
+| **C-03** | Acesso Digital a Documentos e Receitas | Link seguro via SMS/WhatsApp para o paciente visualizar e fazer download dos PDFs assinados digitalmente das suas prescrições, atestados e pedidos de exame. | M | Média | M-02 (assinatura ICP-Brasil), armazenamento seguro. | SPEC-0016 |
+| **C-04** | Check-in Autônomo na Recepção (Totem / QR Code) | Totem de autoatendimento ou QR Code na entrada da clínica para o paciente confirmar chegada de forma autônoma e retirar senha de fila sem passar pelo balcão. | M | Média | SPEC-0005 (Fila de espera). | SPEC-0017 |
+| **C-05** | Portal de Autonomia e Direitos do Titular (LGPD) | Canal simplificado para o paciente solicitar confirmação de tratamento, relatório de dados cadastrais e exercer direitos de titular previstos no Art. 18 da LGPD. | M | Alta | LGPD, política de privacidade, encarregado de dados. | SPEC-0018 |
 
-Nada de externo será contratado agora: cada item abaixo entra com um **adaptador simulado** e uma pendência
-registrada com o que é necessário para ativar a integração real.
+---
 
-| Item | Integração | Mock previsto | Pendência a registrar |
+## 3. Visão da Administração (Prioridade 3)
+
+Foco em eficiência operacional da recepção, saúde financeira da clínica, governança e conformidade administrativa contínua.
+
+| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências / Requisitos | SPEC Prevista |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **A-01** | Fechamento e Conferência de Caixa por Operador | Relatório diário de fechamento de caixa por operador/turno, conferência de sangria e conciliação de valores físicos na gaveta vs. transações registradas no sistema. | P | Baixa | SPEC-0008 (Pagamentos no balcão). | SPEC-0019 |
+| **A-02** | Painel de Chamada para TV na Recepção (Tempo Real) | Interface dedicada em modo TV/quiosque para a sala de espera com sonorização (campainha/voz sintética) e atualização em tempo real (SSE/SignalR) ao ser acionada pelo médico. | M | Média | SPEC-0005, M-03. | SPEC-0020 |
+| **A-03** | Gestão Financeira Avançada e Repasses Médicos | Módulo de cálculo de repasse/comissionamento por profissional (percentual ou valor fixo sobre consultas/procedimentos), contas a pagar/receber e DRE simplificado da clínica. | G | Alta | SPEC-0008, regras contratuais médicas. | SPEC-0021 |
+| **A-04** | Gestão de Insumos e Materiais Médicos (Estoque) | Controle básico de estoque da sala de curativos, medicamentos e descartáveis consumidos durante os atendimentos na clínica. | M | Média | Cadastro de itens, movimentações de estoque. | SPEC-0022 |
+| **A-05** | Painel do DPO / Governança LGPD | Gestão interna de pedidos de titulares, controle de consentimentos, inventário de dados de saúde e relatório de conformidade regulatória. | M | Média | LGPD Art. 50, trilha de auditoria (SPEC-0003). | SPEC-0023 |
+| **A-06** | Alternância de Multi-clínica na Interface | Seletor na barra superior (Topbar) para que gestores e profissionais com vínculo em mais de uma filial alternem dinamicamente o contexto da clínica ativa. | P | Baixa | SPEC-0003 (API de clínicas já existente). | SPEC-0024 |
+| **A-07** | Políticas Parametrizáveis de Encaixe e Cancelamento | Configuração por clínica de cotas diárias de overbooking/encaixe por médico e prazos mínimos de cancelamento sem penalidade (D-04 e D-05). | P | Baixa | SPEC-0002, SPEC-0006. | SPEC-0025 |
+
+---
+
+## 4. Infraestrutura (Infra) (Prioridade 4)
+
+Foco em segurança de produção, alta disponibilidade, observabilidade, conformidade legal de custódia e esteira automatizada de entregas.
+
+| # | Funcionalidade | Descrição curta | Esforço | Complexidade | Dependências / Requisitos | SPEC Prevista |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **T-01** | Hospedagem em Nuvem Nacional e Criptografia em Repouso | Provedor de nuvem em região brasileira (São Paulo / LGPD), criptografia em repouso gerenciada (KMS/TDE) e rede isolada (VPC). | M | Alta | Decisão de infraestrutura e conta em nuvem. | ADR dedicado |
+| **T-02** | Rotinas Automatizadas de Backup e Testes de Restauração | Script de backup contínuo do PostgreSQL com retenção legal de 20 anos (WORM/Object Lock para prontuários) e testes periódicos de restauração verificados. | M | Média | T-01, Lei nº 13.787/2018. | SPEC-0026 |
+| **T-03** | Pipeline de CI/CD Automatizado (GitHub Actions) | Execução de lint, `dotnet build`, `dotnet test`, `npm run build`, `npm run test` e testes E2E do Playwright a cada Pull Request e deploy automatizado. | M | Média | Repositório remoto, GitHub Actions. | SPEC-0027 |
+| **T-04** | Observabilidade de Produção, APM e Logs Estruturados | Instrumentação com OpenTelemetry e Serilog estruturado com correlação por `traceId`, métricas de latência e integração com Sentry/Loki/Grafana. | M | Média | T-01. | SPEC-0028 |
+| **T-05** | Containerização de Produção (Docker) | `Dockerfile` multi-stage otimizado para o backend ASP.NET Core (.NET 10) e SPA React (Nginx), com `docker-compose.prod.yml`. | P | Baixa | Docker. | SPEC-0029 |
+| **T-06** | Hardening de Segurança e Rate Limiting Global | Ampliação do Rate Limiting para todas as rotas de API sensíveis e cabeçalhos HTTP rígidos (HSTS, CSP, X-Frame-Options, Permissions-Policy). | P | Baixa | OWASP API Security Top 10. | SPEC-0030 |
+| **T-07** | Serviço Transacional de E-mail (Esqueci Minha Senha e Convites) | Provedor transacional (Resend, SendGrid ou Amazon SES) com SPF, DKIM e DMARC para autoatendimento de senha e convites seguros de operadores. | P | Média | Provedor de e-mail e domínio institucional. | SPEC-0031 |
+| **T-08** | Códigos de Recuperação de MFA (Backup Codes) | Geração de conjunto de códigos hash de uso único para recuperação de conta quando o autenticador TOTP for perdido pelo usuário. | P | Média | SPEC-0003. | SPEC-0032 |
+
+---
+
+## Integrações Externas Previstas e Uso de Adaptadores Simulados
+
+Nenhum serviço externo pago é exigido para desenvolvimento local e testes. Cada integração externa conta com **adaptador simulado (mock)** e documentação dos pré-requisitos para ativação em produção:
+
+| Recurso | Integração Real | Adaptador Simulado (DEV/TEST) | Pré-requisitos para Produção |
 | :--- | :--- | :--- | :--- |
-| P-04 | Gateway de pagamento / maquininha | Provedor simulado que aprova, recusa e estorna | Escolha do provedor, credenciais, conta comercial, contrato, taxa e certificação PCI-DSS |
-| I-01, I-02 | Envio de e-mail (recuperação de senha e convites) | Remetente simulado que grava a mensagem em log de desenvolvimento | Serviço de e-mail (SMTP ou API), domínio verificado (SPF/DKIM) e template aprovado |
-| P-07 | WhatsApp/SMS para lembretes e confirmação | Remetente simulado com fila local | Provedor oficial (API do WhatsApp Business), número verificado, templates aprovados e base legal/opt-out na LGPD |
-| T-04 | APM/telemetria (Sentry, Application Insights) | Coletor simulado em arquivo/memória | Escolha do serviço, conta, DSN e política de retenção de dados |
-| I-06 | SSO/federação corporativa | — (não iniciado) | Provedor de identidade, contrato e requisitos do cliente |
-| P-08 | Assinatura digital (ICP-Brasil) e PACS/DICOM | — (não iniciado) | Certificado A1/A3, integração com PACS e avaliação de conformidade CFM/SBIS (NGS2) |
+| **M-02** | Certificado Digital ICP-Brasil | Emissor simulado com assinatura criptográfica RSA local e carimbo do tempo simulado | Certificado A1/A3 de médico e autoridade certificadora credenciada ITI |
+| **C-01** | WhatsApp Business API / SMS | Adaptador em memória que registra as mensagens enviadas em log | Conta na Meta/Twilio/Z-API, número oficial homologado e templates aprovados |
+| **T-07** | Envio de e-mails transacionais | Gravador de e-mails em arquivo local / console | Domínio próprio configurado com SPF/DKIM/DMARC e conta de envio |
+| **T-04** | APM / Coleta de Logs de Produção | Coletor estruturado Serilog em arquivo e console | Instância do Sentry/Seq/Grafana Cloud |
+| **C-02** | Gateway de Pagamento Online | Provedor simulado com aprovação imediata e geração de QR Code PIX fake | Contrato com adquirente/gateway e credenciamento PCI-DSS |
 
-> Cada item, ao entrar em execução, deve virar SPEC (com regras de negócio, critérios de aceitação,
-> casos de erro, requisitos de segurança e legais) e, quando a decisão for arquitetural, um ADR.
+---
 
 ## Referências
 
-- [`docs/visao-produto.md`](visao-produto.md) — pilares e posicionamento do produto.
-- [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md) — escopo inicial e pendências da fase.
-- [`specs/`](../specs) — especificações aprovadas e implementadas.
-- [`docs/guia-de-uso-e-execucao.md`](guia-de-uso-e-execucao.md) — execução e operação atuais.
+- [`specs/`](../specs) — especificações aprovadas e em desenvolvimento.
+- [`GEMINI.md`](../GEMINI.md) — princípios e requisitos legais inegociáveis do produto.
+- [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md) — escopo de negócio e diretrizes.
+- [`docs/seguranca-e-conformidade.md`](seguranca-e-conformidade.md) — governança, LGPD, CFM, ANVISA e segurança.

@@ -697,3 +697,23 @@ Resolução de inconsistência de coluna no banco de dados, definição do Dashb
     - **Build de Produção:** `npm run build` executado com sucesso (zero erros de tipagem TypeScript e bundles otimizados gerados).
 
 
+
+---
+
+### [2026-10-02] — Reorganização Estratégica do Backlog e Criação das SPECs da Visão do Médico
+
+- **AÇÃO**: Reestruturação integral do backlog consolidado ([`docs/backlog-proximas-funcionalidades.md`](backlog-proximas-funcionalidades.md))
+  - **MOTIVO**: Cumprir a ordem estratégica de prioridades definida pelo responsável pelo produto: (1º) Visão do Médico, (2º) Visão do Paciente, (3º) Visão da Administração e (4º) Infraestrutura.
+  - **LOCAL AFETADO**: `docs/backlog-proximas-funcionalidades.md`
+  - **RESULTADO**: Backlog promovido para versão 2.0 com todas as funcionalidades mapeadas categorizadas, tabela de progresso atualizado (SPECs 0001 a 0009 e SPEC-UI-001) e mapeamento de dependências e integrações simuladas.
+- **AÇÃO**: Especificação formal da Visão do Médico: criação das SPECs 0010, 0011, 0012 e 0013
+  - **MOTIVO**: Cumprimento do fluxo mandatório spec-driven do `GEMINI.md` antes de qualquer codificação do atendimento assistencial, cobrindo integralmente as exigências da Lei nº 13.787/2018, CFM, MP 2.200-2/2001 e LGPD.
+  - **LOCAL AFETADO**:
+    - `specs/0010-spec-prontuario-eletronico-do-paciente.md`: Prontuário Eletrônico do Paciente (PEP) — SOAP, histórico cronológico, imutabilidade com adendos justificados e retenção de 20 anos.
+    - `specs/0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md`: Prescrição médica estruturada, atestados com controle de CID sob consentimento (Art. 73 do CEM), pedidos de exames e assinatura digital ICP-Brasil com QR Code público de validação.
+    - `specs/0012-spec-consultorio-virtual-e-workspace-medico.md`: Workspace Médico integrado com fila em tempo real, acionamento de chamada, dados vitais da triagem Manchester (SPEC-0009) e alertas persistentes de alergias e comorbidades.
+    - `specs/0013-spec-gestao-de-retornos-e-prazos-assistenciais.md`: Gestão de retornos médicos conforme a Resolução CFM nº 1.958/2010, carência configurável por especialidade, elegibilidade automática no agendamento e isenção de cobrança de caixa.
+  - **RESULTADO**: 4 novas especificações completas elaboradas, contendo todas as 20 seções obrigatórias do modelo `specs/0000-modelo-de-spec.md`, status `Rascunho` e prontas para revisão/aprovação.
+- **AÇÃO**: Atualização do índice de especificações
+  - **LOCAL AFETADO**: `specs/README.md`
+  - **RESULTADO**: Adicionadas as entradas para as SPECs 0010, 0011, 0012 e 0013.
