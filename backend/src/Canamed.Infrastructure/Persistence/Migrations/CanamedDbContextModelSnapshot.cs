@@ -2191,6 +2191,76 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("patient_portal_sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.Portal.PatientRegistrationDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CapabilityTokenId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("capability_token_id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload_json");
+
+                    b.Property<string>("ReviewNote")
+                        .HasColumnType("text")
+                        .HasColumnName("review_note");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CapabilityTokenId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("ClinicId", "Status");
+
+                    b.ToTable("patient_registration_drafts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_patient_registration_drafts_status_valid", "status IN ('draft', 'pending_review', 'approved', 'returned')");
+                        });
+                });
+
             modelBuilder.Entity("Canamed.Domain.Privacy.PrivacyConsent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2745,6 +2815,31 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ClinicId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Canamed.Domain.Portal.PatientRegistrationDraft", b =>
+                {
+                    b.HasOne("Canamed.Domain.Portal.PatientCapabilityToken", null)
+                        .WithMany()
+                        .HasForeignKey("CapabilityTokenId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Canamed.Domain.Clinics.Clinic", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Agenda.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Canamed.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Canamed.Domain.Queue.TriageRecord", b =>

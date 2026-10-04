@@ -73,12 +73,49 @@ public static class PublicPortalEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
+        group.MapGet("/registration/{token}", GetRegistrationDraftAsync)
+            .WithName("PublicGetRegistrationDraft")
+            .Produces<RegistrationDraftResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        group.MapPut("/registration/{token}", UpdateRegistrationDraftAsync)
+            .WithName("PublicUpdateRegistrationDraft")
+            .Produces<RegistrationDraftResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        group.MapPost("/registration/{token}/submit", SubmitRegistrationDraftAsync)
+            .WithName("PublicSubmitRegistrationDraft")
+            .Produces<RegistrationDraftResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
         // Emissão de link pela recepção/gestão: exige sessão e permissão de agenda (RN-018).
         group.MapPost("/links", IssueLinkAsync)
             .WithName("PublicIssueCapabilityLink")
             .Produces<IssueCapabilityLinkResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden)
+            .RequirePermissions(Permissions.AgendaWrite, Permissions.ClinicManage);
+
+        var receptionGroup = api.MapGroup("/reception");
+
+        receptionGroup.MapGet("/registration-reviews", ListPendingRegistrationReviewsAsync)
+            .WithName("ReceptionListRegistrationReviews")
+            .Produces<IReadOnlyList<PendingRegistrationReviewDto>>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.AgendaWrite, Permissions.ClinicManage);
+
+        receptionGroup.MapPost("/registration-reviews/{draftId:guid}/approve", ApproveRegistrationReviewAsync)
+            .WithName("ReceptionApproveRegistrationReview")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequirePermissions(Permissions.AgendaWrite, Permissions.ClinicManage);
+
+        receptionGroup.MapPost("/registration-reviews/{draftId:guid}/return", ReturnRegistrationReviewAsync)
+            .WithName("ReceptionReturnRegistrationReview")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequirePermissions(Permissions.AgendaWrite, Permissions.ClinicManage);
 
         return api;
@@ -179,6 +216,81 @@ public static class PublicPortalEndpoints
             .ConfigureAwait(false);
 
         return Results.Created(result.Path, result);
+    }
+
+    private static async Task<IResult> GetRegistrationDraftAsync(
+        PublicPortalService service,
+        string token,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+        => Results.Ok(await service.GetRegistrationDraftAsync(token, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<IResult> UpdateRegistrationDraftAsync(
+        PublicPortalService service,
+        string token,
+        [FromBody] UpdateRegistrationDraftPayload payload,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+        => Results.Ok(await service.UpdateRegistrationDraftAsync(token, payload.PayloadJson, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<IResult> SubmitRegistrationDraftAsync(
+        PublicPortalService service,
+        string token,
+        [FromBody] UpdateRegistrationDraftPayload payload,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+        => Results.Ok(await service.SubmitRegistrationDraftAsync(token, payload.PayloadJson, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<IResult> ListPendingRegistrationReviewsAsync(
+        PublicPortalService service,
+        ICurrentActorAccessor actorAccessor,
+        CancellationToken cancellationToken)
+    {
+        if (!actorAccessor.TryGetActor(out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
+        var list = await service.ListPendingReviewsAsync(actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(list);
+    }
+
+    private static async Task<IResult> ApproveRegistrationReviewAsync(
+        PublicPortalService service,
+        Guid draftId,
+        ICurrentActorAccessor actorAccessor,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        if (!actorAccessor.TryGetActor(out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
+        Guid? reviewerId = Guid.TryParse(actor.UserId, out var parsedId) ? parsedId : null;
+
+        await service.ApproveRegistrationReviewAsync(actor.ClinicId, draftId, reviewerId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
+        return Results.Ok(new { message = "Cadastro aprovado com sucesso." });
+    }
+
+    private static async Task<IResult> ReturnRegistrationReviewAsync(
+        PublicPortalService service,
+        Guid draftId,
+        [FromBody] ReviewRegistrationDraftPayload payload,
+        ICurrentActorAccessor actorAccessor,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        if (!actorAccessor.TryGetActor(out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
+        Guid? reviewerId = Guid.TryParse(actor.UserId, out var parsedId) ? parsedId : null;
+
+        var note = string.IsNullOrWhiteSpace(payload?.ReviewNote) ? "Informações cadastrais precisam de correção." : payload.ReviewNote.Trim();
+        await service.ReturnRegistrationReviewAsync(actor.ClinicId, draftId, reviewerId, note, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
+        return Results.Ok(new { message = "Cadastro devolvido com observações." });
     }
 }
 

@@ -32,6 +32,8 @@ internal static class TestDatabase
         using var context = new CanamedDbContext(Options);
 
         // A fila e os pagamentos referenciam agendamentos (RESTRICT): precisam sair antes deles.
+        context.Database.ExecuteSqlRaw("DELETE FROM patient_registration_drafts");
+        context.Database.ExecuteSqlRaw("DELETE FROM patient_capability_tokens");
         context.Database.ExecuteSqlRaw("DELETE FROM triage_records");
         context.Database.ExecuteSqlRaw("DELETE FROM queue_entries");
         context.Database.ExecuteSqlRaw("DELETE FROM payment_transactions");

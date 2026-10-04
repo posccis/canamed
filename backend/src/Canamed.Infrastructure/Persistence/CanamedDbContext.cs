@@ -65,6 +65,7 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
     public DbSet<Canamed.Domain.Portal.PatientPortalSession> PatientPortalSessions => Set<Canamed.Domain.Portal.PatientPortalSession>();
 
     public DbSet<Canamed.Domain.Portal.PatientCapabilityToken> PatientCapabilityTokens => Set<Canamed.Domain.Portal.PatientCapabilityToken>();
+    public DbSet<Canamed.Domain.Portal.PatientRegistrationDraft> PatientRegistrationDrafts => Set<Canamed.Domain.Portal.PatientRegistrationDraft>();
 
     public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog> MedicalDocumentAccessLogs => Set<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog>();
 

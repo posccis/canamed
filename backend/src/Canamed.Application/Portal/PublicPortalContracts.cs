@@ -31,6 +31,21 @@ public interface IPublicPortalRepository
         string resourceId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Adiciona um rascunho de cadastro ao contexto de persistência.</summary>
+    void AddDraft(PatientRegistrationDraft draft);
+
+    /// <summary>Busca um rascunho de cadastro pelo identificador do token de capacidade.</summary>
+    Task<PatientRegistrationDraft?> FindDraftByTokenIdAsync(Guid tokenId, CancellationToken cancellationToken = default);
+
+    /// <summary>Busca um rascunho de cadastro pelo identificador do rascunho.</summary>
+    Task<PatientRegistrationDraft?> FindDraftByIdAsync(Guid draftId, CancellationToken cancellationToken = default);
+
+    /// <summary>Busca o rascunho mais recente de um paciente.</summary>
+    Task<PatientRegistrationDraft?> FindLatestDraftForPatientAsync(Guid clinicId, Guid patientId, CancellationToken cancellationToken = default);
+
+    /// <summary>Lista rascunhos de cadastro com status pendente de revisão (F-004/RN-016).</summary>
+    Task<IReadOnlyList<PatientRegistrationDraft>> ListPendingReviewDraftsAsync(Guid clinicId, CancellationToken cancellationToken = default);
+
     /// <summary>Confirma as alterações pendentes no contexto de persistência.</summary>
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
@@ -118,3 +133,35 @@ public sealed record IssueCapabilityLinkResponse(
     string Path,
     string Scope,
     DateTimeOffset ExpiresAt);
+
+/// <summary>Visualização do rascunho de cadastro completo pelo paciente (F-004/RN-015).</summary>
+public sealed record RegistrationDraftResponse(
+    Guid DraftId,
+    Guid ClinicId,
+    Guid PatientId,
+    string ClinicSlug,
+    string Status,
+    string? ReviewNote,
+    string PayloadJson,
+    string PatientNameMasked,
+    DateTimeOffset? SubmittedAt,
+    DateTimeOffset? ReviewedAt);
+
+public sealed record UpdateRegistrationDraftPayload(
+    string PayloadJson);
+
+public sealed record ReviewRegistrationDraftPayload(
+    string? ReviewNote);
+
+/// <summary>Item da fila de validação cadastral da recepção (F-004/RN-016).</summary>
+public sealed record PendingRegistrationReviewDto(
+    Guid DraftId,
+    Guid ClinicId,
+    Guid PatientId,
+    string PatientName,
+    string PatientPhone,
+    string Status,
+    string? ReviewNote,
+    string PayloadJson,
+    DateTimeOffset? SubmittedAt);
+

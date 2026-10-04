@@ -50,6 +50,41 @@ public sealed class PublicPortalRepository(CanamedDbContext dbContext) : IPublic
                 && auditEvent.ResourceId == resourceId,
             cancellationToken);
 
+    public void AddDraft(PatientRegistrationDraft draft) => dbContext.PatientRegistrationDrafts.Add(draft);
+
+    public async Task<PatientRegistrationDraft?> FindDraftByTokenIdAsync(
+        Guid tokenId,
+        CancellationToken cancellationToken = default) =>
+        await dbContext.PatientRegistrationDrafts
+            .FirstOrDefaultAsync(d => d.CapabilityTokenId == tokenId, cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task<PatientRegistrationDraft?> FindDraftByIdAsync(
+        Guid draftId,
+        CancellationToken cancellationToken = default) =>
+        await dbContext.PatientRegistrationDrafts
+            .FirstOrDefaultAsync(d => d.Id == draftId, cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task<PatientRegistrationDraft?> FindLatestDraftForPatientAsync(
+        Guid clinicId,
+        Guid patientId,
+        CancellationToken cancellationToken = default) =>
+        await dbContext.PatientRegistrationDrafts
+            .Where(d => d.ClinicId == clinicId && d.PatientId == patientId)
+            .OrderByDescending(d => d.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task<IReadOnlyList<PatientRegistrationDraft>> ListPendingReviewDraftsAsync(
+        Guid clinicId,
+        CancellationToken cancellationToken = default) =>
+        await dbContext.PatientRegistrationDrafts
+            .Where(d => d.ClinicId == clinicId && d.Status == RegistrationDraftStatus.PendingReview)
+            .OrderBy(d => d.SubmittedAt ?? d.CreatedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 }

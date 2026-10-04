@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Canamed.Application.Abstractions;
 using Canamed.Application.Agenda;
 using Canamed.Application.Clinics;
@@ -540,6 +541,301 @@ public sealed class PublicPortalService(
         }
 
         return slots;
+    }
+
+    /// <summary>Carrega ou inicializa o rascunho de cadastro completo vinculado a um token (F-004/RN-015).</summary>
+    public async Task<RegistrationDraftResponse> GetRegistrationDraftAsync(
+        string rawToken,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await RequireUsableTokenAsync(rawToken, now, cancellationToken).ConfigureAwait(false);
+        if (token.Scope != CapabilityScope.Registration || token.PatientId is not { } patientId)
+        {
+            throw InvalidLink();
+        }
+
+        var clinic = await RequireClinicAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        var patient = await catalogRepository.FindPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+
+        var draft = await publicPortalRepository.FindDraftByTokenIdAsync(token.Id, cancellationToken).ConfigureAwait(false);
+        if (draft is null)
+        {
+            var latest = await publicPortalRepository.FindLatestDraftForPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+            if (latest is not null && latest.Status is RegistrationDraftStatus.Draft or RegistrationDraftStatus.Returned)
+            {
+                draft = latest;
+            }
+        }
+
+        if (draft is null)
+        {
+            var initialObj = new
+            {
+                name = patient?.Name ?? string.Empty,
+                phone = patient?.Phone ?? string.Empty,
+                email = patient?.Email ?? string.Empty,
+                birthDate = patient?.BirthDate?.ToString("yyyy-MM-dd") ?? string.Empty,
+                document = patient?.Document ?? string.Empty,
+                healthPlanId = patient?.HealthPlanId,
+            };
+            var initialPayload = JsonSerializer.Serialize(initialObj);
+            draft = PatientRegistrationDraft.Create(token.ClinicId, patientId, initialPayload, now, capabilityTokenId: token.Id);
+            publicPortalRepository.AddDraft(draft);
+            await publicPortalRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        var masked = patient is not null ? MaskName(patient.Name) : "Paciente";
+
+        return new RegistrationDraftResponse(
+            draft.Id,
+            draft.ClinicId,
+            draft.PatientId,
+            clinic.Slug,
+            draft.Status.ToStoredValue(),
+            draft.ReviewNote,
+            draft.PayloadJson,
+            masked,
+            draft.SubmittedAt,
+            draft.ReviewedAt);
+    }
+
+    /// <summary>Salva alterações em rascunho no cadastro completo (F-004).</summary>
+    public async Task<RegistrationDraftResponse> UpdateRegistrationDraftAsync(
+        string rawToken,
+        string payloadJson,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await RequireUsableTokenAsync(rawToken, now, cancellationToken).ConfigureAwait(false);
+        if (token.Scope != CapabilityScope.Registration || token.PatientId is not { } patientId)
+        {
+            throw InvalidLink();
+        }
+
+        var clinic = await RequireClinicAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        var patient = await catalogRepository.FindPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+
+        var draft = await publicPortalRepository.FindDraftByTokenIdAsync(token.Id, cancellationToken).ConfigureAwait(false);
+        if (draft is null)
+        {
+            var latest = await publicPortalRepository.FindLatestDraftForPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+            if (latest is not null && latest.Status is RegistrationDraftStatus.Draft or RegistrationDraftStatus.Returned)
+            {
+                draft = latest;
+            }
+        }
+
+        if (draft is null)
+        {
+            draft = PatientRegistrationDraft.Create(token.ClinicId, patientId, payloadJson, now, capabilityTokenId: token.Id);
+            publicPortalRepository.AddDraft(draft);
+        }
+        else
+        {
+            draft.UpdateDraft(payloadJson, now);
+        }
+
+        await publicPortalRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        var masked = patient is not null ? MaskName(patient.Name) : "Paciente";
+        return new RegistrationDraftResponse(
+            draft.Id,
+            draft.ClinicId,
+            draft.PatientId,
+            clinic.Slug,
+            draft.Status.ToStoredValue(),
+            draft.ReviewNote,
+            draft.PayloadJson,
+            masked,
+            draft.SubmittedAt,
+            draft.ReviewedAt);
+    }
+
+    /// <summary>Envia o cadastro completo para validação da recepção (F-004/RN-016).</summary>
+    public async Task<RegistrationDraftResponse> SubmitRegistrationDraftAsync(
+        string rawToken,
+        string payloadJson,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await RequireUsableTokenAsync(rawToken, now, cancellationToken).ConfigureAwait(false);
+        if (token.Scope != CapabilityScope.Registration || token.PatientId is not { } patientId)
+        {
+            throw InvalidLink();
+        }
+
+        var clinic = await RequireClinicAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        var patient = await catalogRepository.FindPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+
+        var draft = await publicPortalRepository.FindDraftByTokenIdAsync(token.Id, cancellationToken).ConfigureAwait(false);
+        if (draft is null)
+        {
+            var latest = await publicPortalRepository.FindLatestDraftForPatientAsync(token.ClinicId, patientId, cancellationToken).ConfigureAwait(false);
+            if (latest is not null && latest.Status is RegistrationDraftStatus.Draft or RegistrationDraftStatus.Returned)
+            {
+                draft = latest;
+            }
+        }
+
+        if (draft is null)
+        {
+            draft = PatientRegistrationDraft.Create(token.ClinicId, patientId, payloadJson, now, capabilityTokenId: token.Id);
+            publicPortalRepository.AddDraft(draft);
+        }
+        else
+        {
+            draft.UpdateDraft(payloadJson, now);
+        }
+
+        draft.SubmitForReview(now);
+        await publicPortalRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        auditRepository.Add(AuditEvent.Record(
+            clinic.Id,
+            "patient_portal",
+            "Paciente",
+            "RegistrationSubmittedForReview",
+            "patient_registration_drafts",
+            draft.Id.ToString(),
+            now,
+            $"{{\"patientId\":\"{patientId}\"}}"));
+        await auditRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        var masked = patient is not null ? MaskName(patient.Name) : "Paciente";
+        return new RegistrationDraftResponse(
+            draft.Id,
+            draft.ClinicId,
+            draft.PatientId,
+            clinic.Slug,
+            draft.Status.ToStoredValue(),
+            draft.ReviewNote,
+            draft.PayloadJson,
+            masked,
+            draft.SubmittedAt,
+            draft.ReviewedAt);
+    }
+
+    /// <summary>Lista cadastros pendentes de validação pela recepção (F-004/RN-016).</summary>
+    public async Task<IReadOnlyList<PendingRegistrationReviewDto>> ListPendingReviewsAsync(
+        Guid clinicId,
+        CancellationToken cancellationToken = default)
+    {
+        var drafts = await publicPortalRepository.ListPendingReviewDraftsAsync(clinicId, cancellationToken).ConfigureAwait(false);
+        var list = new List<PendingRegistrationReviewDto>();
+
+        foreach (var draft in drafts)
+        {
+            var patient = await catalogRepository.FindPatientAsync(clinicId, draft.PatientId, cancellationToken).ConfigureAwait(false);
+            list.Add(new PendingRegistrationReviewDto(
+                draft.Id,
+                draft.ClinicId,
+                draft.PatientId,
+                patient?.Name ?? "Paciente",
+                patient?.Phone ?? string.Empty,
+                draft.Status.ToStoredValue(),
+                draft.ReviewNote,
+                draft.PayloadJson,
+                draft.SubmittedAt));
+        }
+
+        return list;
+    }
+
+    /// <summary>Aprova o cadastro completo e atualiza os dados básicos do paciente (F-004/RN-016).</summary>
+    public async Task ApproveRegistrationReviewAsync(
+        Guid clinicId,
+        Guid draftId,
+        Guid? reviewerId,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var draft = await publicPortalRepository.FindDraftByIdAsync(draftId, cancellationToken).ConfigureAwait(false)
+            ?? throw new CanamedException(ProblemKind.NotFound, "Rascunho não encontrado", "O rascunho de cadastro informado não existe.", "draft-not-found");
+
+        if (draft.ClinicId != clinicId)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Rascunho não encontrado", "O rascunho de cadastro informado não existe na clínica.", "draft-not-found");
+        }
+
+        draft.Approve(reviewerId, now);
+
+        var patient = await catalogRepository.FindPatientAsync(clinicId, draft.PatientId, cancellationToken).ConfigureAwait(false);
+        if (patient is not null)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(draft.PayloadJson);
+                var root = doc.RootElement;
+                var name = root.TryGetProperty("name", out var n) && !string.IsNullOrWhiteSpace(n.GetString()) ? n.GetString()! : patient.Name;
+                var phone = root.TryGetProperty("phone", out var p) && !string.IsNullOrWhiteSpace(p.GetString()) ? p.GetString()! : patient.Phone;
+                var email = root.TryGetProperty("email", out var e) && !string.IsNullOrWhiteSpace(e.GetString()) ? e.GetString() : patient.Email;
+                var document = root.TryGetProperty("document", out var d) && !string.IsNullOrWhiteSpace(d.GetString()) ? d.GetString() : patient.Document;
+                DateOnly? birthDate = patient.BirthDate;
+                if (root.TryGetProperty("birthDate", out var b) && DateOnly.TryParse(b.GetString(), out var parsedBirth))
+                {
+                    birthDate = parsedBirth;
+                }
+                Guid? healthPlanId = patient.HealthPlanId;
+                if (root.TryGetProperty("healthPlanId", out var hp) && hp.TryGetGuid(out var parsedHp))
+                {
+                    healthPlanId = parsedHp == Guid.Empty ? null : parsedHp;
+                }
+
+                patient.Update(name, phone, email, birthDate, document, healthPlanId, now);
+            }
+            catch (JsonException)
+            {
+                // Mantém os dados atuais em caso de formato inesperado
+            }
+        }
+
+        auditRepository.Add(AuditEvent.Record(
+            clinicId,
+            reviewerId?.ToString() ?? "reception",
+            "Recepção",
+            "RegistrationApproved",
+            "patient_registration_drafts",
+            draft.Id.ToString(),
+            now,
+            $"{{\"patientId\":\"{draft.PatientId}\"}}"));
+
+        await publicPortalRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await catalogRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await auditRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Devolve o cadastro para o paciente com observação para correção (F-004/RN-016).</summary>
+    public async Task ReturnRegistrationReviewAsync(
+        Guid clinicId,
+        Guid draftId,
+        Guid? reviewerId,
+        string note,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var draft = await publicPortalRepository.FindDraftByIdAsync(draftId, cancellationToken).ConfigureAwait(false)
+            ?? throw new CanamedException(ProblemKind.NotFound, "Rascunho não encontrado", "O rascunho de cadastro informado não existe.", "draft-not-found");
+
+        if (draft.ClinicId != clinicId)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Rascunho não encontrado", "O rascunho de cadastro informado não existe na clínica.", "draft-not-found");
+        }
+
+        draft.Return(reviewerId, note, now);
+
+        auditRepository.Add(AuditEvent.Record(
+            clinicId,
+            reviewerId?.ToString() ?? "reception",
+            "Recepção",
+            "RegistrationReturned",
+            "patient_registration_drafts",
+            draft.Id.ToString(),
+            now,
+            $"{{\"patientId\":\"{draft.PatientId}\",\"note\":\"{note.Replace("\"", "\\\"")}\"}}"));
+
+        await publicPortalRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await auditRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Emite um link tokenizado para envio ao paciente (Central de Links e mensageria).</summary>

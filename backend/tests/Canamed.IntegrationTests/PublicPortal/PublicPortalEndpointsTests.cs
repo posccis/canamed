@@ -169,6 +169,100 @@ public sealed class PublicPortalEndpointsTests(CanamedApiFactory factory) : Agen
         Assert.Equal(HttpStatusCode.NotFound, replay.StatusCode);
     }
 
+    [Fact]
+    public async Task RegistrationDraft_LoadUpdateSubmit_AndReceptionApproves()
+    {
+        using var reception = CreateReceptionClient();
+        var appointment = await CreateAppointmentAsync(reception, LocalStart(2, 10, 0));
+
+        var link = await IssueLinkAsync(reception, "registration", appointment.Id);
+        using var anonymous = CreateSpaClient();
+
+        // 1. Carrega rascunho inicial
+        var getDraft = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/registration/{link.Token}", UriKind.Relative));
+        getDraft.EnsureSuccessStatusCode();
+
+        var draft = await ReadAsync<RegistrationDraftResponse>(getDraft);
+        Assert.Equal("draft", draft.Status);
+        Assert.NotNull(draft.PayloadJson);
+
+        // 2. Atualiza rascunho
+        var updatedPayload = "{\"name\":\"Paciente Teste Atualizado\",\"address\":\"Rua Nova, 123\"}";
+        var update = await anonymous.PutAsJsonAsync(
+            $"/api/v1/public/registration/{link.Token}",
+            new { payloadJson = updatedPayload });
+        update.EnsureSuccessStatusCode();
+
+        var updated = await ReadAsync<RegistrationDraftResponse>(update);
+        Assert.Contains("Rua Nova", updated.PayloadJson);
+
+        // 3. Envia para revisão
+        var submit = await anonymous.PostAsJsonAsync(
+            $"/api/v1/public/registration/{link.Token}/submit",
+            new { payloadJson = updatedPayload });
+        submit.EnsureSuccessStatusCode();
+
+        var submitted = await ReadAsync<RegistrationDraftResponse>(submit);
+        Assert.Equal("pending_review", submitted.Status);
+        Assert.NotNull(submitted.SubmittedAt);
+
+        // 4. Recepção lista pendentes
+        var listPending = await reception.GetAsync(
+            new Uri("/api/v1/reception/registration-reviews", UriKind.Relative));
+        listPending.EnsureSuccessStatusCode();
+
+        var pendingList = await ReadAsync<List<PendingRegistrationReviewDto>>(listPending);
+        var item = Assert.Single(pendingList, d => d.DraftId == draft.DraftId);
+        Assert.Equal("pending_review", item.Status);
+
+        // 5. Recepção aprova
+        var approve = await reception.PostAsync(
+            new Uri($"/api/v1/reception/registration-reviews/{draft.DraftId}/approve", UriKind.Relative),
+            JsonBody(new { }));
+        approve.EnsureSuccessStatusCode();
+
+        // 6. Paciente verifica status aprovado
+        var checkApproved = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/registration/{link.Token}", UriKind.Relative));
+        checkApproved.EnsureSuccessStatusCode();
+
+        var approved = await ReadAsync<RegistrationDraftResponse>(checkApproved);
+        Assert.Equal("approved", approved.Status);
+    }
+
+    [Fact]
+    public async Task RegistrationDraft_ReceptionReturns_AndPatientResubmits()
+    {
+        using var reception = CreateReceptionClient();
+        var appointment = await CreateAppointmentAsync(reception, LocalStart(2, 11, 0));
+
+        var link = await IssueLinkAsync(reception, "registration", appointment.Id);
+        using var anonymous = CreateSpaClient();
+
+        // Envia rascunho
+        var submit = await anonymous.PostAsJsonAsync(
+            $"/api/v1/public/registration/{link.Token}/submit",
+            new { payloadJson = "{\"document\":\"000\"}" });
+        submit.EnsureSuccessStatusCode();
+        var draft = await ReadAsync<RegistrationDraftResponse>(submit);
+
+        // Recepção devolve com observação
+        var returnResponse = await reception.PostAsJsonAsync(
+            $"/api/v1/reception/registration-reviews/{draft.DraftId}/return",
+            new { reviewNote = "CPF incompleto, informe os 11 dígitos." });
+        returnResponse.EnsureSuccessStatusCode();
+
+        // Paciente consulta e vê devolvido com a nota
+        var checkReturned = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/registration/{link.Token}", UriKind.Relative));
+        checkReturned.EnsureSuccessStatusCode();
+
+        var returned = await ReadAsync<RegistrationDraftResponse>(checkReturned);
+        Assert.Equal("returned", returned.Status);
+        Assert.Equal("CPF incompleto, informe os 11 dígitos.", returned.ReviewNote);
+    }
+
     private static async Task<IssueCapabilityLinkResponse> IssueLinkAsync(
         HttpClient client,
         string scope,
