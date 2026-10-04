@@ -27,17 +27,15 @@
 | **SPEC-0014** | Notificações e lembretes ativos (WhatsApp/SMS simulados e opt-out) | **Implementado** |
 | **SPEC-0015 a 0018** | Portal do paciente, carteira digital, check-in autônomo e privacidade LGPD | **Implementado** |
 | **SPEC-0019 a 0025** | Caixa, painel de TV, repasses, estoque, DPO, multi-clínica e políticas de encaixe | **Implementado** |
-| **SPEC-0026** | Superfícies dedicadas por URL, Central de Links, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in digital e fila por etapa | **Primeira entrega (em *path*)** |
+| **SPEC-0026** | Superfícies dedicadas por URL, Central de Links, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in digital, fila por etapa, cadastro prévio com validação da recepção e links em lembretes | **Primeira e Segunda entregas implementadas** |
 | **SPEC-UI-001** | Design System oficial CANAMED, sidebar retrátil, busca global (`Ctrl+K`) e exportação CSV | **Implementado** |
 
 ### Pendências da SPEC-0026 (próximas entregas)
 
 | Item | Descrição | Esforço |
 | :--- | :--- | :--- |
-| Cadastro completo com validação da recepção | `patient_registration_drafts`, link `registration` e fila de revisão da recepção | M |
-| Reposição de vaga por lista de espera | `waitlist_entries`, oferta por link de validade curta e aceite | M |
-| Sessão do paciente isolada por superfície | Deixar de usar `localStorage` compartilhado com o operador (D-05) | P |
-| Links nos lembretes | Notificações apontando para os links L-07 a L-12 em vez do token de sessão | P |
+| Reposição de vaga por lista de espera | `waitlist_entries`, oferta por link de validade curta e aceite (RN-019 / L-16) | M |
+| Link de documento por página própria com desafio | Emissão de tokens `document` no fluxo de prontuário/atendimento (D-06 / L-13) | P |
 | E2E mobile das jornadas do paciente | Playwright em viewport mobile para agendar, confirmar, cancelar, check-in e fila (D-08) | M |
 
 ---

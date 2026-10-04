@@ -113,12 +113,13 @@ Pendente para as próximas entregas (preservando o status `Aprovada` desta SPEC)
 
 | Pendente | Observação |
 | :--- | :--- |
-| Cadastro completo com validação da recepção (F-004 / RN-015, RN-016) | depende de `patient_registration_drafts` |
-| Reposição de vaga por lista de espera (RN-019 / L-16) | fase 2, conforme Q-004 |
-| Sessão do paciente isolada em storage por superfície (D-05) | hoje ainda usa `localStorage` da mesma origem |
-| Link de documento por página própria com desafio (D-06 / L-13) | rota criada; falta emitir tokens `document` no fluxo do paciente |
-| Notificações apontando para os links L-07 a L-12 (RN-023) | templates ainda usam o token de sessão |
-| Testes E2E das jornadas em viewport mobile (D-08) | cenários de Playwright ainda não escritos |
+| Cadastro completo com validação da recepção (F-004 / RN-015, RN-016) | **Entregue** (Backend + Frontend + Testes unitários/integração) |
+| Sessão do paciente isolada em storage por clínica (D-05 / RN-020) | **Entregue** (`canamed_patient_session_{slug}`) |
+| Notificações com tokens de capacidade em links L-07 a L-12 (RN-012 / RN-023) | **Entregue** (Confirmação 1 clique, reagendamento e cancelamento) |
+| Exibição do nome real da especialidade no histórico (D-03) | **Entregue** (`GetMyAppointmentsAsync` resolvido via catálogo) |
+| Reposição de vaga por lista de espera (RN-019 / L-16) | Fase 2, conforme Q-004 |
+| Link de documento por página própria com desafio (D-06 / L-13) | Rota criada; emissão de tokens `document` no fluxo de prontuário/atendimento |
+| Testes E2E das jornadas em viewport mobile (D-08) | Cenários de Playwright a serem adicionados |
 
 ---
 

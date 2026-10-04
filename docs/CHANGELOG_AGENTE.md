@@ -983,3 +983,65 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - **MOTIVO**: Cadastro completo, lista de espera, isolamento de storage do paciente (D-05), nome real da especialidade no histórico (D-03), links nos lembretes e E2E mobile (D-08) ainda não foram entregues.
   - **LOCAL AFETADO**: `specs/0026-...md` (seção 3.3), `specs/0017-...md`, `specs/README.md`, `docs/backlog-proximas-funcionalidades.md`.
   - **RESULTADO**: Escopo entregue e pendências explícitos para a próxima fase.
+
+---
+
+### [2026-10-03] — Segunda Entrega: Cadastro Completo Prévio e Validação pela Recepção (SPEC-0026 / F-004)
+
+#### 1. Resolução de Débitos e Estabilização Inicial
+- **AÇÃO**: Correção do teste `KioskMode.test.tsx` ajustando o rótulo para "Check-in assistido", garantindo que a suíte de frontend voltasse a 100% *green*.
+  - **MOTIVO**: Divergência textual deixada na sessão anterior.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/KioskMode.test.tsx`
+  - **RESULTADO**: Testes de totem e check-in assistido aprovados.
+- **AÇÃO**: Resolução de **D-03**: em `OnlineBookingService.cs`, consulta a especialidade real no catálogo para exibição em `GetMyAppointmentsAsync`.
+  - **MOTIVO**: Impedir que consultas apareçam com especialidade genérica fixada.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/OnlineBookingService.cs`
+  - **RESULTADO**: O histórico do paciente passa a exibir a especialidade médica exata cadastrada.
+- **AÇÃO**: Resolução de **D-05 / RN-020**: isolamento da sessão do paciente no `localStorage` escopado por slug da clínica (`canamed_patient_session_${slug}`).
+  - **MOTIVO**: Prevenir colisão de sessão entre diferentes unidades ou superfícies.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/PatientPortal.tsx`
+  - **RESULTADO**: Sessão do paciente isolada por clínica.
+- **AÇÃO**: Implementação de **RN-012 / RN-023**: emissão de tokens de capacidade nos lembretes de consulta (48h e 24h) com links diretos de confirmação em 1 clique (L-08), reagendamento (L-09) e cancelamento (L-10).
+  - **MOTIVO**: Automatizar a entrega de links tokenizados de ação nas notificações ativas sem expor dados clínicos sensíveis.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Notifications/NotificationService.cs`, `INotificationChannel.cs`
+  - **RESULTADO**: Lembretes passam a incluir links opacos e seguros para o paciente.
+
+#### 2. Backend — Cadastro Completo e Fluxo de Revisão da Recepção (F-004 / RN-015, RN-016)
+- **AÇÃO**: Criação da entidade `PatientRegistrationDraft` com ciclo de vida `draft`, `pending_review`, `approved`, `returned`, vinculada à clínica, paciente e token de capacidade.
+  - **MOTIVO**: Sustentar o preenchimento prévio, salvamento automático de rascunhos e conferência segura antes da consolidação cadastral.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Portal/PatientRegistrationDraft.cs`, `backend/src/Canamed.Infrastructure/Persistence/Configurations/PatientRegistrationDraftConfiguration.cs`, migration `AddPatientRegistrationDrafts`.
+  - **RESULTADO**: Tabela criada no banco relacional com chaves estrangeiras e índices otimizados.
+- **AÇÃO**: Métodos de repositório e regras de aplicação no `PublicPortalService`:
+  - `GetRegistrationDraftAsync`, `UpdateRegistrationDraftAsync`, `SubmitRegistrationDraftAsync`
+  - `ListPendingReviewsAsync`, `ApproveRegistrationReviewAsync`, `ReturnRegistrationReviewAsync`
+  - **MOTIVO**: Permitir que o paciente edite e envie seu cadastro via token de capacidade, e que a recepção revise, consolide ou devolva com orientações.
+  - **LOCAL AFETADO**: `PublicPortalContracts.cs`, `PublicPortalService.cs`, `PublicPortalRepository.cs`.
+  - **RESULTADO**: Lógica transacional com consolidação dos dados do paciente e auditoria completa.
+- **AÇÃO**: Endpoints REST na API:
+  - `GET /api/v1/public/registration/{token}`
+  - `PUT /api/v1/public/registration/{token}`
+  - `POST /api/v1/public/registration/{token}/submit`
+  - `GET /api/v1/reception/registration-reviews`
+  - `POST /api/v1/reception/registration-reviews/{draftId}/approve`
+  - `POST /api/v1/reception/registration-reviews/{draftId}/return`
+  - **MOTIVO**: Expor as operações públicas e autenticadas para o frontend.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/Endpoints/PublicPortalEndpoints.cs`.
+  - **RESULTADO**: Endpoints integrados com autorização RBAC para a recepção e proteção por rate limiting nas rotas públicas.
+
+#### 3. Frontend — Páginas e Componentes de Cadastro e Conferência
+- **AÇÃO**: Criação de `PatientRegistrationPage.tsx` e registro das rotas `/p/:slug/cadastro` e `/p/:slug/cadastro/:token` em `App.tsx`.
+  - **MOTIVO**: Permitir ao paciente preencher e submeter seus dados (pessoais, endereço residencial, convênio, contatos de emergência, alergias e consentimento LGPD) de forma responsiva (*mobile-first*).
+  - **LOCAL AFETADO**: `frontend/src/features/patient/pages/PatientRegistrationPage.tsx`, `frontend/src/App.tsx`, `frontend/src/features/patient/patientApi.ts`.
+  - **RESULTADO**: Interface clara, com acompanhamento de status em tempo real (`draft`, `pending_review`, `returned`, `approved`).
+- **AÇÃO**: Criação do componente `RegistrationReviewModal.tsx` integrado ao painel da recepção (`QueuePanel.tsx`).
+  - **MOTIVO**: Capacitar a equipe de atendimento a inspecionar os cadastros enviados pelos pacientes, aprovar com 1 clique ou solicitar correções com notas explicativas.
+  - **LOCAL AFETADO**: `frontend/src/features/queue/RegistrationReviewModal.tsx`, `frontend/src/features/queue/QueuePanel.tsx`.
+  - **RESULTADO**: Botão "Cadastros (N)" na recepção com modal completo de conferência lado a lado.
+
+#### 4. Testes e Homologação
+- **AÇÃO**: Testes automatizados executados e 100% aprovados:
+  - **Backend .NET:** **201 unitários** + **83 de integração** = **284 testes aprovados** (`dotnet test Canamed.sln`).
+  - **Frontend Vitest:** **18 arquivos de teste** / **70 testes aprovados** (`npm test`).
+  - **Frontend TypeScript/Vite:** `npm run build` gerado sem erros de compilação ou tipos.
+  - **RESULTADO**: Funcionalidade F-004 e débitos técnicos homologados com zero quebra de regressão.
+
