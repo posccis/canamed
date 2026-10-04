@@ -1,33 +1,30 @@
 import { useState } from 'react';
 import { type Session, switchClinic } from '../auth/authApi';
-import type { AppView } from './Sidebar';
+import type { StaffView } from '../../navigation/routes';
 
 type TopbarProps = {
   session: Session;
-  view: AppView;
+  view: StaffView;
   onToggleMobile: () => void;
   onSignOut: () => void;
   onOpenSearch?: () => void;
   onReloadSession?: () => void;
 };
 
-const VIEW_TITLES: Record<AppView, string> = {
+const VIEW_TITLES: Record<StaffView, string> = {
   dashboard: 'Painel Operacional',
   agenda: 'Agenda de Consultas',
   queue: 'Recepção e Fila de Espera',
-  workspace: 'Consultório Médico & PEP',
   operation: 'Gestão Operacional',
   catalog: 'Catálogo Assistencial',
   users: 'Gestão de Usuários',
-  portal: 'Portal do Paciente & Agendamento',
-  kiosk: 'Totem de Autoatendimento',
-  privacy: 'Privacidade & LGPD',
   cashier: 'Frente de Caixa & Turno',
   financial: 'Gestão Financeira & Repasses',
   inventory: 'Estoque & Insumos Médicos',
   dpo: 'Governança LGPD & Painel do DPO',
   policies: 'Políticas de Agendamento & Encaixes',
   tv: 'Painel de Chamada para TV',
+  links: 'Central de Links',
 };
 
 export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch, onReloadSession }: TopbarProps) {

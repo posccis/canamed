@@ -141,13 +141,120 @@ export interface MedicalDocumentItem {
 export interface PortalMetaResponse {
   clinicId: string;
   clinicName: string;
+  clinicSlug?: string;
+  helpPhone?: string;
   specialties: Array<{ id: string; name: string }>;
   professionals: Array<{ id: string; name: string; specialtyId: string }>;
+}
+
+/** Metadados públicos resolvidos pelo slug da clínica (SPEC-0026/RN-003). */
+export interface PublicClinicMeta {
+  clinicId: string;
+  slug: string;
+  name: string;
+  publicName: string;
+  helpPhone?: string;
+  allowWaitlist: boolean;
+  allowSelfReschedule: boolean;
+  specialties: Array<{ id: string; name: string }>;
+  professionals: Array<{ id: string; name: string; specialtyId: string }>;
+}
+
+/** Escopos de token de capacidade (SPEC-0026/RN-004). */
+export type CapabilityScope =
+  | 'confirm'
+  | 'cancel'
+  | 'reschedule'
+  | 'check_in'
+  | 'queue'
+  | 'registration'
+  | 'document'
+  | 'waitlist_offer';
+
+/** Dados mínimos e mascarados devolvidos ao abrir um link tokenizado. */
+export interface CapabilitySummary {
+  scope: CapabilityScope;
+  status: string;
+  clinicId: string;
+  clinicSlug: string;
+  clinicName: string;
+  patientNameMasked?: string;
+  expiresAt: string;
+  appointment?: {
+    startsAt: string;
+    professionalName: string;
+    specialtyName: string;
+    status: string;
+  };
+  ticketCode?: string;
+  documentType?: string;
+}
+
+/** Etapa do atendimento exibida ao paciente (SPEC-0026/9.3). */
+export interface PatientQueueStatus {
+  ticketCode: string;
+  stage: string;
+  stageLabel: string;
+  message: string;
+  positionInQueue: number;
+  estimatedWaitMinutes: number;
+  professionalName?: string;
+  roomName?: string;
+  updatedAt: string;
+}
+
+export interface CheckInByTokenResult {
+  ticketCode: string;
+  priority: string;
+  positionInQueue: number;
+  professionalName: string;
+  queueToken?: string;
+}
+
+/** Resultado público da validação de um documento clínico (SPEC-0016). */
+export interface PublicDocumentValidation {
+  isValid: boolean;
+  status: string;
+  documentType: string;
+  issuedAt?: string;
+  doctorName: string;
+  clinicName: string;
+  patientInitials: string;
+  cancellationReason?: string;
 }
 
 export const patientApi = {
   // Metadados públicos (Clínica, Especialidades, Médicos)
   getPortalMeta: () => apiGet<PortalMetaResponse>('/portal/meta'),
+
+  // SPEC-0026: resolução da clínica pelo slug e links tokenizados
+  getClinicBySlug: (slug: string) =>
+    apiGet<PublicClinicMeta>(`/public/clinics/${encodeURIComponent(slug)}/meta`),
+
+  resolveCapability: (token: string) =>
+    apiGet<CapabilitySummary>(`/public/capabilities/${encodeURIComponent(token)}`),
+
+  confirmByToken: (token: string) =>
+    apiPost<{ message: string }>(`/public/capabilities/${encodeURIComponent(token)}/confirm`),
+
+  cancelByToken: (token: string, reason: string, answer: string) =>
+    apiPost<{ message: string }>(`/public/capabilities/${encodeURIComponent(token)}/cancel`, {
+      reason,
+      answer,
+    }),
+
+  checkInByToken: (token: string, isPreferential: boolean) =>
+    apiPost<CheckInByTokenResult>(`/public/check-in/${encodeURIComponent(token)}`, {
+      isPreferential,
+    }),
+
+  getQueueByToken: (token: string) =>
+    apiGet<PatientQueueStatus>(`/public/capabilities/${encodeURIComponent(token)}/queue`),
+
+  validatePublicDocument: (publicToken: string) =>
+    apiGet<PublicDocumentValidation>(
+      `/medical-documents/public/validate-document/${encodeURIComponent(publicToken)}`,
+    ),
 
   // SPEC-0015: Portal do Paciente & Agendamento Online
   requestOtp: (phone: string, cpf: string) =>

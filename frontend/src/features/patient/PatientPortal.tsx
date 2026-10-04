@@ -9,7 +9,16 @@ import {
 } from './patientApi';
 import { useToast } from '../layout/Toast';
 
-export function PatientPortal() {
+export type PatientPortalTab = 'schedule' | 'appointments' | 'documents';
+
+type PatientPortalProps = {
+  /** Aba inicial, definida pela rota atual (`/agendar`, `/consultas` ou `/documentos`). */
+  initialTab?: PatientPortalTab;
+  /** Notifica a troca de aba para que a URL acompanhe a funcionalidade visível. */
+  onTabChange?: (tab: PatientPortalTab) => void;
+};
+
+export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientPortalProps = {}) {
   const { addToast } = useToast();
   const [session, setSession] = useState<PatientSession | null>(() => {
     const saved = localStorage.getItem('canamed_patient_session');
@@ -25,7 +34,16 @@ export function PatientPortal() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'schedule' | 'appointments' | 'documents'>('schedule');
+  const [activeTab, setActiveTab] = useState<PatientPortalTab>(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  const selectTab = (tab: PatientPortalTab) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
 
   // Metadata
   const [meta, setMeta] = useState<PortalMetaResponse | null>(null);
@@ -170,7 +188,7 @@ export function PatientPortal() {
       addToast('Consulta agendada com sucesso! Lembretes ativos configurados.', 'success');
       setSelectedSlot(null);
       fetchSlots();
-      setActiveTab('appointments');
+      selectTab('appointments');
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Não foi possível confirmar o agendamento.';
       addToast(errorMsg, 'error');
@@ -385,7 +403,7 @@ export function PatientPortal() {
       {/* Navigation Tabs */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
         <button
-          onClick={() => setActiveTab('schedule')}
+          onClick={() => selectTab('schedule')}
           style={{
             padding: '10px 20px',
             borderRadius: '8px',
@@ -401,7 +419,7 @@ export function PatientPortal() {
           Agendar Consulta
         </button>
         <button
-          onClick={() => setActiveTab('appointments')}
+          onClick={() => selectTab('appointments')}
           style={{
             padding: '10px 20px',
             borderRadius: '8px',
@@ -417,7 +435,7 @@ export function PatientPortal() {
           Minhas Consultas
         </button>
         <button
-          onClick={() => setActiveTab('documents')}
+          onClick={() => selectTab('documents')}
           style={{
             padding: '10px 20px',
             borderRadius: '8px',

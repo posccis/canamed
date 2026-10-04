@@ -1,27 +1,12 @@
 import type { Session } from '../auth/authApi';
-
-export type AppView =
-  | 'dashboard'
-  | 'agenda'
-  | 'queue'
-  | 'operation'
-  | 'catalog'
-  | 'users'
-  | 'workspace'
-  | 'portal'
-  | 'kiosk'
-  | 'privacy'
-  | 'cashier'
-  | 'financial'
-  | 'inventory'
-  | 'dpo'
-  | 'policies'
-  | 'tv';
+import type { StaffView } from '../../navigation/routes';
 
 type SidebarProps = {
   session: Session;
-  view: AppView;
-  onChangeView: (view: AppView) => void;
+  view: StaffView;
+  onChangeView: (view: StaffView) => void;
+  /** Abre a superfície dedicada do profissional de saúde (`/medico`). */
+  onOpenDoctorSurface: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
   mobileOpen: boolean;
@@ -32,6 +17,7 @@ export function Sidebar({
   session,
   view,
   onChangeView,
+  onOpenDoctorSurface,
   collapsed,
   onToggleCollapse,
   mobileOpen,
@@ -76,8 +62,13 @@ export function Sidebar({
     session.permissions.includes('policy:manage') ||
     session.role === 'gestor';
 
-  function handleNav(target: AppView) {
+  function handleNav(target: StaffView) {
     onChangeView(target);
+    onCloseMobile();
+  }
+
+  function handleOpenDoctorSurface() {
+    onOpenDoctorSurface();
     onCloseMobile();
   }
 
@@ -153,12 +144,12 @@ export function Sidebar({
           {!collapsed && <span className="sidebar__item-label">Agenda</span>}
         </button>
 
-        {/* Meu Consultório (SPEC-0010, SPEC-0011, SPEC-0012) */}
+        {/* Meu Consultório — superfície dedicada do médico em /medico (SPEC-0026/RN-001) */}
         {canAccessWorkspace ? (
           <button
             type="button"
-            className={`sidebar__item ${view === 'workspace' ? 'sidebar__item--active' : ''}`}
-            onClick={() => handleNav('workspace')}
+            className="sidebar__item"
+            onClick={handleOpenDoctorSurface}
             title="Meu Consultório Virtual e Prontuário Eletrônico (PEP)"
           >
             <span className="sidebar__item-icon">
@@ -246,55 +237,23 @@ export function Sidebar({
           </button>
         ) : null}
 
-        {/* Divisor Visão do Paciente */}
-        <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
-
-        {/* Portal do Paciente */}
-        <button
-          type="button"
-          className={`sidebar__item ${view === 'portal' ? 'sidebar__item--active' : ''}`}
-          onClick={() => handleNav('portal')}
-          title="Portal do Paciente e Agendamento Online"
-        >
-          <span className="sidebar__item-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </span>
-          {!collapsed && <span className="sidebar__item-label">Portal Paciente</span>}
-        </button>
-
-        {/* Totem de Autoatendimento */}
-        <button
-          type="button"
-          className={`sidebar__item ${view === 'kiosk' ? 'sidebar__item--active' : ''}`}
-          onClick={() => handleNav('kiosk')}
-          title="Totem de Autoatendimento e Check-in"
-        >
-          <span className="sidebar__item-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-              <line x1="12" y1="18" x2="12.01" y2="18" />
-            </svg>
-          </span>
-          {!collapsed && <span className="sidebar__item-label">Totem Check-in</span>}
-        </button>
-
-        {/* Privacidade LGPD */}
-        <button
-          type="button"
-          className={`sidebar__item ${view === 'privacy' ? 'sidebar__item--active' : ''}`}
-          onClick={() => handleNav('privacy')}
-          title="Autonomia e Privacidade (LGPD)"
-        >
-          <span className="sidebar__item-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </span>
-          {!collapsed && <span className="sidebar__item-label">Privacidade (LGPD)</span>}
-        </button>
+        {/* Central de Links — endereços compartilháveis da superfície do paciente (SPEC-0026/RN-018) */}
+        {canOperateQueue || canReadClinic ? (
+          <button
+            type="button"
+            className={`sidebar__item ${view === 'links' ? 'sidebar__item--active' : ''}`}
+            onClick={() => handleNav('links')}
+            title="Central de Links — copie e compartilhe os endereços do paciente"
+          >
+            <span className="sidebar__item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </span>
+            {!collapsed && <span className="sidebar__item-label">Central de Links</span>}
+          </button>
+        ) : null}
 
         {/* Divisor Visão Administrativa */}
         <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />

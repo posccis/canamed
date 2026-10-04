@@ -1197,3 +1197,451 @@ body {
     margin: 0 !important;
   }
 }
+
+/* ------------------------------------------------------------------------- */
+/* Superfície do paciente (/p) — SPEC-0026 / ADR-0011                       */
+/* Sem sidebar, sem topbar, mobile-first e com alvos grandes (RN-021).       */
+/* ------------------------------------------------------------------------- */
+.patient-surface {
+  min-height: 100vh;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.patient-header__brand img {
+  height: 44px;
+  display: block;
+}
+
+.patient-header__nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.patient-header__nav a {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.patient-header__nav a:hover {
+  background: rgb(0 128 128 / 8%);
+}
+
+.patient-header__clinic {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.patient-main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+.patient-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.patient-footer a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.patient-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.patient-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.patient-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--color-primary-dark);
+}
+
+.patient-page__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.patient-hub-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.patient-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.15rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  min-height: 48px;
+}
+
+.patient-hub-card--primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.patient-hub-card__title {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  font-size: 1.05rem;
+}
+
+.patient-hub-card__description {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.patient-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+  background: #ffffff;
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.patient-action--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.patient-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.patient-field,
+.patient-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0;
+  border: none;
+}
+
+.patient-field > span,
+.patient-fieldset > legend {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.patient-field input {
+  min-height: 48px;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+}
+
+.patient-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+}
+
+.patient-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.patient-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.patient-list__item--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.patient-notice {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.patient-notice--error {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  color: #9b2c2c;
+}
+
+.patient-hello {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.patient-help {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.patient-ticket,
+.patient-queue,
+.patient-validation,
+.patient-document {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.patient-ticket__caption {
+  color: #166534;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.patient-ticket__code,
+.patient-queue__ticket {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-primary-dark);
+}
+
+.patient-ticket__meta,
+.patient-queue__stage,
+.patient-queue__message {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.patient-queue__stage {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.patient-queue__metrics,
+.patient-validation__data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+  text-align: left;
+}
+
+.patient-queue__metrics dt,
+.patient-validation__data dt {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.patient-queue__metrics dd,
+.patient-validation__data dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.patient-queue__refreshing {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.patient-validation.is-valid {
+  border-color: #86efac;
+}
+
+.patient-validation.is-invalid {
+  border-color: #fca5a5;
+}
+
+.patient-validation__status {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.patient-document__content {
+  margin: 0;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  text-align: left;
+  font-size: 0.85rem;
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Superfície do profissional (/medico) — SPEC-0026 / seção 9.4             */
+/* ------------------------------------------------------------------------- */
+.doctor-shell {
+  min-height: 100vh;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.doctor-header__brand img {
+  height: 40px;
+  display: block;
+}
+
+.doctor-header__nav {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.doctor-header__nav-item {
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.doctor-header__nav-item--active {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.doctor-header__user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doctor-header__user-name {
+  font-weight: 700;
+}
+
+.doctor-header__user-clinic {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.doctor-main {
+  flex: 1;
+  padding: 1.25rem;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Central de Links (/app/links) — SPEC-0026/RN-018                         */
+/* ------------------------------------------------------------------------- */
+.links-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.links-url {
+  display: inline-block;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.links-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.button--small {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}

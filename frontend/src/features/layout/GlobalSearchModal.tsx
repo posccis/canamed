@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Patient } from '../agenda/agendaApi';
-import type { AppView } from './Sidebar';
+import type { StaffView } from '../../navigation/routes';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: StaffView) => void;
+  /** Abre a superfície dedicada do médico em `/medico` (SPEC-0026/RN-001). */
+  onOpenDoctor: () => void;
   patients?: Patient[];
 }
 
@@ -17,7 +19,13 @@ interface ActionItem {
   action: () => void;
 }
 
-export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }: GlobalSearchModalProps) {
+export function GlobalSearchModal({
+  isOpen,
+  onClose,
+  onNavigate,
+  onOpenDoctor,
+  patients = [],
+}: GlobalSearchModalProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +86,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
       title: 'Meu Consultório & PEP',
       description: 'Consultório virtual, fila médica, prontuário SOAP e emissão de documentos',
       action: () => {
-        onNavigate('workspace');
+        onOpenDoctor();
         onClose();
       }
     },
@@ -183,32 +191,12 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
       }
     },
     {
-      id: 'nav-portal',
+      id: 'nav-links',
       category: 'Navegação',
-      title: 'Portal do Paciente',
-      description: 'Agendamento online sem atrito e confirmações',
+      title: 'Central de Links do Paciente',
+      description: 'Copie os endereços de agendamento, check-in, consulta e privacidade',
       action: () => {
-        onNavigate('portal');
-        onClose();
-      }
-    },
-    {
-      id: 'nav-kiosk',
-      category: 'Navegação',
-      title: 'Totem de Autoatendimento',
-      description: 'Check-in rápido na chegada à clínica e emissão de senha',
-      action: () => {
-        onNavigate('kiosk');
-        onClose();
-      }
-    },
-    {
-      id: 'nav-privacy',
-      category: 'Navegação',
-      title: 'Privacidade & LGPD do Titular',
-      description: 'Solicitações de direitos e histórico de consentimentos',
-      action: () => {
-        onNavigate('privacy');
+        onNavigate('links');
         onClose();
       }
     }
