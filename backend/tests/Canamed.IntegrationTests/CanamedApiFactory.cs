@@ -170,7 +170,9 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
             "Paciente Teste A",
             "(81) 90000-0000",
             now,
-            PatientAId));
+            PatientAId,
+            document: "12345678900",
+            birthDate: new DateOnly(1980, 5, 10)));
 
         context.Specialties.Add(Specialty.Create(ClinicAId, "Ortopedia Teste", now, SpecialtyAId));
 

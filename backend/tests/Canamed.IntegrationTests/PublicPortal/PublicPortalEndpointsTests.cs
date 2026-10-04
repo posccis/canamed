@@ -111,6 +111,64 @@ public sealed class PublicPortalEndpointsTests(CanamedApiFactory factory) : Agen
         Assert.EndsWith("capability-token-rejected", await ReadProblemTypeAsync(response), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RescheduleLink_ChangesSlot_RevokesOldToken_AndRespectsSingleReschedule()
+    {
+        using var reception = CreateReceptionClient();
+        var originalStart = LocalStart(3, 9, 0);
+        var appointment = await CreateAppointmentAsync(reception, originalStart);
+
+        var link = await IssueLinkAsync(reception, "reschedule", appointment.Id);
+        using var anonymous = CreateSpaClient();
+
+        var localDate = DateOnly.FromDateTime(AgendaTimeZone.ToLocal(originalStart).DateTime);
+        var slotsResponse = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/capabilities/{link.Token}/reschedule-slots?date={localDate:yyyy-MM-dd}", UriKind.Relative));
+        slotsResponse.EnsureSuccessStatusCode();
+
+        var slots = await ReadAsync<List<RescheduleSlotItem>>(slotsResponse);
+        Assert.NotEmpty(slots);
+
+        var target = slots.First(slot => AgendaTimeZone.ToLocal(slot.StartsAt).Hour == 10);
+        var reschedule = await anonymous.PostAsJsonAsync(
+            $"/api/v1/public/capabilities/{link.Token}/reschedule",
+            new { startsAt = target.StartsAt, answer = "123" });
+        reschedule.EnsureSuccessStatusCode();
+
+        var result = await ReadAsync<CapabilityRescheduleResponse>(reschedule);
+        Assert.Equal(target.StartsAt, result.StartsAt);
+        Assert.NotNull(result.ConfirmPath);
+
+        // RN-007/RN-008: o token de remarcação é consumido e não pode ser reutilizado.
+        var replay = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/capabilities/{link.Token}", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.NotFound, replay.StatusCode);
+    }
+
+    [Fact]
+    public async Task CancelLink_RequiresChallenge_AndCancelsWithinPolicy()
+    {
+        using var reception = CreateReceptionClient();
+        var appointment = await CreateAppointmentAsync(reception, LocalStart(3, 14, 0));
+
+        var link = await IssueLinkAsync(reception, "cancel", appointment.Id);
+        using var anonymous = CreateSpaClient();
+
+        var wrongAnswer = await anonymous.PostAsJsonAsync(
+            $"/api/v1/public/capabilities/{link.Token}/cancel",
+            new { reason = "imprevisto", answer = "000" });
+        Assert.Equal(HttpStatusCode.Forbidden, wrongAnswer.StatusCode);
+
+        var cancel = await anonymous.PostAsJsonAsync(
+            $"/api/v1/public/capabilities/{link.Token}/cancel",
+            new { reason = "imprevisto", answer = "1980" });
+        Assert.Equal(HttpStatusCode.OK, cancel.StatusCode);
+
+        var replay = await anonymous.GetAsync(
+            new Uri($"/api/v1/public/capabilities/{link.Token}", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.NotFound, replay.StatusCode);
+    }
+
     private static async Task<IssueCapabilityLinkResponse> IssueLinkAsync(
         HttpClient client,
         string scope,
