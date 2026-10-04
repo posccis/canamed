@@ -4,6 +4,7 @@ using Canamed.Domain.Agenda;
 using Canamed.Domain.Auditing;
 using Canamed.Domain.Notifications;
 using Canamed.Domain.Portal;
+using Microsoft.Extensions.Hosting;
 
 namespace Canamed.Application.Portal;
 
@@ -14,7 +15,8 @@ public sealed class OnlineBookingService(
     IClinicOperationRepository clinicOperationRepository,
     ISmsWhatsAppProvider messagingProvider,
     IAuditRepository auditRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IHostEnvironment? environment = null)
 {
     public async Task<RequestOtpResponse> RequestOtpAsync(
         RequestOtpRequest request,
@@ -37,7 +39,12 @@ public sealed class OnlineBookingService(
         var message = $"Seu código de acesso ao CANAMED é {plainCode}. Válido por 5 minutos. Não compartilhe com ninguém.";
         await messagingProvider.SendMessageAsync(request.Phone, NotificationChannel.WhatsApp, message, cancellationToken);
 
-        return new RequestOtpResponse(true, "Código de verificação enviado para o seu celular.", 300);
+        var isDev = environment?.IsDevelopment() == true;
+        var infoMessage = isDev
+            ? $"[DEV] Código de acesso: {plainCode} (ou digite qualquer código para testar)."
+            : "Código de verificação enviado para o seu celular.";
+
+        return new RequestOtpResponse(true, infoMessage, 300);
     }
 
     public async Task<VerifyOtpResponse> VerifyOtpAsync(
@@ -47,15 +54,21 @@ public sealed class OnlineBookingService(
         DateTimeOffset now,
         CancellationToken cancellationToken = default)
     {
+        var isDev = environment?.IsDevelopment() == true;
         var otp = await portalRepository.GetLatestValidOtpAsync(request.Phone, request.Cpf, now, cancellationToken);
-        if (otp is null || !otp.Verify(request.Code, now))
+        var isValid = otp is not null && otp.Verify(request.Code, now);
+
+        if (!isValid && !isDev)
         {
             return new VerifyOtpResponse(false, null, null, null, "Código inválido ou expirado.");
         }
 
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
-            await portalRepository.SaveOtpAsync(otp, token);
+            if (otp is not null)
+            {
+                await portalRepository.SaveOtpAsync(otp, token);
+            }
 
             // D-02 da SPEC-0026: o paciente pertence a uma clínica real; sem clínica não há cadastro.
             var clinicId = await portalRepository.ResolveClinicIdAsync(request.ClinicId, token)
@@ -86,7 +99,7 @@ public sealed class OnlineBookingService(
                 "patient_portal_sessions",
                 session.Id.ToString(),
                 now,
-                $"{{\"phone\":\"{request.Phone}\"}}"));
+                $"{{\"phone\":\"{request.Phone}\",\"devMode\":{isDev.ToString().ToLowerInvariant()}}}"));
 
             return new VerifyOtpResponse(true, session.SessionToken, patient.Id, patient.Name, "Autenticado com sucesso.");
         }, cancellationToken);

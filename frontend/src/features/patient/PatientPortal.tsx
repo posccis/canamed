@@ -131,13 +131,13 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: 
 
   // Verify OTP
   const handleVerifyOtp = async () => {
-    if (!otpCode || otpCode.length !== 6) {
-      addToast('Digite o código de 6 dígitos recebido por SMS/WhatsApp.', 'info');
+    if (!otpCode || !otpCode.trim()) {
+      addToast('Digite o código de validação recebido.', 'info');
       return;
     }
     setAuthLoading(true);
     try {
-      const res = await patientApi.verifyOtp(phone, cpf, otpCode, meta?.clinicId);
+      const res = await patientApi.verifyOtp(phone, cpf, otpCode.trim(), meta?.clinicId);
       if (res.success && res.sessionToken && res.patientId) {
         const s: PatientSession = {
           token: res.sessionToken,
@@ -338,29 +338,31 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: 
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Código de 6 Dígitos</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Código de Validação</label>
               <input
                 type="text"
-                maxLength={6}
-                placeholder="000000"
+                placeholder="123456"
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => setOtpCode(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '1px solid var(--color-border)',
                   fontSize: '1.5rem',
-                  letterSpacing: '8px',
+                  letterSpacing: '6px',
                   textAlign: 'center',
                   fontWeight: 700,
                 }}
               />
+              <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                Em desenvolvimento, qualquer código de validação é aceito para testes.
+              </p>
             </div>
 
             <button
               onClick={handleVerifyOtp}
-              disabled={authLoading || otpCode.length !== 6}
+              disabled={authLoading || !otpCode.trim()}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -370,7 +372,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: 
                 borderRadius: '8px',
                 fontWeight: 600,
                 fontSize: '1rem',
-                cursor: authLoading || otpCode.length !== 6 ? 'not-allowed' : 'pointer',
+                cursor: authLoading || !otpCode.trim() ? 'not-allowed' : 'pointer',
                 marginBottom: '12px',
               }}
             >
