@@ -226,6 +226,18 @@ export interface PublicDocumentValidation {
   cancellationReason?: string;
 }
 
+export interface RescheduleSlot {
+  startsAt: string;
+  endsAt: string;
+}
+
+export interface RescheduleResult {
+  startsAt: string;
+  endsAt: string;
+  professionalName: string;
+  confirmPath?: string;
+}
+
 export const patientApi = {
   // Metadados públicos (Clínica, Especialidades, Médicos)
   getPortalMeta: () => apiGet<PortalMetaResponse>('/portal/meta'),
@@ -253,6 +265,17 @@ export const patientApi = {
 
   getQueueByToken: (token: string) =>
     apiGet<PatientQueueStatus>(`/public/capabilities/${encodeURIComponent(token)}/queue`),
+
+  getRescheduleSlots: (token: string, date: string) =>
+    apiGet<RescheduleSlot[]>(
+      `/public/capabilities/${encodeURIComponent(token)}/reschedule-slots?date=${encodeURIComponent(date)}`,
+    ),
+
+  rescheduleByToken: (token: string, startsAt: string, answer: string) =>
+    apiPost<RescheduleResult>(`/public/capabilities/${encodeURIComponent(token)}/reschedule`, {
+      startsAt,
+      answer,
+    }),
 
   validatePublicDocument: (publicToken: string) =>
     apiGet<PublicDocumentValidation>(

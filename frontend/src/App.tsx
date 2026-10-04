@@ -4,6 +4,12 @@ import { DoctorApp } from './app/DoctorApp';
 import { PatientLayout } from './app/PatientLayout';
 import { StaffApp } from './app/StaffApp';
 import { TvDisplay } from './features/admin/TvDisplay';
+import {
+  PatientAppointmentPage,
+  PatientCancelPage,
+  PatientConfirmPage,
+  PatientReschedulePage,
+} from './features/patient/pages/PatientAppointmentPages';
 import { PatientCheckInPage } from './features/patient/pages/PatientCheckInPage';
 import { PatientDocumentPage } from './features/patient/pages/PatientDocumentPage';
 import { PatientDocumentValidationPage } from './features/patient/pages/PatientDocumentValidationPage';
@@ -58,6 +64,10 @@ export function App() {
           <Route path="agendar/profissional/:professionalSlug" element={<PatientBookingPage />} />
           <Route path="agendar/especialidade/:specialtySlug" element={<PatientBookingPage />} />
           <Route path="consultas" element={<PatientAppointmentsPage />} />
+          <Route path="c/:token" element={<PatientAppointmentPage />} />
+          <Route path="c/:token/confirmar" element={<PatientConfirmPage />} />
+          <Route path="c/:token/remarcar" element={<PatientReschedulePage />} />
+          <Route path="c/:token/cancelar" element={<PatientCancelPage />} />
           <Route path="documentos" element={<PatientDocumentsPage />} />
           <Route path="documentos/:token" element={<PatientDocumentPage />} />
           <Route path="privacidade" element={<PrivacyPortal />} />

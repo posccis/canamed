@@ -1358,9 +1358,43 @@ body {
   color: #ffffff;
 }
 
+.patient-action--danger {
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
 .patient-action:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.patient-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.patient-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 0.5rem;
+}
+
+.patient-slot {
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.patient-slot--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
 
 .patient-field,
