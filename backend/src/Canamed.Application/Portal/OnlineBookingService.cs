@@ -57,12 +57,16 @@ public sealed class OnlineBookingService(
         {
             await portalRepository.SaveOtpAsync(otp, token);
 
-            // Localiza paciente existente ou cria preliminar
-            var patient = await portalRepository.GetPatientByCpfOrPhoneAsync(request.Cpf, request.Phone, token);
+            // D-02 da SPEC-0026: o paciente pertence a uma clínica real; sem clínica não há cadastro.
+            var clinicId = await portalRepository.ResolveClinicIdAsync(request.ClinicId, token)
+                ?? throw new InvalidOperationException("Nenhuma clínica disponível para vincular o cadastro do paciente.");
+
+            // Localiza paciente existente ou cria preliminar no escopo da clínica resolvida.
+            var patient = await portalRepository.GetPatientByCpfOrPhoneAsync(request.Cpf, request.Phone, clinicId, token);
             if (patient is null)
             {
                 patient = Patient.Create(
-                    clinicId: Guid.Empty, // será vinculado à clínica no agendamento
+                    clinicId: clinicId,
                     name: $"Paciente ({request.Phone.Trim()})",
                     phone: request.Phone.Trim(),
                     now: now,
@@ -75,7 +79,7 @@ public sealed class OnlineBookingService(
             await portalRepository.SaveSessionAsync(session, token);
 
             auditRepository.Add(AuditEvent.Record(
-                Guid.Empty,
+                clinicId,
                 patient.Id.ToString(),
                 patient.Name,
                 "PatientPortalAuthenticated",

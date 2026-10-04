@@ -12,7 +12,8 @@ public sealed record RequestOtpResponse(
 public sealed record VerifyOtpRequest(
     string Phone,
     string Cpf,
-    string Code);
+    string Code,
+    Guid? ClinicId = null);
 
 public sealed record VerifyOtpResponse(
     bool Success,

@@ -60,18 +60,44 @@ public sealed class PortalRepository(CanamedDbContext dbContext) : IPortalReposi
     public async Task<Patient?> GetPatientByCpfOrPhoneAsync(
         string cpf,
         string phone,
+        Guid? clinicId = null,
         CancellationToken cancellationToken = default)
     {
         var cpfDigits = new string(cpf.Where(char.IsDigit).ToArray());
         var phoneDigits = new string(phone.Where(char.IsDigit).ToArray());
 
-        var patients = await dbContext.Patients.ToListAsync(cancellationToken);
+        var query = dbContext.Patients.AsQueryable();
+        if (clinicId is { } scopedClinicId && scopedClinicId != Guid.Empty)
+        {
+            query = query.Where(patient => patient.ClinicId == scopedClinicId);
+        }
+
+        var patients = await query.ToListAsync(cancellationToken);
 
         return patients.FirstOrDefault(p =>
             (!string.IsNullOrEmpty(cpfDigits) && !string.IsNullOrEmpty(p.Document) &&
              new string(p.Document.Where(char.IsDigit).ToArray()) == cpfDigits) ||
             (!string.IsNullOrEmpty(phoneDigits) &&
              new string(p.Phone.Where(char.IsDigit).ToArray()) == phoneDigits));
+    }
+
+    /// <summary>
+    /// Resolve a clínica do cadastro do paciente: a informada pelo link ou a primeira cadastrada
+    /// (compatibilidade com bancos de desenvolvimento de clínica única).
+    /// </summary>
+    public async Task<Guid?> ResolveClinicIdAsync(Guid? preferred, CancellationToken cancellationToken = default)
+    {
+        if (preferred is { } clinicId && clinicId != Guid.Empty)
+        {
+            return clinicId;
+        }
+
+        var clinic = await dbContext.Clinics
+            .OrderBy(item => item.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return clinic?.Id;
     }
 
     public async Task<int> GetPatientActiveAppointmentsCountAsync(

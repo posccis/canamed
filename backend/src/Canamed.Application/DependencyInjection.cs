@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<Canamed.Application.DoctorWorkspace.DoctorWorkspaceService>();
         services.AddScoped<Canamed.Application.Notifications.NotificationService>();
         services.AddScoped<Canamed.Application.Portal.OnlineBookingService>();
+        services.AddScoped<Canamed.Application.Portal.PublicPortalService>();
         services.AddScoped<Canamed.Application.Kiosk.KioskCheckInService>();
         services.AddScoped<Canamed.Application.Privacy.PrivacyService>();
         services.AddScoped<Canamed.Application.CashRegister.CashRegisterService>();
