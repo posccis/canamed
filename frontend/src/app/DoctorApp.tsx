@@ -1,6 +1,10 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 
 import { DoctorWorkspace } from '../features/medical/DoctorWorkspace';
+import { DoctorMedicalRecordsPage } from '../features/medical/DoctorMedicalRecordsPage';
+import { DoctorAgendaPage } from '../features/medical/DoctorAgendaPage';
+import { DoctorDocumentsPage } from '../features/medical/DoctorDocumentsPage';
+import { DoctorReturnsPage } from '../features/medical/DoctorReturnsPage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { MfaEnrollmentPanel } from '../features/auth/MfaEnrollmentPanel';
 import { useSession } from '../features/auth/useSession';
@@ -8,8 +12,9 @@ import { ToastProvider } from '../features/layout/Toast';
 import { DOCTOR_PATHS } from '../navigation/routes';
 
 const DOCTOR_NAV = [
-  { to: DOCTOR_PATHS.home, label: 'Hoje', end: true },
-  { to: DOCTOR_PATHS.agenda, label: 'Agenda', end: false },
+  { to: DOCTOR_PATHS.home, label: 'Hoje / Consultório', end: true },
+  { to: DOCTOR_PATHS.records, label: 'Prontuário (PEP)', end: false },
+  { to: DOCTOR_PATHS.agenda, label: 'Minha Agenda', end: false },
   { to: DOCTOR_PATHS.queue, label: 'Minha fila', end: false },
   { to: DOCTOR_PATHS.documents, label: 'Documentos', end: false },
   { to: DOCTOR_PATHS.returns, label: 'Retornos', end: false },
@@ -18,6 +23,7 @@ const DOCTOR_NAV = [
 /**
  * Superfície do profissional de saúde (`/medico`).
  * Shell reduzido, sem menus administrativos (SPEC-0026 / RN-001, seção 9.4).
+ * Suporte completo a navegação por URL e abertura em novas abas do navegador.
  */
 export function DoctorApp() {
   const { state, reload, end } = useSession();
@@ -31,7 +37,14 @@ export function DoctorApp() {
   }
 
   if (state.status === 'anonymous') {
-    return <LoginPage onAuthenticated={reload} notice={state.message} />;
+    return (
+      <LoginPage
+        onAuthenticated={reload}
+        notice={state.message}
+        portalTitle="Espaço do Médico"
+        portalSubtitle="Acesse seu consultório digital com suas credenciais médicas"
+      />
+    );
   }
 
   if (state.status === 'error') {
@@ -89,31 +102,12 @@ export function DoctorApp() {
         <main className="doctor-main">
           <Routes>
             <Route index element={<DoctorWorkspace />} />
-            <Route path="agenda" element={<DoctorWorkspace />} />
+            <Route path="prontuario" element={<DoctorMedicalRecordsPage />} />
+            <Route path="prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
+            <Route path="agenda" element={<DoctorAgendaPage />} />
             <Route path="fila" element={<DoctorWorkspace />} />
-            <Route
-              path="documentos"
-              element={
-                <section className="page">
-                  <h1 className="page__title">Documentos do profissional</h1>
-                  <p className="form__hint">
-                    Emissão e histórico de documentos clínicos ficam disponíveis no atendimento ativo.
-                    Esta superfície segue a SPEC-0026, seção 8.3.
-                  </p>
-                </section>
-              }
-            />
-            <Route
-              path="retornos"
-              element={
-                <section className="page">
-                  <h1 className="page__title">Retornos e prazos</h1>
-                  <p className="form__hint">
-                    Os retornos programados serão listados aqui conforme a SPEC-0026, seção 8.3.
-                  </p>
-                </section>
-              }
-            />
+            <Route path="documentos" element={<DoctorDocumentsPage />} />
+            <Route path="retornos" element={<DoctorReturnsPage />} />
             <Route path="*" element={<Navigate to={DOCTOR_PATHS.home} replace />} />
           </Routes>
         </main>

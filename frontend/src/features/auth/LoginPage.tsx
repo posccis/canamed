@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { describeError } from '../agenda/agendaErrors';
 import { login, loginWithMfa } from './authApi';
@@ -6,10 +7,12 @@ import { login, loginWithMfa } from './authApi';
 type LoginPageProps = {
   onAuthenticated: () => void;
   notice?: string;
+  portalTitle?: string;
+  portalSubtitle?: string;
 };
 
 /** Tela de entrada: e-mail e senha, com passo adicional de segundo fator quando exigido (F-001 e F-002). */
-export function LoginPage({ onAuthenticated, notice }: LoginPageProps) {
+export function LoginPage({ onAuthenticated, notice, portalTitle, portalSubtitle }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -77,6 +80,23 @@ export function LoginPage({ onAuthenticated, notice }: LoginPageProps) {
           <p className="login__tagline">Eficiência para quem mais precisa.</p>
         </div>
 
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <Link
+            to="/"
+            style={{
+              fontSize: '0.85rem',
+              color: 'var(--color-primary-dark, #064e3b)',
+              textDecoration: 'none',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            ← Voltar ao Portal de Entrada
+          </Link>
+        </div>
+
         {notice ? (
           <div className="alert alert--success" role="status">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -90,8 +110,8 @@ export function LoginPage({ onAuthenticated, notice }: LoginPageProps) {
         {challengeId === null ? (
           <form className="form login__form" onSubmit={handlePasswordSubmit}>
             <div className="login__form-header">
-              <h2 className="login__form-title">Acesse sua conta</h2>
-              <p className="login__form-desc">Digite suas credenciais corporativas para entrar</p>
+              <h2 className="login__form-title">{portalTitle || 'Acesse sua conta'}</h2>
+              <p className="login__form-desc">{portalSubtitle || 'Digite suas credenciais corporativas para entrar'}</p>
             </div>
 
             <label className="field">

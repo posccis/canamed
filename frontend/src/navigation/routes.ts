@@ -69,6 +69,8 @@ export const DOCTOR_PATHS = {
   home: '/medico',
   agenda: '/medico/agenda',
   queue: '/medico/fila',
+  records: '/medico/prontuario',
+  patientRecord: (patientId: string) => `/medico/prontuario/${encodeURIComponent(patientId)}`,
   documents: '/medico/documentos',
   returns: '/medico/retornos',
 } as const;

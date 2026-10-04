@@ -1,6 +1,7 @@
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 
 import { DoctorApp } from './app/DoctorApp';
+import { HomePage } from './features/home/HomePage';
 import { PatientLayout } from './app/PatientLayout';
 import { StaffApp } from './app/StaffApp';
 import { TvDisplay } from './features/admin/TvDisplay';
@@ -46,7 +47,7 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={STAFF_PATHS.dashboard} replace />} />
+        <Route path="/" element={<HomePage />} />
 
         {/* Sistema interno — recepção, gestão e administração */}
         <Route path="/app/*" element={<StaffApp />} />

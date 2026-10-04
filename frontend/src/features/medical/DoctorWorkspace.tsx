@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   getDoctorWorkspaceState,
   doctorCallPatient,
@@ -10,6 +11,7 @@ import { updateDraftMedicalRecord } from './medicalRecordsApi';
 import { DocumentModal } from './DocumentModal';
 import { PatientHistoryModal } from './PatientHistoryModal';
 import { useToast } from '../layout/Toast';
+import { DOCTOR_PATHS } from '../../navigation/routes';
 
 export function DoctorWorkspace() {
   const { addToast } = useToast();
@@ -229,23 +231,35 @@ export function DoctorWorkspace() {
                     <span>
                       {item.priority === 'preferencial' ? '⭐ Preferencial' : 'Normal'} • Espera: {item.waitingTimeMinutes}m
                     </span>
-                    {item.status === 'chamado' ? (
-                      <button
-                        type="button"
-                        className="button button--primary button--small"
-                        onClick={() => handleStartConsultation(item.queueEntryId)}
-                      >
-                        ▶️ Iniciar
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
+                    <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                      <Link
+                        to={DOCTOR_PATHS.patientRecord(item.patientId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="button button--secondary button--small"
-                        onClick={() => handleCallNext(item.queueEntryId)}
+                        title="Abrir prontuário deste paciente em uma nova aba"
+                        style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem' }}
                       >
-                        Chamar
-                      </button>
-                    )}
+                        PEP ↗
+                      </Link>
+                      {item.status === 'chamado' ? (
+                        <button
+                          type="button"
+                          className="button button--primary button--small"
+                          onClick={() => handleStartConsultation(item.queueEntryId)}
+                        >
+                          ▶️ Iniciar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="button button--secondary button--small"
+                          onClick={() => handleCallNext(item.queueEntryId)}
+                        >
+                          Chamar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -288,7 +302,16 @@ export function DoctorWorkspace() {
                   </p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Link
+                    to={DOCTOR_PATHS.patientRecord(active.patientId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="button button--secondary button--small"
+                    title="Abrir o Prontuário Eletrônico deste paciente em uma nova aba"
+                  >
+                    🔗 Abrir PEP em Nova Aba ↗
+                  </Link>
                   <button
                     type="button"
                     className="button button--secondary button--small"

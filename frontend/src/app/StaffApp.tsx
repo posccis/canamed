@@ -65,7 +65,14 @@ export function StaffApp() {
   }
 
   if (state.status === 'anonymous') {
-    return <LoginPage onAuthenticated={reload} notice={state.message} />;
+    return (
+      <LoginPage
+        onAuthenticated={reload}
+        notice={state.message}
+        portalTitle="Administração & Recepção"
+        portalSubtitle="Acesse a administração da clínica com suas credenciais"
+      />
+    );
   }
 
   if (state.status === 'error') {

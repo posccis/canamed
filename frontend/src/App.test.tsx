@@ -33,9 +33,19 @@ describe('App', () => {
     mocks.apiPost.mockReset();
   });
 
-  it('exige login antes de mostrar qualquer funcionalidade', async () => {
+  it('exibe o Portal de Acesso Integrado na rota raiz com opções de Administração e Médico', async () => {
+    window.history.pushState({}, '', '/');
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Portal de Acesso Integrado' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Acessar Administração' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Entrar no Consultório Médico' })).toBeInTheDocument();
+  });
+
+  it('exige login antes de mostrar funcionalidades administrativas em /app/dashboard', async () => {
     mocks.apiGet.mockRejectedValue(new ApiError(401, 'Sessão expirada'));
 
+    window.history.pushState({}, '', '/app/dashboard');
     render(<App />);
 
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('CANA MED');
@@ -88,6 +98,7 @@ describe('App', () => {
       return [];
     });
 
+    window.history.pushState({}, '', '/app/dashboard');
     render(<App />);
 
     expect(await screen.findByRole('button', { name: /^Dashboard$/ })).toBeInTheDocument();

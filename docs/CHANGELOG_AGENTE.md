@@ -1062,4 +1062,58 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - **LOCAL AFETADO**: `backend/tests/Canamed.UnitTests/Portal/OnlineBookingServiceDevOtpTests.cs`.
   - **RESULTADO**: 3 novos testes unitários adicionados e aprovados. Suíte total de backend agora com **287 testes 100% aprovados** (204 unitários + 83 integração).
 
+---
+
+### [2026-10-04] — Portal de Acesso, Congelamento de Módulos Secundários e Expansão da Visão do Médico com Suporte a Novas Abas
+
+#### 1. Congelamento de Caixa, Financeiro e Estoque
+- **AÇÃO**: Ocultação/congelamento dos módulos Caixa (`/app/caixa`), Financeiro (`/app/financeiro`) e Estoque (`/app/estoque`) na barra de navegação da administração (`Sidebar.tsx`).
+  - **MOTIVO**: Foco estratégico no aprimoramento da experiência clínica do profissional de saúde e na simplificação da rotina operacional prioritária.
+  - **LOCAL AFETADO**: `frontend/src/features/layout/Sidebar.tsx`.
+  - **RESULTADO**: Navegação limpa e objetiva, mantendo os módulos de Dashboard, Agenda, Recepção/Fila, Operação, Catálogo, Usuários, Central de Links, Painel TV, DPO e Políticas.
+
+#### 2. Portal de Entrada Institucional (`/`) e Segregação de Logins
+- **AÇÃO**: Criação do componente `HomePage.tsx` como rota raiz (`/`) da aplicação, exibindo a logomarca oficial e opções explícitas de acesso:
+  - **Administração & Recepção** (`/app/dashboard`)
+  - **Espaço do Médico / Consultório** (`/medico`)
+  - Atalhos complementares para o **Painel TV do Saguão** (`/sala/tv`) e **Portal do Paciente** (`/p/cana-med`).
+  - **MOTIVO**: Atender à solicitação de segregação de ambientes e fluxos de acesso na tela inicial.
+  - **LOCAL AFETADO**: `frontend/src/features/home/HomePage.tsx`, `frontend/src/App.tsx`.
+  - **RESULTADO**: Tela inicial moderna, profissional e institucional alinhada ao manual de marca CANAMED.
+- **AÇÃO**: Atualização de `LoginPage.tsx` para comportar identificação visual de ambiente (`portalTitle` e `portalSubtitle`) e link direto para retorno ao Portal de Entrada (`/`).
+  - **MOTIVO**: Permitir que médicos e recepcionistas reconheçam o contexto de login em que estão acessando e possam alternar facilmente.
+  - **LOCAL AFETADO**: `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/app/DoctorApp.tsx`, `frontend/src/app/StaffApp.tsx`.
+  - **RESULTADO**: Login contextualizado em `/app` ("Administração & Recepção") e em `/medico` ("Espaço do Médico").
+
+#### 3. Expansão Completa da Visão do Médico e Autonomia de Rotas
+- **AÇÃO**: Criação da página do Prontuário Eletrônico do Paciente (`DoctorMedicalRecordsPage.tsx`) com rotas `/medico/prontuario` e `/medico/prontuario/:patientId`.
+  - **MOTIVO**: Integrar o PEP na visão do médico conforme solicitado pelo usuário, com busca de pacientes, histórico longitudinal SOAP (Subjetivo, Objetivo, Avaliação, Plano), visualização de adendos clínicos (norma CFM) e capacidade de novos registros de adendos.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorMedicalRecordsPage.tsx`, `frontend/src/navigation/routes.ts`, `frontend/src/app/DoctorApp.tsx`.
+  - **RESULTADO**: Acesso direto ao prontuário por URL, com carregamento do paciente e de seus documentos.
+- **AÇÃO**: Criação da página da Agenda do Médico (`DoctorAgendaPage.tsx`) na rota `/medico/agenda`.
+  - **MOTIVO**: Permitir que o profissional consulte sua grade do dia ou de qualquer data selecionada, com contadores de consultas, marcação de atendimento/falta e links diretos para o prontuário.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorAgendaPage.tsx`.
+  - **RESULTADO**: Grade diária clara e objetiva com suporte a ações rápidas.
+- **AÇÃO**: Criação da página de Documentos Clínicos (`DoctorDocumentsPage.tsx`) na rota `/medico/documentos`.
+  - **MOTIVO**: Gestão de receitas simples, receitas de controle especial, atestados médicos e solicitações de exames com verificação pública e opção de revogação/cancelamento com justificativa clínica.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorDocumentsPage.tsx`.
+  - **RESULTADO**: Painel centralizado de documentos emitidos pelo médico.
+- **AÇÃO**: Criação da página de Gestão de Retornos (`DoctorReturnsPage.tsx`) na rota `/medico/retornos`.
+  - **MOTIVO**: Monitoramento de elegibilidade de consultas de retorno na janela regulatória de 30 dias (CFM) com indicadores de dias restantes e link para prontuário e agendamento.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorReturnsPage.tsx`.
+  - **RESULTADO**: Painel de retenção e acompanhamento de retornos clínicos.
+- **AÇÃO**: Suporte integral a abertura de páginas e prontuários em **nova aba** (`target="_blank"`):
+  - **MOTIVO**: Requisito explícito do usuário ("eu preciso que essas páginas possam ser abertas em uma nova aba por exemplo").
+  - **LOCAL AFETADO**: `DoctorWorkspace.tsx`, `DoctorApp.tsx`, `DoctorMedicalRecordsPage.tsx`, `DoctorAgendaPage.tsx`, `DoctorDocumentsPage.tsx`, `DoctorReturnsPage.tsx`.
+  - **RESULTADO**: Todas as âncoras usam componentes `<Link to="...">` e `<NavLink to="...">` do `react-router-dom` com URLs reais e atributo `target="_blank"` com `rel="noopener noreferrer"`. O profissional pode abrir qualquer prontuário ou documento em aba separada com o botão direito, clique com o botão do meio ou atalhos de teclado (Ctrl+Clique) mantendo o atendimento ativo intacto na aba principal.
+
+#### 4. Testes e Validação de Produção
+- **AÇÃO**: Criação e atualização de suítes de teste para cobertura dos novos módulos:
+  - `DoctorMedicalRecordsPage.test.tsx` (busca de pacientes e histórico SOAP)
+  - `DoctorAgendaPage.test.tsx` (grade de agendamento e PEP em nova aba)
+  - `DoctorDocumentsPage.test.tsx` (documentos clínicos e validação pública)
+  - `DoctorReturnsPage.test.tsx` (controle de retornos de 30 dias)
+  - `DoctorWorkspace.test.tsx` e `App.test.tsx` (ajustes para roteamento e novos elementos)
+  - **RESULTADO**: **22 arquivos de teste / 76 testes aprovados (100% green)** no frontend. **287 testes aprovados (100% green)** no backend. Build de produção (`tsc --noEmit && vite build`) validado com zero advertências bloqueantes.
+
 

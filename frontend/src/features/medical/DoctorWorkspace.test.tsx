@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DoctorWorkspace } from './DoctorWorkspace';
 
@@ -39,7 +40,11 @@ describe('DoctorWorkspace Component', () => {
       waitingQueue: [],
     });
 
-    render(<DoctorWorkspace />);
+    render(
+      <MemoryRouter>
+        <DoctorWorkspace />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Carregando consultório virtual…')).toBeInTheDocument();
 
@@ -110,7 +115,11 @@ describe('DoctorWorkspace Component', () => {
       ],
     });
 
-    render(<DoctorWorkspace />);
+    render(
+      <MemoryRouter>
+        <DoctorWorkspace />
+      </MemoryRouter>,
+    );
 
     await waitFor(() => {
       // Paciente na fila
