@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { patientPaths } from '../../../navigation/routes';
 import { PatientPortal, type PatientPortalTab } from '../PatientPortal';
+import { useClinicBySlug } from '../useClinicBySlug';
 
 /**
  * Páginas do portal do paciente endereçáveis por URL.
@@ -12,6 +13,7 @@ function PortalPage({ tab }: { tab: PatientPortalTab }) {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const paths = patientPaths(slug ?? '');
+  const clinicState = useClinicBySlug(slug);
 
   const routes: Record<PatientPortalTab, string> = {
     schedule: paths.agendar,
@@ -19,7 +21,13 @@ function PortalPage({ tab }: { tab: PatientPortalTab }) {
     documents: paths.documentos,
   };
 
-  return <PatientPortal initialTab={tab} onTabChange={(next) => navigate(routes[next])} />;
+  return (
+    <PatientPortal
+      initialTab={tab}
+      onTabChange={(next) => navigate(routes[next])}
+      clinic={clinicState.status === 'ready' ? clinicState.clinic : null}
+    />
+  );
 }
 
 export function PatientBookingPage() {

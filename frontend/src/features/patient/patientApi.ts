@@ -32,6 +32,7 @@ export interface BookOnlineRequest {
   clinicId: string;
   professionalId: string;
   specialtyId: string;
+  appointmentTypeId: string;
   startsAt: string;
   notes?: string;
 }
@@ -145,6 +146,7 @@ export interface PortalMetaResponse {
   helpPhone?: string;
   specialties: Array<{ id: string; name: string }>;
   professionals: Array<{ id: string; name: string; specialtyId: string }>;
+  appointmentTypes?: Array<{ id: string; name: string; durationMinutes: number }>;
 }
 
 /** Metadados públicos resolvidos pelo slug da clínica (SPEC-0026/RN-003). */
@@ -158,6 +160,7 @@ export interface PublicClinicMeta {
   allowSelfReschedule: boolean;
   specialties: Array<{ id: string; name: string }>;
   professionals: Array<{ id: string; name: string; specialtyId: string }>;
+  appointmentTypes: Array<{ id: string; name: string; durationMinutes: number }>;
 }
 
 /** Escopos de token de capacidade (SPEC-0026/RN-004). */
@@ -260,8 +263,8 @@ export const patientApi = {
   requestOtp: (phone: string, cpf: string) =>
     apiPost<RequestOtpResponse>('/portal/auth/request-otp', { phone, cpf }),
 
-  verifyOtp: (phone: string, cpf: string, code: string) =>
-    apiPost<VerifyOtpResponse>('/portal/auth/verify-otp', { phone, cpf, code }),
+  verifyOtp: (phone: string, cpf: string, code: string, clinicId?: string) =>
+    apiPost<VerifyOtpResponse>('/portal/auth/verify-otp', { phone, cpf, code, clinicId }),
 
   getAvailableSlots: (clinicId: string, specialtyId: string, date: string, professionalId?: string) => {
     const params = new URLSearchParams({ clinicId, specialtyId, date });

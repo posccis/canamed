@@ -6,6 +6,7 @@ import {
   type PublicSlot,
   type MedicalDocumentItem,
   type PortalMetaResponse,
+  type PublicClinicMeta,
 } from './patientApi';
 import { useToast } from '../layout/Toast';
 
@@ -16,9 +17,11 @@ type PatientPortalProps = {
   initialTab?: PatientPortalTab;
   /** Notifica a troca de aba para que a URL acompanhe a funcionalidade visível. */
   onTabChange?: (tab: PatientPortalTab) => void;
+  /** Clínica resolvida pelo slug do link público (superfície `/p/:slug`). */
+  clinic?: PublicClinicMeta | null;
 };
 
-export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientPortalProps = {}) {
+export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: PatientPortalProps = {}) {
   const { addToast } = useToast();
   const [session, setSession] = useState<PatientSession | null>(() => {
     const saved = localStorage.getItem('canamed_patient_session');
@@ -49,6 +52,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
   const [meta, setMeta] = useState<PortalMetaResponse | null>(null);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('');
   const [selectedProfessional, setSelectedProfessional] = useState<string>('');
+  const [selectedAppointmentType, setSelectedAppointmentType] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [availableSlots, setAvailableSlots] = useState<PublicSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -67,17 +71,33 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<MedicalDocumentItem | null>(null);
 
-  // Load portal metadata on mount
+  // Metadados: usa a clínica do slug quando disponível; caso contrário, o fallback de clínica única.
   useEffect(() => {
+    if (clinic) {
+      const mapped: PortalMetaResponse = {
+        clinicId: clinic.clinicId,
+        clinicName: clinic.publicName,
+        clinicSlug: clinic.slug,
+        specialties: clinic.specialties,
+        professionals: clinic.professionals,
+        appointmentTypes: clinic.appointmentTypes,
+      };
+      setMeta(mapped);
+      setSelectedSpecialty((current) => current || clinic.specialties[0]?.id || '');
+      setSelectedAppointmentType((current) => current || clinic.appointmentTypes[0]?.id || '');
+      return;
+    }
+
     patientApi.getPortalMeta()
       .then((m) => {
         setMeta(m);
         if (m.specialties.length > 0) {
           setSelectedSpecialty(m.specialties[0].id);
         }
+        setSelectedAppointmentType(m.appointmentTypes?.[0]?.id ?? '');
       })
       .catch(() => addToast('Erro ao carregar especialidades', 'error'));
-  }, [addToast]);
+  }, [addToast, clinic]);
 
   // Handle countdown
   useEffect(() => {
@@ -114,7 +134,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
     }
     setAuthLoading(true);
     try {
-      const res = await patientApi.verifyOtp(phone, cpf, otpCode);
+      const res = await patientApi.verifyOtp(phone, cpf, otpCode, meta?.clinicId);
       if (res.success && res.sessionToken && res.patientId) {
         const s: PatientSession = {
           token: res.sessionToken,
@@ -173,7 +193,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
       addToast('Faça login com seu celular para concluir o agendamento.', 'info');
       return;
     }
-    if (!selectedSlot || !meta?.clinicId || !selectedSpecialty) {
+    if (!selectedSlot || !meta?.clinicId || !selectedSpecialty || !selectedAppointmentType) {
       addToast('Selecione um horário disponível.', 'info');
       return;
     }
@@ -183,6 +203,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
         clinicId: meta.clinicId,
         professionalId: selectedSlot.professionalId,
         specialtyId: selectedSpecialty,
+        appointmentTypeId: selectedAppointmentType,
         startsAt: selectedSlot.startsAt,
       });
       addToast('Consulta agendada com sucesso! Lembretes ativos configurados.', 'success');
@@ -469,6 +490,23 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange }: PatientP
                 ))}
               </select>
             </div>
+
+            {meta?.appointmentTypes && meta.appointmentTypes.length > 0 ? (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Tipo de Atendimento</label>
+                <select
+                  value={selectedAppointmentType}
+                  onChange={(e) => setSelectedAppointmentType(e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', fontSize: '0.95rem' }}
+                >
+                  {meta.appointmentTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name} ({type.durationMinutes} min)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Profissional (Opcional)</label>
