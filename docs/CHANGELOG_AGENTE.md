@@ -1045,3 +1045,21 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - **Frontend TypeScript/Vite:** `npm run build` gerado sem erros de compilação ou tipos.
   - **RESULTADO**: Funcionalidade F-004 e débitos técnicos homologados com zero quebra de regressão.
 
+---
+
+### [2026-10-04] — Ambiente de Desenvolvimento: Validação Flexível de OTP no Agendamento do Paciente
+
+- **AÇÃO**: Modificação em `OnlineBookingService.cs` para permitir qualquer código de validação quando o ambiente de execução for `Development` (`IHostEnvironment.IsDevelopment()`).
+  - **MOTIVO**: Solicitação do usuário para permitir testes fluidos do agendamento online do paciente em ambiente de desenvolvimento sem necessidade de consulta a logs ou banco de dados para recuperar o código OTP.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/OnlineBookingService.cs`.
+  - **RESULTADO**: Em `Development`, qualquer código (ex.: `123456`, `000000`) é aceito com sucesso em `VerifyOtpAsync`. Em produção, a validação rigorosa de hash SHA-256 e expiração continua 100% preservada.
+- **AÇÃO**: Atualização na interface de autenticação do paciente (`PatientPortal.tsx`).
+  - **MOTIVO**: Permitir o envio de qualquer código sem bloqueio por tamanho no formulário e informar ao usuário testador que qualquer código é válido em desenvolvimento.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/PatientPortal.tsx`.
+  - **RESULTADO**: Input e botão aceitam qualquer código digitado pelo usuário em desenvolvimento.
+- **AÇÃO**: Criação de testes unitários em `OnlineBookingServiceDevOtpTests.cs`.
+  - **MOTIVO**: Garantir cobertura automatizada do bypass em `Development` e verificar que em `Production` códigos incorretos continuam sendo rejeitados.
+  - **LOCAL AFETADO**: `backend/tests/Canamed.UnitTests/Portal/OnlineBookingServiceDevOtpTests.cs`.
+  - **RESULTADO**: 3 novos testes unitários adicionados e aprovados. Suíte total de backend agora com **287 testes 100% aprovados** (204 unitários + 83 integração).
+
+
