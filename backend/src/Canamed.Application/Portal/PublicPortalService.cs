@@ -1,5 +1,6 @@
 using System.Globalization;
 using Canamed.Application.Abstractions;
+using Canamed.Application.Agenda;
 using Canamed.Application.Clinics;
 using Canamed.Application.Errors;
 using Canamed.Application.Kiosk;
@@ -20,6 +21,7 @@ public sealed class PublicPortalService(
     IQueueRepository queueRepository,
     ITriageRepository triageRepository,
     ICatalogRepository catalogRepository,
+    IClinicOperationRepository clinicOperationRepository,
     IClinicPolicyRepository policyRepository,
     KioskCheckInService kioskCheckInService,
     IAuditRepository auditRepository,
@@ -322,6 +324,222 @@ public sealed class PublicPortalService(
             professional?.Name,
             null,
             now);
+    }
+
+    /// <summary>Horários livres compatíveis com o reagendamento autônomo (RN-014).</summary>
+    public async Task<IReadOnlyList<RescheduleSlotItem>> GetRescheduleSlotsAsync(
+        string rawToken,
+        DateOnly date,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await RequireUsableTokenAsync(rawToken, now, cancellationToken).ConfigureAwait(false);
+        if (token.Scope != CapabilityScope.Reschedule || token.AppointmentId is not { } appointmentId)
+        {
+            throw InvalidLink();
+        }
+
+        var clinic = await RequireClinicAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        if (!clinic.AllowSelfReschedule)
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Reagendamento indisponível",
+                "Esta consulta não pode ser remarcada por aqui. Fale com a recepção.",
+                "reschedule-policy-blocked");
+        }
+
+        var appointment = await agendaRepository.FindAppointmentAsync(appointmentId, token.ClinicId, cancellationToken).ConfigureAwait(false)
+            ?? throw InvalidLink();
+
+        if (appointment.Status is not (AppointmentStatus.Scheduled or AppointmentStatus.Confirmed))
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Consulta não pode ser remarcada",
+                "Fale com a recepção para verificar sua situação.",
+                "appointment-state");
+        }
+
+        var policy = await policyRepository.GetByClinicIdAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        var minimumNoticeHours = policy?.MinHoursNoticeForOnlineBooking ?? 2;
+
+        return await BuildFreeSlotsAsync(
+            token.ClinicId,
+            appointment.ProfessionalId,
+            appointmentId,
+            appointment.EndsAt - appointment.StartsAt,
+            date,
+            now.AddHours(minimumNoticeHours),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Reagendamento autônomo com desafio, política e limite de remarcações (RN-014).</summary>
+    public async Task<CapabilityRescheduleResponse> RescheduleAsync(
+        string rawToken,
+        DateTimeOffset newStartsAt,
+        string? answer,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await RequireUsableTokenAsync(rawToken, now, cancellationToken).ConfigureAwait(false);
+        if (token.Scope != CapabilityScope.Reschedule || token.AppointmentId is not { } appointmentId)
+        {
+            throw InvalidLink();
+        }
+
+        await VerifyChallengeAsync(token, answer, cancellationToken).ConfigureAwait(false);
+
+        var clinic = await RequireClinicAsync(token.ClinicId, cancellationToken).ConfigureAwait(false);
+        if (!clinic.AllowSelfReschedule)
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Reagendamento indisponível",
+                "Esta consulta não pode ser remarcada por aqui. Fale com a recepção.",
+                "reschedule-policy-blocked");
+        }
+
+        var previousReschedules = await publicPortalRepository
+            .CountAuditEventsAsync(token.ClinicId, "AppointmentRescheduledByLink", appointmentId.ToString(), cancellationToken)
+            .ConfigureAwait(false);
+        if (previousReschedules >= 1)
+        {
+            throw new CanamedException(
+                ProblemKind.Conflict,
+                "Limite de remarcações atingido",
+                "Esta consulta já foi remarcada uma vez. Fale com a recepção.",
+                "reschedule-limit-reached");
+        }
+
+        return await unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            var appointment = await agendaRepository.FindAppointmentAsync(appointmentId, token.ClinicId, ct).ConfigureAwait(false)
+                ?? throw InvalidLink();
+
+            if (appointment.Status is not (AppointmentStatus.Scheduled or AppointmentStatus.Confirmed))
+            {
+                throw new CanamedException(
+                    ProblemKind.Conflict,
+                    "Consulta não pode ser remarcada",
+                    "Fale com a recepção para verificar sua situação.",
+                    "appointment-state");
+            }
+
+            var policy = await policyRepository.GetByClinicIdAsync(token.ClinicId, ct).ConfigureAwait(false);
+            var minimumNoticeHours = policy?.MinHoursNoticeForOnlineBooking ?? 2;
+            if (newStartsAt < now.AddHours(minimumNoticeHours))
+            {
+                throw new CanamedException(
+                    ProblemKind.Conflict,
+                    "Horário indisponível",
+                    $"Escolha um horário com pelo menos {minimumNoticeHours} horas de antecedência.",
+                    "reschedule-window-closed");
+            }
+
+            var duration = appointment.EndsAt - appointment.StartsAt;
+            await agendaRepository.LockProfessionalAgendaAsync(appointment.ProfessionalId, ct).ConfigureAwait(false);
+
+            var overlaps = await agendaRepository
+                .ProfessionalHasOverlappingAppointmentAsync(
+                    token.ClinicId,
+                    appointment.ProfessionalId,
+                    newStartsAt,
+                    newStartsAt.Add(duration),
+                    appointmentId,
+                    ct)
+                .ConfigureAwait(false);
+            if (overlaps)
+            {
+                throw new CanamedException(
+                    ProblemKind.Conflict,
+                    "Horário ocupado",
+                    "Este horário acabou de ser ocupado. Escolha outro.",
+                    "appointment-overlap");
+            }
+
+            appointment.Reschedule(newStartsAt, now);
+
+            await RevokeAppointmentTokensAsync(token, appointmentId, now, ct).ConfigureAwait(false);
+            token.Consume(now);
+
+            var (confirmToken, confirmEntity) = PatientCapabilityToken.Issue(
+                token.ClinicId,
+                CapabilityScope.Confirm,
+                now.Add(DefaultValidity[CapabilityScope.Confirm]),
+                now,
+                patientId: token.PatientId,
+                appointmentId: appointmentId,
+                createdBy: "system");
+            publicPortalRepository.AddToken(confirmEntity);
+
+            var professional = await catalogRepository
+                .FindProfessionalAsync(token.ClinicId, appointment.ProfessionalId, ct)
+                .ConfigureAwait(false);
+
+            auditRepository.Add(AuditEvent.Record(
+                token.ClinicId,
+                token.PatientId?.ToString() ?? "public_link",
+                "Link público",
+                "AppointmentRescheduledByLink",
+                "appointments",
+                appointmentId.ToString(),
+                now,
+                $"{{\"channel\":\"link\",\"newStartsAt\":\"{newStartsAt:O}\"}}"));
+
+            return new CapabilityRescheduleResponse(
+                appointment.StartsAt,
+                appointment.EndsAt,
+                professional?.Name ?? "Profissional",
+                BuildPath(CapabilityScope.Confirm, clinic.Slug, confirmToken));
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<RescheduleSlotItem>> BuildFreeSlotsAsync(
+        Guid clinicId,
+        Guid professionalId,
+        Guid appointmentId,
+        TimeSpan duration,
+        DateOnly date,
+        DateTimeOffset earliestStart,
+        CancellationToken cancellationToken)
+    {
+        var hours = await clinicOperationRepository.ListOperatingHoursAsync(clinicId, cancellationToken).ConfigureAwait(false);
+        var clinicHours = hours.FirstOrDefault(hour => hour.DayOfWeek == (int)date.DayOfWeek);
+
+        var localStart = clinicHours?.StartsAt ?? new TimeOnly(8, 0);
+        var localEnd = clinicHours?.EndsAt ?? new TimeOnly(18, 0);
+        var startUtc = AgendaTimeZone.LocalToUtc(date.ToDateTime(localStart));
+        var endUtc = AgendaTimeZone.LocalToUtc(date.ToDateTime(localEnd));
+        var step = TimeSpan.FromMinutes(30);
+
+        var slots = new List<RescheduleSlotItem>();
+        var cursor = startUtc;
+
+        while (cursor.Add(duration) <= endUtc && slots.Count < 48)
+        {
+            if (cursor >= earliestStart)
+            {
+                var overlaps = await agendaRepository
+                    .ProfessionalHasOverlappingAppointmentAsync(
+                        clinicId,
+                        professionalId,
+                        cursor,
+                        cursor.Add(duration),
+                        appointmentId,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!overlaps)
+                {
+                    slots.Add(new RescheduleSlotItem(cursor, cursor.Add(duration)));
+                }
+            }
+
+            cursor = cursor.Add(step);
+        }
+
+        return slots;
     }
 
     /// <summary>Emite um link tokenizado para envio ao paciente (Central de Links e mensageria).</summary>

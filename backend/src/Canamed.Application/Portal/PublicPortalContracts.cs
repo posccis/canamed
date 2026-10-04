@@ -24,6 +24,13 @@ public interface IPublicPortalRepository
         Guid appointmentId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Conta eventos de auditoria por ação e recurso (ex.: remarcações de um agendamento).</summary>
+    Task<int> CountAuditEventsAsync(
+        Guid clinicId,
+        string action,
+        string resourceId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Confirma as alterações pendentes no contexto de persistência.</summary>
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
@@ -85,6 +92,16 @@ public sealed record CapabilityCheckInResponse(
     int PositionInQueue,
     string ProfessionalName,
     string? QueuePath);
+
+/// <summary>Horário livre compatível para o reagendamento autônomo (RN-014).</summary>
+public sealed record RescheduleSlotItem(DateTimeOffset StartsAt, DateTimeOffset EndsAt);
+
+/// <summary>Resultado do reagendamento, com o novo link de confirmação do agendamento vigente.</summary>
+public sealed record CapabilityRescheduleResponse(
+    DateTimeOffset StartsAt,
+    DateTimeOffset EndsAt,
+    string ProfessionalName,
+    string? ConfirmPath);
 
 /// <summary>Pedido de emissão de link pela recepção (Central de Links / mensageria).</summary>
 public sealed record IssueCapabilityLinkRequest(

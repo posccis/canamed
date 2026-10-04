@@ -90,6 +90,24 @@ public sealed class AgendaRepository(CanamedDbContext dbContext) : IAgendaReposi
                 && (exceptAppointmentId == null || appointment.Id != exceptAppointmentId),
             cancellationToken);
 
+    public Task<bool> ProfessionalHasOverlappingAppointmentAsync(
+        Guid clinicId,
+        Guid professionalId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        Guid? exceptAppointmentId,
+        CancellationToken cancellationToken) =>
+        dbContext.Appointments.AnyAsync(
+            appointment => appointment.ClinicId == clinicId
+                && appointment.ProfessionalId == professionalId
+                && appointment.DeletedAt == null
+                && (appointment.Status == AppointmentStatus.Scheduled
+                    || appointment.Status == AppointmentStatus.Confirmed)
+                && appointment.StartsAt < toUtc
+                && appointment.EndsAt > fromUtc
+                && (exceptAppointmentId == null || appointment.Id != exceptAppointmentId),
+            cancellationToken);
+
     public async Task<IReadOnlyList<Appointment>> ListAppointmentsByIdsAsync(
         Guid clinicId,
         IReadOnlyCollection<Guid> appointmentIds,

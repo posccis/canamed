@@ -53,6 +53,20 @@ public static class PublicPortalEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
+        group.MapGet("/capabilities/{token}/reschedule-slots", GetRescheduleSlotsAsync)
+            .WithName("PublicGetRescheduleSlots")
+            .Produces<IReadOnlyList<RescheduleSlotItem>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        group.MapPost("/capabilities/{token}/reschedule", RescheduleAsync)
+            .WithName("PublicRescheduleByLink")
+            .Produces<CapabilityRescheduleResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AllowAnonymous();
+
         group.MapPost("/check-in/{token}", CheckInAsync)
             .WithName("PublicCheckInByLink")
             .Produces<CapabilityCheckInResponse>(StatusCodes.Status200OK)
@@ -113,6 +127,27 @@ public static class PublicPortalEndpoints
         CancellationToken cancellationToken)
         => Results.Ok(await service.GetQueueStatusAsync(token, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
 
+    private static async Task<IResult> GetRescheduleSlotsAsync(
+        PublicPortalService service,
+        string token,
+        [FromQuery] DateOnly date,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+        => Results.Ok(await service.GetRescheduleSlotsAsync(token, date, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<IResult> RescheduleAsync(
+        PublicPortalService service,
+        string token,
+        [FromBody] PublicReschedulePayload? payload,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var result = await service
+            .RescheduleAsync(token, payload?.StartsAt ?? default, payload?.Answer, timeProvider.GetUtcNow(), cancellationToken)
+            .ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
     private static async Task<IResult> CheckInAsync(
         PublicPortalService service,
         string token,
@@ -150,3 +185,5 @@ public static class PublicPortalEndpoints
 public sealed record CancelCapabilityPayload(string? Reason, string? Answer);
 
 public sealed record PublicCheckInPayload(bool IsPreferential);
+
+public sealed record PublicReschedulePayload(DateTimeOffset StartsAt, string? Answer);

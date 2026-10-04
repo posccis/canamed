@@ -39,6 +39,17 @@ public sealed class PublicPortalRepository(CanamedDbContext dbContext) : IPublic
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+    public Task<int> CountAuditEventsAsync(
+        Guid clinicId,
+        string action,
+        string resourceId,
+        CancellationToken cancellationToken = default) =>
+        dbContext.AuditEvents.CountAsync(
+            auditEvent => auditEvent.ClinicId == clinicId
+                && auditEvent.Action == action
+                && auditEvent.ResourceId == resourceId,
+            cancellationToken);
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 }
