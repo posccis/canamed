@@ -1,8 +1,10 @@
 using Canamed.Application.Abstractions;
 using Canamed.Application.Auditing;
+using Canamed.Application.Portal;
 using Canamed.Domain.Agenda;
 using Canamed.Domain.Auditing;
 using Canamed.Domain.Notifications;
+using Canamed.Domain.Portal;
 
 namespace Canamed.Application.Notifications;
 
@@ -10,6 +12,7 @@ public sealed class NotificationService(
     INotificationRepository notificationRepository,
     IAgendaRepository agendaRepository,
     ICatalogRepository catalogRepository,
+    IPublicPortalRepository publicPortalRepository,
     ISmsWhatsAppProvider provider,
     IAuditRepository auditRepository,
     IUnitOfWork unitOfWork)
@@ -78,8 +81,50 @@ public sealed class NotificationService(
                 continue;
             }
 
+            var clinic = await publicPortalRepository.FindClinicAsync(clinicId, cancellationToken);
+            var slug = clinic?.Slug ?? "clinica";
+
+            var (confirmToken, confirmEntity) = PatientCapabilityToken.Issue(
+                clinicId,
+                CapabilityScope.Confirm,
+                now.AddDays(3),
+                now,
+                apt.PatientId,
+                apt.Id,
+                createdBy: "notification_worker");
+
+            var (rescheduleToken, rescheduleEntity) = PatientCapabilityToken.Issue(
+                clinicId,
+                CapabilityScope.Reschedule,
+                now.AddDays(3),
+                now,
+                apt.PatientId,
+                apt.Id,
+                createdBy: "notification_worker");
+
+            var (cancelToken, cancelEntity) = PatientCapabilityToken.Issue(
+                clinicId,
+                CapabilityScope.Cancel,
+                now.AddDays(3),
+                now,
+                apt.PatientId,
+                apt.Id,
+                createdBy: "notification_worker");
+
+            publicPortalRepository.AddToken(confirmEntity);
+            publicPortalRepository.AddToken(rescheduleEntity);
+            publicPortalRepository.AddToken(cancelEntity);
+
             var localDateStr = apt.StartsAt.ToOffset(TimeSpan.FromHours(-3)).ToString("dd/MM/yyyy às HH:mm");
-            var messageBody = $"Olá, {patient.Name}! Lembrando da sua consulta no CANAMED agendada para {localDateStr}.\n\nPara CONFIRMAR sua presença, responda 1.\nPara CANCELAR ou reagendar, responda 2.\n\n(Caso não queira mais receber lembretes, responda SAIR).";
+            var confirmLink = $"/p/{slug}/c/{confirmToken}/confirmar";
+            var rescheduleLink = $"/p/{slug}/c/{rescheduleToken}/remarcar";
+            var cancelLink = $"/p/{slug}/c/{cancelToken}/cancelar";
+
+            var messageBody = $"Olá, {patient.Name}! Lembrando da sua consulta no CANAMED agendada para {localDateStr}.\n\n"
+                + $"• Confirmar presença: {confirmLink}\n"
+                + $"• Remarcar consulta: {rescheduleLink}\n"
+                + $"• Cancelar: {cancelLink}\n\n"
+                + "Você também pode responder 1 para confirmar ou 2 para cancelar.\n(Para não receber mais lembretes, responda SAIR).";
 
             var notification = AppointmentNotification.Create(
                 clinicId,
