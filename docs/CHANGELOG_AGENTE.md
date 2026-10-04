@@ -903,4 +903,30 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - **Frontend React:** 15 suítes de teste = **60 testes aprovados (100% green)**.
   - **TypeScript & Vite Build:** 0 erros de compilação em modo de produção.
 
+---
 
+### [2026-10-03] — Planejamento das Superfícies Dedicadas e dos Links Compartilháveis (SPEC-0026)
+
+#### 1. Análise da situação atual
+- **AÇÃO**: Auditoria do frontend e das specs existentes para mapear o acoplamento entre sistema interno, portal do paciente, totem e workspace médico.
+  - **MOTIVO**: O usuário relatou que o totem de check-in não faz sentido no produto e que cada funcionalidade precisa de link próprio; era necessário confirmar a causa estrutural antes de propor o fluxo.
+  - **LOCAL AFETADO**: `frontend/src/App.tsx`, `frontend/src/features/patient/`, `frontend/src/features/medical/`, `frontend/src/features/layout/`, `specs/0015`, `specs/0016`, `specs/0017`, `specs/0018`.
+  - **RESULTADO**: Identificado que a SPA usa navegação por estado (`AppView`), sem URLs; que Portal do Paciente, Totem e Privacidade são itens do menu administrativo; que o médico compartilha o menu de gestão; e que não existe modelo de link tokenizado por ação. Também registrados desvios de implementação (ex.: `AppointmentTypeId` não enviado pelo frontend no agendamento online e paciente criado com `Guid.Empty` na verificação de OTP).
+
+#### 2. ADR de arquitetura
+- **AÇÃO**: Criação do `adr/0011-roteamento-por-url-e-superficies-dedicadas.md` (status `Proposto`) e atualização do índice de ADRs.
+  - **MOTIVO**: Formalizar a decisão de adotar roteamento por URL e separar as superfícies de sistema (`/app`), paciente (`/p`), médico (`/medico`) e saguão, conforme exigência de ADR para decisões relevantes do `GEMINI.md`.
+  - **LOCAL AFETADO**: `adr/0011-roteamento-por-url-e-superficies-dedicadas.md`, `adr/README.md`.
+  - **RESULTADO**: Decisão registrada com alternativas, consequências e impacto, incluindo a substituição parcial da SPEC-0017 (totem físico).
+
+#### 3. Especificação do novo fluxo
+- **AÇÃO**: Criação da `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md` (status `Rascunho`) e atualização do índice de SPECs.
+  - **MOTIVO**: Planejar integralmente a jornada do paciente e do médico, o catálogo de links compartilháveis, o check-in digital, o cadastro completo, o reagendamento, a lista de espera e a separação das superfícies.
+  - **LOCAL AFETADO**: `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md`, `specs/README.md`.
+  - **RESULTADO**: SPEC com 25 regras de negócio, rotas da superfície do paciente (`/p`), do sistema (`/app`), do médico (`/medico`) e do saguão; catálogo de 16 links por funcionalidade; central de links; modelo de token de capacidade; jornadas em Mermaid; critérios de aceitação, casos de erro, segurança, LGPD e questões abertas.
+
+#### 4. Aprovação e decisão de entrega
+- **AÇÃO**: Aprovação do ADR-0011 (status `Aceito`) e da SPEC-0026 (status `Aprovada`), com a Q-001 resolvida em "path agora, subdomínio depois".
+  - **MOTIVO**: O responsável pelo projeto autorizou o início da implementação e definiu que a primeira entrega usa rotas em *path* (`/p/{slug}`).
+  - **LOCAL AFETADO**: `adr/0011-roteamento-por-url-e-superficies-dedicadas.md`, `adr/README.md`, `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md`, `specs/README.md`.
+  - **RESULTADO**: Decisão formalizada; a implementação passa a seguir o plano de microcommits por camada (frontend, API, domínio, infraestrutura e testes).

@@ -87,7 +87,15 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0023](0023-spec-painel-do-dpo-governanca-lgpd.md) | Painel do DPO / Governança LGPD | Implementada | 2026-10-03 |
 | [0024](0024-spec-multi-clinica-e-alternancia-de-contexto.md) | Alternância de Multi-Clínica na Interface | Implementada | 2026-10-03 |
 | [0025](0025-spec-politicas-de-encaixe-e-cancelamento.md) | Políticas Parametrizáveis de Encaixe e Cancelamento | Implementada | 2026-10-03 |
+| [0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) | Jornada Digital do Paciente, Superfícies Dedicadas e Links Compartilháveis | Aprovada | 2026-10-03 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
+
+> A [SPEC-0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) propõe, sobre o
+> [ADR-0011](../adr/0011-roteamento-por-url-e-superficies-dedicadas.md), a separação das superfícies de
+> sistema, paciente, médico e saguão por URL, bem como a substituição parcial da
+> [SPEC-0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) (totem físico) pelo check-in digital por
+> QR Code/link. A SPEC-0017 permanece válida quanto às regras de tolerância, prioridade legal e
+> emissão de senha até a aprovação da SPEC-0026.
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
 Está implementada, com P-002 (migrations) e P-003 (tipos do frontend gerados a partir do OpenAPI)
