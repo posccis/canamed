@@ -227,12 +227,29 @@ public sealed class OnlineBookingService(
         foreach (var a in list)
         {
             var prof = await catalogRepository.FindProfessionalAsync(a.ClinicId, a.ProfessionalId, cancellationToken);
+            var type = await catalogRepository.FindAppointmentTypeAsync(a.ClinicId, a.AppointmentTypeId, cancellationToken);
+
+            string specialtyName = "Consulta Médica";
+            var specialtyId = type?.SpecialtyId ?? prof?.SpecialtyId;
+            if (specialtyId.HasValue)
+            {
+                var specialty = await catalogRepository.FindSpecialtyAsync(a.ClinicId, specialtyId.Value, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(specialty?.Name))
+                {
+                    specialtyName = specialty.Name;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(type?.Name))
+            {
+                specialtyName = type.Name;
+            }
+
             dtos.Add(new OnlineAppointmentDto(
                 a.Id,
                 a.ClinicId,
                 a.ProfessionalId,
                 prof?.Name ?? "Médico",
-                "Consulta Médica",
+                specialtyName,
                 a.StartsAt,
                 a.EndsAt,
                 AppointmentStatusMap.ToStoredValue(a.Status),

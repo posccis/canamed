@@ -23,8 +23,11 @@ type PatientPortalProps = {
 
 export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: PatientPortalProps = {}) {
   const { addToast } = useToast();
+  const storageKey = clinic?.slug ? `canamed_patient_session_${clinic.slug}` : 'canamed_patient_session';
   const [session, setSession] = useState<PatientSession | null>(() => {
-    const saved = localStorage.getItem('canamed_patient_session');
+    const scoped = clinic?.slug ? localStorage.getItem(`canamed_patient_session_${clinic.slug}`) : null;
+    const legacy = localStorage.getItem('canamed_patient_session');
+    const saved = scoped || legacy;
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -142,7 +145,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: 
           patientName: res.patientName || 'Paciente',
         };
         setSession(s);
-        localStorage.setItem('canamed_patient_session', JSON.stringify(s));
+        localStorage.setItem(storageKey, JSON.stringify(s));
         addToast(`Bem-vindo ao portal, ${s.patientName}!`, 'success');
       } else {
         addToast(res.errorMessage || 'Código inválido ou expirado.', 'error');
@@ -156,6 +159,7 @@ export function PatientPortal({ initialTab = 'schedule', onTabChange, clinic }: 
 
   const handleLogout = () => {
     setSession(null);
+    localStorage.removeItem(storageKey);
     localStorage.removeItem('canamed_patient_session');
     setOtpSent(false);
     setOtpCode('');
