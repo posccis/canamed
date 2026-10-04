@@ -136,9 +136,9 @@ export function KioskMode() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
         }}
       >
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>Autoatendimento CANAMED</h1>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>Check-in assistido</h1>
         <p style={{ opacity: 0.9, marginTop: '6px', fontSize: '1rem' }}>
-          Totem de Recepção Inteligente — Faça seu check-in e retire sua senha com rapidez.
+          Recepção CANAMED — localize o agendamento de hoje, confirme a chegada e emita a senha.
         </p>
       </div>
 

@@ -24,7 +24,7 @@ describe('KioskMode Component', () => {
     vi.clearAllMocks();
   });
 
-  it('renderiza a tela do totem de autoatendimento e o teclado touch', async () => {
+  it('renderiza a tela de check-in assistido e o teclado touch', async () => {
     mocks.getPortalMeta.mockResolvedValueOnce({
       clinicId: 'clinic-1',
       clinicName: 'Clínica CanaMed',
@@ -39,7 +39,7 @@ describe('KioskMode Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Autoatendimento CANAMED')).toBeInTheDocument();
+      expect(screen.getByText('Check-in assistido')).toBeInTheDocument();
       expect(screen.getByText('Digite seu CPF ou Telefone')).toBeInTheDocument();
     });
 
