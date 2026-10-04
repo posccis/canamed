@@ -217,15 +217,24 @@ public static class PortalEndpoints
 
         var specialties = await catalogRepository.ListSpecialtiesAsync(clinic.Id, cancellationToken);
         var professionals = await catalogRepository.ListProfessionalsAsync(clinic.Id, cancellationToken);
+        var appointmentTypes = await catalogRepository.ListAppointmentTypesAsync(clinic.Id, cancellationToken);
 
         var specDtos = specialties.Where(s => s.IsActive).Select(s => new PortalSpecialtyItem(s.Id, s.Name)).ToList();
         var profDtos = professionals.Where(p => p.IsActive).Select(p => new PortalProfessionalItem(p.Id, p.Name, p.SpecialtyId)).ToList();
+        var typeDtos = appointmentTypes.Where(t => t.IsActive).Select(t => new PortalAppointmentTypeItem(t.Id, t.Name, t.DurationMinutes)).ToList();
 
-        return Results.Ok(new PortalMetaResponse(clinic.Id, clinic.Name, specDtos, profDtos));
+        return Results.Ok(new PortalMetaResponse(clinic.Id, clinic.Slug, clinic.DisplayName, specDtos, profDtos, typeDtos));
     }
 }
 
 public sealed record CancelAppointmentPayload(string Reason);
-public sealed record PortalMetaResponse(Guid ClinicId, string ClinicName, IReadOnlyList<PortalSpecialtyItem> Specialties, IReadOnlyList<PortalProfessionalItem> Professionals);
+public sealed record PortalMetaResponse(
+    Guid ClinicId,
+    string ClinicSlug,
+    string ClinicName,
+    IReadOnlyList<PortalSpecialtyItem> Specialties,
+    IReadOnlyList<PortalProfessionalItem> Professionals,
+    IReadOnlyList<PortalAppointmentTypeItem> AppointmentTypes);
 public sealed record PortalSpecialtyItem(Guid Id, string Name);
 public sealed record PortalProfessionalItem(Guid Id, string Name, Guid? SpecialtyId);
+public sealed record PortalAppointmentTypeItem(Guid Id, string Name, int DurationMinutes);

@@ -62,6 +62,22 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
             }));
 
+    // Superfície pública do paciente: limite generoso, mas suficiente para conter varredura de tokens
+    // e abuso de links (SPEC-0026/13).
+    var publicPermitLimit = builder.Configuration.GetValue("Canamed:RateLimiting:PublicPermitLimit", 120);
+    var publicWindowSeconds = builder.Configuration.GetValue("Canamed:RateLimiting:PublicWindowSeconds", 60);
+
+    options.AddPolicy(
+        PublicPortalEndpoints.PublicRateLimitPolicy,
+        context => RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "origem-desconhecida",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromSeconds(publicWindowSeconds),
+                PermitLimit = publicPermitLimit,
+                QueueLimit = 0,
+            }));
+
     options.OnRejected = async (context, cancellationToken) =>
     {
         context.HttpContext.Response.ContentType = "application/problem+json";
@@ -116,6 +132,7 @@ api.MapMedicalDocumentEndpoints();
 api.MapDoctorWorkspaceEndpoints();
 api.MapNotificationEndpoints();
 api.MapPortalEndpoints();
+api.MapPublicPortalEndpoints();
 api.MapKioskEndpoints();
 api.MapPrivacyEndpoints();
 api.MapCashRegisterEndpoints();
