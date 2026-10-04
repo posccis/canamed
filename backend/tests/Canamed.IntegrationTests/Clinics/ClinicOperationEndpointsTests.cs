@@ -249,7 +249,11 @@ public sealed class ClinicOperationEndpointsTests(CanamedApiFactory factory) : A
         var now = DateTimeOffset.UtcNow;
         var clinicId = Guid.NewGuid();
 
-        context.Clinics.Add(Clinic.Create("Clínica Operação (sintética)", now, clinicId));
+        context.Clinics.Add(Clinic.Create(
+            "Clínica Operação (sintética)",
+            now,
+            clinicId,
+            $"operacao-{clinicId:N}"));
 
         var professional = Professional.Create(clinicId, "Profissional Operação", now);
         var patient = Patient.Create(clinicId, "Paciente Operação", "(81) 95555-5555", now);

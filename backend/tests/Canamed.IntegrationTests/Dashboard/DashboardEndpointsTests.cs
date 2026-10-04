@@ -167,7 +167,11 @@ public sealed class DashboardEndpointsTests(CanamedApiFactory factory) : Agenda.
         var now = DateTimeOffset.UtcNow;
         var clinicId = Guid.NewGuid();
 
-        context.Clinics.Add(Clinic.Create("Clínica Dashboard (sintética)", now, clinicId));
+        context.Clinics.Add(Clinic.Create(
+            "Clínica Dashboard (sintética)",
+            now,
+            clinicId,
+            $"dashboard-{clinicId:N}"));
 
         var prof = Professional.Create(clinicId, "Dr. Painel " + Guid.NewGuid().ToString("N")[..4], now);
         var patient = Patient.Create(clinicId, "Paciente Painel", "(81) 98888-8888", now);
