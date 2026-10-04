@@ -930,3 +930,56 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - **MOTIVO**: O responsável pelo projeto autorizou o início da implementação e definiu que a primeira entrega usa rotas em *path* (`/p/{slug}`).
   - **LOCAL AFETADO**: `adr/0011-roteamento-por-url-e-superficies-dedicadas.md`, `adr/README.md`, `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md`, `specs/README.md`.
   - **RESULTADO**: Decisão formalizada; a implementação passa a seguir o plano de microcommits por camada (frontend, API, domínio, infraestrutura e testes).
+
+---
+
+### [2026-10-03] — Primeira Entrega das Superfícies Dedicadas e dos Links Compartilháveis (SPEC-0026)
+
+#### 1. Frontend — roteamento por URL e superfícies segregadas
+- **AÇÃO**: Substituição da navegação por estado (`AppView`) por roteamento com `react-router-dom`, criando as superfícies `/app` (sistema), `/p/:slug` (paciente), `/medico` (profissional) e `/sala/tv` (saguão).
+  - **MOTIVO**: Atender o requisito central da SPEC-0026/RN-002 — cada funcionalidade com endereço próprio, compartilhável e restaurável por *refresh*/*Back* — e isolar o paciente da moldura administrativa (RN-001).
+  - **LOCAL AFETADO**: `frontend/src/App.tsx`, `frontend/src/main.tsx`, `frontend/src/app/` (`StaffApp`, `PatientLayout`, `DoctorApp`), `frontend/src/navigation/routes.ts`, `frontend/src/features/layout/` (`Sidebar`, `Topbar`, `GlobalSearchModal`).
+  - **RESULTADO**: `App.tsx` deixa de decidir a tela por estado; o menu interno perde "Portal Paciente", "Totem Check-in" e "Privacidade (LGPD)" e ganha a Central de Links; o médico passa a usar shell próprio com navegação reduzida.
+
+#### 2. Frontend — páginas da superfície do paciente
+- **AÇÃO**: Criação das páginas `/p/:slug` (hub), `/agendar`, `/consultas`, `/documentos`, `/privacidade`, `/check-in[/token]`, `/fila[/token]`, `/c/:token` (detalhe), `/c/:token/confirmar`, `/c/:token/remarcar`, `/c/:token/cancelar` e `/validar/:token`.
+  - **MOTIVO**: Tornar cada funcionalidade do paciente um endereço real e *mobile-first*, sem sidebar, com alvos ≥ 48 px e "Precisa de ajuda?" persistente (RN-021, RN-022).
+  - **LOCAL AFETADO**: `frontend/src/app/PatientLayout.tsx`, `frontend/src/features/patient/pages/`, `frontend/src/features/patient/useClinicBySlug.ts`, `frontend/src/features/patient/PatientPortal.tsx`, `frontend/src/styles/theme.css`.
+  - **RESULTADO**: Os links de confirmação, reagendamento, cancelamento, check-in, fila e validação de documento abrem páginas próprias; as abas do portal acompanham a URL.
+
+#### 3. Frontend — Central de Links
+- **AÇÃO**: Criação de `/app/links` com o catálogo L-01 a L-16, filtros por profissional/especialidade e botão de copiar.
+  - **MOTIVO**: Operacionalizar a SPEC-0026/RN-018 e o pedido "cada funcionalidade com link próprio".
+  - **LOCAL AFETADO**: `frontend/src/features/layout/LinksPanel.tsx`, `frontend/src/features/layout/Sidebar.tsx`, `frontend/src/features/layout/GlobalSearchModal.tsx`.
+  - **RESULTADO**: A recepção copia o endereço correto para WhatsApp, SMS, cartões e redes sociais sem depender do menu interno.
+
+#### 4. Domínio e infraestrutura — slug da clínica e token de capacidade
+- **AÇÃO**: `clinics.slug` (+ `public_name`, `allow_waitlist`, `allow_self_reschedule`, `max_online_appointments`) e a entidade `patient_capability_tokens` com hash SHA-256, escopo, validade, consumo e revogação; migration `AddClinicPublicProfileAndCapabilityTokens` com *backfill* das clínicas existentes.
+  - **MOTIVO**: Sustentar links públicos estáveis (RN-003) e tokens opacos de uso único (RN-004 a RN-008).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Clinics/Clinic.cs`, `backend/src/Canamed.Domain/Portal/PatientCapabilityToken.cs`, configurações EF, `CanamedDbContext`, migration e semeador de desenvolvimento (slug `cana-med`).
+  - **RESULTADO**: Clínica com slug único global validado (`[a-z0-9-]`, 3–60); token de 256 bits guardado apenas como hash, com estados `active/used/revoked/expired`.
+
+#### 5. Aplicação e API — superfície pública por slug e token
+- **AÇÃO**: `PublicPortalService` com resolução de clínica por slug, resumo de capacidade, confirmação, cancelamento com desafio, reagendamento com disponibilidade, check-in digital e projeção da etapa da fila; endpoints `/api/v1/public/*` com rate limiting por IP, `noindex` e `no-store`.
+  - **MOTIVO**: Implementar as jornadas F-002 a F-004 sobre as regras aprovadas, sem expor dado clínico na URL ou no corpo dos links (RN-006, RN-011).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/PublicPortalService.cs` e contratos, `backend/src/Canamed.Infrastructure/Persistence/PublicPortalRepository.cs`, `backend/src/Canamed.Api/Endpoints/PublicPortalEndpoints.cs`, `Program.cs`, `SecurityHeadersMiddleware.cs`.
+  - **RESULTADO**: Links funcionais de confirmação, cancelamento, reagendamento, check-in, fila e validação; cada ação sensível exige desafio e reusa as regras existentes (check-in via `KioskCheckInService`).
+
+#### 6. Correções de base (Anexo C da SPEC-0026)
+- **AÇÃO**: Correção de D-01 (envio e validação do `appointmentTypeId` no agendamento online, com tipos no metadado público), D-02 (paciente criado sem clínica vazia, escopado por slug), D-04 (rate limiting nas rotas públicas), D-06 (páginas públicas de documento e validação) e D-07 (totem fora do menu; check-in por link).
+  - **MOTIVO**: Eram pré-requisito para a primeira entrega e impediam o agendamento online e o vínculo correto do paciente.
+  - **LOCAL AFETADO**: `OnlineBookingService`, `PortalEndpoints`, `PortalRepository`, `patientApi.ts`, `PatientPortal.tsx`.
+  - **RESULTADO**: Agendamento online grava o tipo de atendimento escolhido; o cadastro do paciente respeita a clínica do link.
+
+#### 7. Testes e homologação
+- **AÇÃO**: Execução das suítes após cada camada.
+  - **Backend .NET:** **196 testes unitários** e **81 testes de integração** aprovados (100% *green*), incluindo slug, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in e fila.
+  - **Frontend React:** **16 suítes / 63 testes** aprovados, incluindo o roteamento das superfícies e a ausência da moldura do sistema no portal do paciente.
+  - **TypeScript & Vite Build:** build de produção sem erros.
+  - **RESULTADO**: Entrega verificada de ponta a ponta; commit sem `push`, conforme solicitado.
+
+#### 8. Pendências registradas
+- **AÇÃO**: Manutenção da SPEC-0026 em `Aprovada` (seção 3.3) e da SPEC-0017 como `Substituída por SPEC-0026 (parcialmente)`.
+  - **MOTIVO**: Cadastro completo, lista de espera, isolamento de storage do paciente (D-05), nome real da especialidade no histórico (D-03), links nos lembretes e E2E mobile (D-08) ainda não foram entregues.
+  - **LOCAL AFETADO**: `specs/0026-...md` (seção 3.3), `specs/0017-...md`, `specs/README.md`, `docs/backlog-proximas-funcionalidades.md`.
+  - **RESULTADO**: Escopo entregue e pendências explícitos para a próxima fase.

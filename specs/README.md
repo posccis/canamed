@@ -78,7 +78,7 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0014](0014-spec-notificacoes-e-lembretes-ativos-whatsapp-sms.md) | Notificações e Lembretes Ativos (WhatsApp / SMS) | Implementada | 2026-10-03 |
 | [0015](0015-spec-agendamento-online-e-portal-do-paciente.md) | Agendamento Online e Portal do Paciente (OTP) | Implementada | 2026-10-03 |
 | [0016](0016-spec-carteira-digital-e-acesso-a-documentos-clinicos.md) | Carteira Digital e Acesso a Documentos Clínicos | Implementada | 2026-10-03 |
-| [0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) | Check-in Autônomo na Recepção (Totem / QR Code) | Implementada | 2026-10-03 |
+| [0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) | Check-in Autônomo na Recepção (Totem / QR Code) | Substituída por SPEC-0026 (parcialmente) | 2026-10-03 |
 | [0018](0018-spec-portal-de-autonomia-e-direitos-do-titular-lgpd.md) | Portal de Autonomia e Direitos do Titular (LGPD) | Implementada | 2026-10-03 |
 | [0019](0019-spec-fechamento-e-conferencia-de-caixa.md) | Fechamento e Conferência de Caixa por Operador | Implementada | 2026-10-03 |
 | [0020](0020-spec-painel-de-chamada-tv-recepcao.md) | Painel de Chamada para TV na Recepção (Tempo Real) | Implementada | 2026-10-03 |

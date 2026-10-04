@@ -4,13 +4,20 @@
 | :--- | :--- |
 | **ID** | SPEC-0017 |
 | **Título** | Check-in Autônomo na Recepção via Totem de Autoatendimento e QR Code Mobile |
-| **Status** | Implementada |
+| **Status** | Substituída por SPEC-0026 (parcialmente) |
 | **Versão** | 1.0 |
 | **Data** | 2026-10-03 |
 | **Autor** | Antigravity AI / Equipe CANAMED |
 | **Revisores** | Responsável pelo Projeto CANAMED |
 | **Módulos afetados** | backend (Application, Infrastructure, Api), frontend (modo quiosque em tela cheia / interface web móvel de check-in), banco de dados |
-| **ADRs relacionados** | ADR-0006 (.NET/React), ADR-0007 (EF Core/PostgreSQL), ADR-0008 (segurança) |
+| **ADRs relacionados** | ADR-0006 (.NET/React), ADR-0007 (EF Core/PostgreSQL), ADR-0008 (segurança), [ADR-0011](../adr/0011-roteamento-por-url-e-superficies-dedicadas.md) |
+
+> **Substituição parcial (ADR-0011 / SPEC-0026):** o **totem físico deixa de ser produto**. As regras
+> aprovadas aqui — janela de tolerância de 60 min antes a 15 min depois, pergunta obrigatória de
+> prioridade legal, emissão de senha `N-`/`P-` e idempotência do check-in — permanecem válidas e são
+> reaproveitadas pelo check-in digital em `/p/{slug}/check-in/{token}` e pelo fluxo assistido da
+> recepção na superfície `/app/recepcao`. A tela de quiosque (`KioskMode`) deixa de ser item do menu interno; o
+> serviço `KioskCheckInService` continua sendo a implementação de referência das regras.
 
 ---
 

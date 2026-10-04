@@ -4,9 +4,9 @@
 >
 > **Regra fundamental:** nenhum item entra em implementação sem SPEC aprovada ([`specs/README.md`](../specs/README.md)). A priorização abaixo segue a ordem estratégica definida para o produto: **1º Visão do Médico**, **2º Visão do Paciente**, **3º Visão da Administração** e **4º Infraestrutura**.
 
-- **Versão:** 2.0
-- **Data:** 2026-10-02
-- **Estado atual do produto:** Fundação (SPEC-0001), Agenda de Consultas (SPEC-0002), Autenticação & Auditoria (SPEC-0003), Catálogo Assistencial (SPEC-0004), Fila de Espera & Atendimento (SPEC-0005), Gestão Operacional da Clínica (SPEC-0006), Painel Gerencial & Dashboards (SPEC-0007), Pagamento no Balcão (SPEC-0008), Apoio à Triagem & Manchester (SPEC-0009) e Design System UI/UX (SPEC-UI-001) **implementadas e testadas**.
+- **Versão:** 2.1
+- **Data:** 2026-10-03
+- **Estado atual do produto:** SPECs 0001 a 0025 **implementadas e testadas**; a SPEC-0026 (superfícies dedicadas e links compartilháveis) foi **aprovada** e recebeu sua **primeira entrega em *path***, mantendo cadastro completo e lista de espera para as próximas fases.
 
 ---
 
@@ -23,7 +23,22 @@
 | **SPEC-0007** | Painel gerencial / Dashboard com métricas de ocupação, espera, salas e produção médica | **Implementado** |
 | **SPEC-0008** | Fluxo de pagamento no balcão (dinheiro, PIX, débito, crédito, convênio), estorno e recibo | **Implementado** |
 | **SPEC-0009** | Apoio à triagem com sinais vitais completos, IMC e Protocolo de Manchester na fila | **Implementado** |
+| **SPEC-0010 a 0013** | Prontuário eletrônico (SOAP), documentos clínicos, consultório virtual e gestão de retornos | **Implementado** |
+| **SPEC-0014** | Notificações e lembretes ativos (WhatsApp/SMS simulados e opt-out) | **Implementado** |
+| **SPEC-0015 a 0018** | Portal do paciente, carteira digital, check-in autônomo e privacidade LGPD | **Implementado** |
+| **SPEC-0019 a 0025** | Caixa, painel de TV, repasses, estoque, DPO, multi-clínica e políticas de encaixe | **Implementado** |
+| **SPEC-0026** | Superfícies dedicadas por URL, Central de Links, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in digital e fila por etapa | **Primeira entrega (em *path*)** |
 | **SPEC-UI-001** | Design System oficial CANAMED, sidebar retrátil, busca global (`Ctrl+K`) e exportação CSV | **Implementado** |
+
+### Pendências da SPEC-0026 (próximas entregas)
+
+| Item | Descrição | Esforço |
+| :--- | :--- | :--- |
+| Cadastro completo com validação da recepção | `patient_registration_drafts`, link `registration` e fila de revisão da recepção | M |
+| Reposição de vaga por lista de espera | `waitlist_entries`, oferta por link de validade curta e aceite | M |
+| Sessão do paciente isolada por superfície | Deixar de usar `localStorage` compartilhado com o operador (D-05) | P |
+| Links nos lembretes | Notificações apontando para os links L-07 a L-12 em vez do token de sessão | P |
+| E2E mobile das jornadas do paciente | Playwright em viewport mobile para agendar, confirmar, cancelar, check-in e fila (D-08) | M |
 
 ---
 

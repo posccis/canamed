@@ -90,6 +90,36 @@ decisão.
   condicionada à SPEC-0017 Q-001);
 - Reconhecimento facial ou biometria.
 
+### 3.3 Situação da implementação (2026-10-03)
+
+Primeira entrega em *path*, já disponível no repositório:
+
+| Entregue | Como |
+| :--- | :--- |
+| Roteamento por URL e superfícies segregadas | `/app`, `/p/:slug`, `/medico` e `/sala/tv` sobre `react-router-dom`; sidebar sem itens do paciente (RN-001, RN-002) |
+| Central de Links | `/app/links` com o catálogo L-01 a L-16 e botão de copiar (RN-018) |
+| Slug da clínica | `clinics.slug` + `/api/v1/public/clinics/{slug}/meta`, com backfill das clínicas existentes (RN-003) |
+| Token de capacidade | `patient_capability_tokens` com hash SHA-256, escopo, validade, consumo e revogação (RN-004 a RN-008) |
+| Confirmação em um clique | `/p/:slug/c/{token}/confirmar` e `POST /api/v1/public/capabilities/{token}/confirm` (RN-012) |
+| Cancelamento autônomo | desafio de identidade, prazo da política e cancelamento da fila (RN-013) |
+| Reagendamento autônomo | disponibilidade em tempo real, limite de 1 remarcação e novo link de confirmação (RN-014) |
+| Check-in digital | `/p/:slug/check-in/{token}` reutilizando as regras da SPEC-0017, com emissão de senha e link da fila (RN-009) |
+| Acompanhamento por etapa | `/p/:slug/fila/{token}` com posição, etapa e previsão, sem classificação de risco (RN-011) |
+| Validação pública de documento | `/p/:slug/validar/{token}` (SPEC-0016) |
+| Endurecimento das rotas públicas | rate limiting por IP, `X-Robots-Tag: noindex` e `Cache-Control: no-store` (RN-006, seção 13) |
+| Correções de base | D-01 (`appointmentTypeId` no agendamento online), D-02 (paciente sem clínica vazia) e D-04 (rate limiting) |
+
+Pendente para as próximas entregas (preservando o status `Aprovada` desta SPEC):
+
+| Pendente | Observação |
+| :--- | :--- |
+| Cadastro completo com validação da recepção (F-004 / RN-015, RN-016) | depende de `patient_registration_drafts` |
+| Reposição de vaga por lista de espera (RN-019 / L-16) | fase 2, conforme Q-004 |
+| Sessão do paciente isolada em storage por superfície (D-05) | hoje ainda usa `localStorage` da mesma origem |
+| Link de documento por página própria com desafio (D-06 / L-13) | rota criada; falta emitir tokens `document` no fluxo do paciente |
+| Notificações apontando para os links L-07 a L-12 (RN-023) | templates ainda usam o token de sessão |
+| Testes E2E das jornadas em viewport mobile (D-08) | cenários de Playwright ainda não escritos |
+
 ---
 
 ## 4. Atores e Permissões
@@ -634,9 +664,9 @@ classificação de Manchester nunca é exibida aqui (RN-011).
 | **Q-001** | Portal do paciente em *path* (`/p`) ou subdomínio por clínica (`cana-med.canamed.app`)? | Produto / Infra | **Resolvida:** primeira entrega em *path* (`/p/{slug}`); o subdomínio é evolução via resolvedor de clínica por slug, sem reescrever as telas. |
 | **Q-002** | Qual o prazo padrão de cancelamento e limite de remarcações por clínica? | Gestão da Clínica | Hoje 2 h (SPEC-0015); passa a ser configurável na SPEC-0025. |
 | **Q-003** | Cadastro completo é obrigatório para convênio ou apenas recomendado? | Produto / Recepção | Recomendação inicial: obrigatório para convênio e retorno recorrente. |
-| **Q-004** | Lista de espera entra na primeira entrega ou em fase seguinte? | Produto | Recomendada como fase 2, após os links base. |
+| **Q-004** | Lista de espera entra na primeira entrega ou em fase seguinte? | Produto | **Resolvida:** fase 2, após os links base (a primeira entrega já cobre confirmação, cancelamento, reagendamento, check-in e fila). |
 | **Q-005** | O produto precisa de PWA instalável com notificações? | Produto | Não para o MVP; notificação atual é WhatsApp/SMS (SPEC-0014). |
-| **Q-006** | Confirmar presença deve exigir desafio? | Segurança / Produto | Não; o token de escopo `confirm` é suficiente por não expor dado clínico. |
+| **Q-006** | Confirmar presença deve exigir desafio? | Segurança / Produto | **Resolvida:** não; implementado sem desafio, apenas com token de escopo `confirm` (não expõe dado clínico). |
 
 ---
 
@@ -646,6 +676,7 @@ classificação de Manchester nunca é exibida aqui (RN-011).
 | :--- | :--- | :--- | :--- |
 | 0.1 | 2026-10-03 | Equipe CANAMED | Versão inicial: superfícies dedicadas, catálogo de links, check-in digital, cadastro completo, reagendamento, lista de espera e shell do médico. |
 | 1.0 | 2026-10-03 | Equipe CANAMED | Aprovação: Q-001 resolvida (path primeiro) e início da implementação conforme o ADR-0011. |
+| 1.1 | 2026-10-03 | Equipe CANAMED | Primeira entrega em *path*: superfícies `/app`, `/p`, `/medico` e `/sala/tv`, Central de Links, slug da clínica, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in digital, fila por etapa e validação pública de documento. Cadastro completo e lista de espera permanecem nas próximas entregas (seção 3.3). |
 
 ---
 
@@ -716,3 +747,8 @@ funcionalidades, são correções para o fluxo proposto funcionar):
 
 > As correções D-01 a D-04 são pré-requisito para a primeira entrega da SPEC-0026; D-05 a D-08 entram
 > conforme a separação das superfícies for implementada.
+>
+> **Situação em 2026-10-03:** D-01, D-02, D-04 e D-07 resolvidos na primeira entrega; D-06 atendido por
+> página pública própria (`/p/{slug}/documentos/{token}` e `/p/{slug}/validar/{token}`). D-03 (nome da
+> especialidade no histórico), D-05 (isolamento de storage do paciente) e D-08 (E2E mobile) seguem
+> pendentes e registrados na seção 3.3.
