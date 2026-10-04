@@ -9,6 +9,9 @@ public static class DevelopmentDefaults
     /// <summary>Clínica de demonstração criada pelo semeador de desenvolvimento.</summary>
     public static Guid DemoClinicId { get; } = Guid.Parse("11111111-1111-4111-8111-111111111111");
 
+    /// <summary>Slug público da clínica de demonstração (SPEC-0026/RN-003).</summary>
+    public const string DemoClinicSlug = "cana-med";
+
     /// <summary>Profissional de demonstração.</summary>
     public static Guid DemoProfessionalId { get; } = Guid.Parse("22222222-2222-4222-8222-222222222222");
 

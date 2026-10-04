@@ -68,6 +68,7 @@ internal static class TestDatabase
 
         using var context = new CanamedDbContext(Options);
 
+        context.Database.ExecuteSqlRaw("DELETE FROM patient_capability_tokens");
         context.Database.ExecuteSqlRaw("DELETE FROM login_challenges");
         context.Database.ExecuteSqlRaw("DELETE FROM user_sessions");
         context.Database.ExecuteSqlRaw("DELETE FROM clinic_memberships");
