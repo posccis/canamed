@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '../../api/client';
+import { apiGet, apiPost, apiPut } from '../../api/client';
 
 export interface PatientSession {
   token: string;
@@ -238,6 +238,31 @@ export interface RescheduleResult {
   confirmPath?: string;
 }
 
+export interface RegistrationDraftResponse {
+  draftId: string;
+  clinicId: string;
+  patientId: string;
+  clinicSlug: string;
+  status: 'draft' | 'pending_review' | 'approved' | 'returned';
+  reviewNote?: string;
+  payloadJson: string;
+  patientNameMasked: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+}
+
+export interface PendingRegistrationReviewDto {
+  draftId: string;
+  clinicId: string;
+  patientId: string;
+  patientName: string;
+  patientPhone: string;
+  status: string;
+  reviewNote?: string;
+  payloadJson: string;
+  submittedAt?: string;
+}
+
 export const patientApi = {
   // Metadados públicos (Clínica, Especialidades, Médicos)
   getPortalMeta: () => apiGet<PortalMetaResponse>('/portal/meta'),
@@ -275,6 +300,30 @@ export const patientApi = {
     apiPost<RescheduleResult>(`/public/capabilities/${encodeURIComponent(token)}/reschedule`, {
       startsAt,
       answer,
+    }),
+
+  getRegistrationDraft: (token: string) =>
+    apiGet<RegistrationDraftResponse>(`/public/registration/${encodeURIComponent(token)}`),
+
+  updateRegistrationDraft: (token: string, payloadJson: string) =>
+    apiPut<RegistrationDraftResponse>(`/public/registration/${encodeURIComponent(token)}`, {
+      payloadJson,
+    }),
+
+  submitRegistrationDraft: (token: string, payloadJson: string) =>
+    apiPost<RegistrationDraftResponse>(`/public/registration/${encodeURIComponent(token)}/submit`, {
+      payloadJson,
+    }),
+
+  listPendingRegistrationReviews: () =>
+    apiGet<PendingRegistrationReviewDto[]>('/reception/registration-reviews'),
+
+  approveRegistrationReview: (draftId: string) =>
+    apiPost<{ message: string }>(`/reception/registration-reviews/${encodeURIComponent(draftId)}/approve`),
+
+  returnRegistrationReview: (draftId: string, reviewNote: string) =>
+    apiPost<{ message: string }>(`/reception/registration-reviews/${encodeURIComponent(draftId)}/return`, {
+      reviewNote,
     }),
 
   validatePublicDocument: (publicToken: string) =>

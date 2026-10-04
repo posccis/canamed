@@ -14,6 +14,7 @@ import { PatientCheckInPage } from './features/patient/pages/PatientCheckInPage'
 import { PatientDocumentPage } from './features/patient/pages/PatientDocumentPage';
 import { PatientDocumentValidationPage } from './features/patient/pages/PatientDocumentValidationPage';
 import { PatientHub } from './features/patient/pages/PatientHub';
+import { PatientRegistrationPage } from './features/patient/pages/PatientRegistrationPage';
 import {
   PatientAppointmentsPage,
   PatientBookingPage,
@@ -72,6 +73,8 @@ export function App() {
           <Route path="documentos/:token" element={<PatientDocumentPage />} />
           <Route path="privacidade" element={<PrivacyPortal />} />
           <Route path="privacidade/:protocol" element={<PrivacyPortal />} />
+          <Route path="cadastro" element={<PatientRegistrationPage />} />
+          <Route path="cadastro/:token" element={<PatientRegistrationPage />} />
           <Route path="check-in" element={<PatientCheckInPage />} />
           <Route path="check-in/:token" element={<PatientCheckInPage />} />
           <Route path="fila" element={<PatientQueuePage />} />
