@@ -63,7 +63,6 @@ public static class DependencyInjection
         services.AddScoped<IClinicOperationRepository, ClinicOperationRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
-        services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
         services.AddScoped<ITriageRepository, TriageRepository>();
         services.AddScoped<Canamed.Application.MedicalRecords.IMedicalRecordRepository, MedicalRecordRepository>();
         services.AddScoped<Canamed.Application.MedicalDocuments.IMedicalDocumentRepository, MedicalDocumentRepository>();

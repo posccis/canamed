@@ -132,6 +132,16 @@ enquadrar como Software como Dispositivo Médico (SaMD). O impacto regulatório 
 forem adicionadas funcionalidades de diagnóstico automatizado, suporte clínico com recomendações
 terapêuticas ou algoritmos de decisão clínica.
 
+### 3.8 Proteção e Integridade Clínica de Dados Ginecológicos (Saúde da Mulher)
+
+Como plataforma especializada em ginecologia, incidem requisitos reforçados de sigilo, integridade e privacidade:
+- **Dados Altamente Sensíveis:** Histórico menstrual, obstétrico, contraceptivo e resultados de rastreamento de exames preventivos (ex.: citopatológico, mamografia, biópsias) são classificados como dados sensíveis reforçados sob a LGPD (Art. 11).
+- **Controle de Acesso por Necessidade Assistencial:** Perfis de recepção, faturamento e administração não possuem acesso às notas clínicas, histórico ginecológico ou documentos emitidos pelo médico.
+- **Inviolabilidade e Adendos:** Registros clínicos assinados ou finalizados não podem ser silenciosamente sobrescritos (`UPDATE` direto vedado); qualquer correção ocorre exclusivamente via `MedicalRecordAddendum` auditável.
+- **Diferenciação Semântica:** A modelagem deve diferenciar campos não preenchidos, informações desconhecidas e achados negativos documentados (ex.: ausência de nódulos palpáveis ou colo sem lesões aparentes).
+- **Preservação de Hipóteses:** Hipóteses diagnósticas preliminares não podem ser apresentadas na interface como diagnósticos confirmados.
+- **Ambiente de Testes:** Proibição estrita do uso de dados clínicos reais de pacientes em desenvolvimento e testes sem anonimização homologada.
+
 ## 4. Normas Técnicas de Referência
 
 Mesmo quando não obrigatórias inicialmente, orientam decisões arquiteturais:

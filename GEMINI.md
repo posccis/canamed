@@ -8,11 +8,11 @@
 
 # Visão do Projeto
 
-O **CANAMED** é uma plataforma voltada para a gestão de clínicas, criada com o objetivo de reduzir burocracias, aumentar a eficiência operacional e melhorar a experiência tanto dos profissionais de saúde quanto dos pacientes.
+O **CANAMED** é uma plataforma especializada na operação e gestão de **clínicas ginecológicas**, criada com o objetivo de reduzir burocracias, aumentar a eficiência operacional e melhorar a experiência tanto dos profissionais de saúde quanto das pacientes.
 
-O projeto nasce da premissa de que clínicas não precisam apenas de um sistema para registrar informações, mas de uma ferramenta que organize o funcionamento do negócio como um todo.
+O projeto parte da premissa de que clínicas ginecológicas necessitam de fluxos clínicos e administrativos fluidos, acolhedores e precisos, transformando processos manuais, demorados e fragmentados em rotinas simples, intuitivas e seguras.
 
-O foco é transformar processos manuais, demorados e fragmentados em fluxos simples, intuitivos e confiáveis.
+Nesta fase do produto, o foco principal de desenvolvimento é o **Prontuário Eletrônico do Paciente (PEP) especializado em ginecologia**, concebido para atender à profundidade do atendimento da saúde da mulher sem impor burocracia ou rigidez desnecessária ao profissional assistencial.
 
 **Tagline do projeto:**
 
@@ -22,7 +22,7 @@ O foco é transformar processos manuais, demorados e fragmentados em fluxos simp
 
 # Missão
 
-Construir uma plataforma que permita que clínicas dediquem menos tempo à operação administrativa e mais tempo ao atendimento de seus pacientes.
+Construir uma plataforma que permita que clínicas ginecológicas dediquem menos tempo à operação burocrática e mais tempo ao acolhimento e atendimento qualificado de suas pacientes.
 
 Cada funcionalidade deve responder à pergunta:
 
@@ -36,12 +36,13 @@ Se a resposta não for claramente positiva, a funcionalidade deve ser reavaliada
 
 O CANAMED deve buscar constantemente:
 
-- simplificar a operação diária da clínica;
-- reduzir retrabalho;
-- diminuir tempo gasto com tarefas administrativas;
-- oferecer uma experiência intuitiva para usuários com diferentes níveis de familiaridade tecnológica;
-- fornecer informações organizadas para apoiar decisões da gestão;
-- criar uma base sólida para crescimento futuro do produto.
+- simplificar a operação diária e o fluxo ambulatorial da clínica ginecológica;
+- estruturar o registro clínico especializado sem burocracia excessiva;
+- reduzir retrabalho e dupla digitação entre recepção, agendamento e consultório;
+- diminuir o tempo gasto com tarefas administrativas;
+- oferecer uma experiência intuitiva e acolhedora para pacientes e profissionais;
+- fornecer informações clínicas longitudinais organizadas para apoiar decisões assistenciais;
+- criar uma base sólida, segura e interoperável para o crescimento do produto.
 
 ---
 
@@ -49,11 +50,11 @@ O CANAMED deve buscar constantemente:
 
 O produto é direcionado principalmente para:
 
-- clínicas médicas;
-- gestores de clínicas;
-- recepcionistas;
-- profissionais de saúde;
-- equipes administrativas.
+- clínicas ginecológicas e obstétricas ambulatoriais;
+- médicos ginecologistas e profissionais de saúde da mulher;
+- gestores de clínicas ginecológicas;
+- recepcionistas e equipe de atendimento;
+- pacientes de clínicas ginecológicas (através de superfícies dedicadas e seguras).
 
 O primeiro foco comercial é o mercado brasileiro, especialmente clínicas de pequeno e médio porte.
 
@@ -72,34 +73,43 @@ Essa prioridade representa uma estratégia inicial de atuação e não limita a 
 
 # Proposta de Valor
 
-O CANAMED pretende unir características normalmente espalhadas entre diversos sistemas em uma experiência única e integrada.
+O CANAMED une a gestão operacional da clínica com a profundidade necessária ao atendimento clínico ginecológico em uma experiência única, acolhedora e integrada.
 
 A plataforma deve priorizar:
 
-- simplicidade;
-- rapidez;
-- organização;
-- confiança;
-- clareza nas informações.
+- simplicidade e ausência de sobrecarga cognitiva;
+- rapidez e fluidez no consultório;
+- organização e visão longitudinal do histórico da paciente;
+- confiança, integridade e sigilo absoluto dos dados de saúde;
+- clareza nas informações e na interface.
 
 O sistema deve transmitir sensação de controle e previsibilidade, nunca de complexidade.
 
 ---
 
-# Escopo Inicial do Produto
+# Escopo do Produto e Especialização em Ginecologia
 
-O produto evoluirá gradualmente, mas sua visão contempla um ecossistema de gestão para clínicas.
+O CANAMED especializa-se no atendimento a clínicas ginecológicas, preservando a infraestrutura e os módulos de suporte já consolidados (agenda interna, recepção/fila, cobrança básica e superfícies segregadas).
 
-Entre os pilares previstos estão:
+O módulo central prioritário de desenvolvimento é o **Prontuário Eletrônico do Paciente (PEP) especializado em ginecologia**, estruturado para cobrir:
 
-- gestão de agenda;
-- organização da fila de espera;
-- fluxo de pagamento antes da consulta quando aplicável;
-- apoio ao processo de triagem;
-- dashboards gerenciais;
-- gestão operacional da clínica.
+- Cadastro e identificação rigorosa da paciente.
+- Histórico clínico longitudinal e linha do tempo assistencial.
+- Anamnese ginecológica contextualizada.
+- Histórico menstrual (menarca, ciclo, duração, regularidade, fluxo, data da última menstruação - DUM, menopausa).
+- Histórico obstétrico (gestações, partos vaginais, cesáreas, abortos, filhos vivos, complicações prévias - GPA).
+- Histórico contraceptivo e reprodutivo (método em uso, métodos prévios, tempo de uso, planejamento reprodutivo).
+- Exame físico geral e ginecológico (exame das mamas, abdome, genitália externa, exame especular, toque bimanual).
+- Diagnósticos, hipóteses diagnósticas e evolução clínica fundamentada.
+- Prescrições eletrônicas, solicitações de exames laboratoriais/imagem e atestados/documentos clínicos.
+- Resultados e acompanhamento de exames preventivos (rastreamento de câncer do colo do útero / citopatológico / papanicolau, mamografia, ultrassonografia transvaginal).
+- Registro de procedimentos ginecológicos ambulatoriais (inserção/remoção de DIU, implantes, biópsias, cauterizações), quando aplicável.
+- Segurança, privacidade (LGPD), auditoria inviolável e integridade cronológica dos registros.
 
-Esses itens representam a direção do produto, não necessariamente a ordem de implementação.
+### Regras Mandatórias de Escopo:
+1. **Não aglutinar tudo em uma tela única:** Os fluxos devem ser organizados de acordo com o contexto clínico, a especialidade e a real necessidade da consulta. O escopo efetivo de cada tela e componente deve ser definido durante o planejamento orientado por SPEC.
+2. **Preservação Arquitetural:** A especialização em ginecologia não autoriza a reescrita indiscriminada do sistema. Devem ser preservadas a stack (.NET 10, PostgreSQL, React 19/TypeScript/Vite), padrões de código, testes e configurações existentes.
+3. **Limites Explícitos:** Não implementar pré-natal completo de alto risco, reprodução assistida de alta complexidade ou módulos de outras especialidades sem que sejam formalmente aprovados no escopo.
 
 ---
 
@@ -917,8 +927,60 @@ Durante o desenvolvimento, evitar:
 
 - criar identidade visual própria para o projeto;
 - alterar o conceito central do produto;
-- transformar o sistema em um ERP genérico sem foco em clínicas;
-- priorizar funcionalidades que aumentem complexidade sem gerar ganho operacional claro.
+- transformar o sistema em um ERP genérico sem foco em clínicas ginecológicas;
+- priorizar funcionalidades que aumentem complexidade sem gerar ganho operacional claro;
+- expandir o escopo para pré-natal completo de alto risco, reprodução assistida ou outras especialidades sem aprovação formal.
+
+---
+
+# Segurança Clínica e Integridade do Prontuário Ginecológico (Obrigatório)
+
+Como plataforma especializada em ginecologia, o CANAMED lida com dados de saúde íntimos e altamente sensíveis. Toda implementação deve seguir estritamente os seguintes requisitos:
+
+1. **Dados Sensíveis e Privacidade Reforçada:** Tratar todas as anotações clínicas, exames preventivos, histórico menstrual, obstétrico e contraceptivo como dados pessoais sensíveis (Art. 5º, II e Art. 11 da LGPD).
+2. **Controle de Acesso por Necessidade Assistencial:** Aplicar controle de acesso baseado em papéis (RBAC) estrito. Perfis administrativos e de recepção não devem ter acesso aos campos clínicos do prontuário.
+3. **Preservação de Autoria e Rastreabilidade:** Registrar autoria, CRM/conselho, data/hora invioláveis em cada evolução ou documento emitido.
+4. **Imutabilidade e Adendos:** Não permitir que registros finalizados ou assinados sejam silenciosamente sobrescritos. Correções devem ocorrer exclusivamente via adendos clínicos justificados e cronológicos (Lei nº 13.787/2018 e CFM).
+5. **Auditoria Transparente:** Registrar eventos de auditoria para visualização, criação, retificação e exportação de dados clínicos.
+6. **Proteção Documental:** Proteger prescrições, atestados e laudos de exames preventivos.
+7. **Diferenciação de Estados de Dados:** Diferenciar claramente na interface e na persistência: campos não preenchidos, informações desconhecidas e achados negativos documentados (ex: ausência de queixas ou exame normal).
+8. **Hipóteses vs. Diagnósticos Confirmados:** Não apresentar hipóteses diagnósticas preliminares como diagnósticos definitivos.
+9. **Zero Dados Fictícios em Produção:** Jamais gerar dados clínicos de teste ou sintéticos em bancos de dados de produção.
+10. **Não Automação de Decisões Clínicas:** Não automatizar condutas ou decisões clínicas sem validação e supervisão humana apropriadas (ANVISA RDC nº 657/2022).
+
+---
+
+# Governança de Agentes Especialistas no Ciclo de Desenvolvimento (Obrigatório)
+
+O desenvolvimento de qualquer funcionalidade, especialmente no módulo de PEP ginecológico, deve cumprir obrigatoriamente o ciclo em quatro fases coordenadas:
+
+### Fase A — Planejamento
+1. O agente planejador delimita o escopo da funcionalidade e elabora a proposta na SPEC.
+2. O **Medical Systems Domain Expert** revisa criticamente os requisitos clínicos, fluxos ginecológicos e conformidade regulatória.
+3. O **UI/UX Reviewer** revisa os requisitos de interface, usabilidade, acessibilidade e consistência visual.
+4. As observações e ajustes são incorporados à SPEC, definindo critérios objetivos de aceitação funcional, clínica e visual.
+
+### Fase B — Implementação
+1. O agente implementador segue estritamente a SPEC aprovada.
+2. Reutiliza a arquitetura (.NET 10 / PostgreSQL), padrões e componentes visuais existentes do frontend (React 19 / CSS tokens).
+3. Constrói todos os estados da interface (carregamento, sucesso, erro, vazio).
+4. Executa testes automatizados (TDD/unitários/integração).
+5. Registra formalmente limitações e eventuais desvios.
+
+### Fase C — Validação
+1. O validador técnico verifica compilação e suíte integral de testes (`dotnet test`, `npm test`).
+2. O **Medical Systems Domain Expert** audita a completude funcional, coerência clínica dos dados e rastreabilidade.
+3. O **UI/UX Reviewer** avalia a qualidade visual renderizada, ausência de regressões e usabilidade.
+4. Os apontamentos são classificados por severidade (P0 - Bloqueador, P1 - Importante, P2 - Evolução).
+5. Bloqueadores P0 exigem correção imediata pelo implementador antes da liberação.
+
+### Fase D — Conclusão (Definition of Done)
+Uma entrega só é considerada concluída quando:
+- Todos os critérios de aceitação forem atendidos;
+- 100% dos testes exigidos forem executados e aprovados com evidências registradas;
+- Não houver pendências críticas (P0) clínicas, visuais ou de segurança;
+- A revisão visual tiver sido concluída (com limitações técnicas registradas quando aplicável);
+- A ação for registrada no `docs/CHANGELOG_AGENTE.md`.
 
 ---
 

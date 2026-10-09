@@ -1202,4 +1202,59 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - `DoctorWorkspace.test.tsx` e `App.test.tsx` (ajustes para roteamento e novos elementos)
   - **RESULTADO**: **22 arquivos de teste / 76 testes aprovados (100% green)** no frontend. **287 testes aprovados (100% green)** no backend. Build de produção (`tsc --noEmit && vite build`) validado com zero advertências bloqueantes.
 
+---
+
+### [2026-10-09] — Criação e Integração do Agente Medical Systems Domain Expert ao Orquestrador
+
+#### 1. Definição Dinâmica de Subagente no Runtime
+- **AÇÃO**: Registro do subagente `medical-systems-domain-expert` via `define_subagent` no runtime do Antigravity.
+  - **MOTIVO**: Atender à solicitação do usuário de criar um especialista de domínio em sistemas de informação em saúde (HIS), prontuário eletrônico (PEP/EHR), fluxos ambulatoriais, UX clínica, segurança e regulação (LGPD, CFM, ANVISA).
+  - **LOCAL AFETADO**: Runtime Antigravity (`define_subagent`).
+  - **RESULTADO**: Subagente ativado e imediatamente invocável pelo orquestrador via `invoke_subagent`.
+
+#### 2. Especificação do Agente no Projeto
+- **AÇÃO**: Criação do arquivo de definição `.agent/agents/medical-systems-domain-expert.md`.
+  - **MOTIVO**: Documentar de forma versionada no repositório a identidade, missão, método de análise em 8 passos, formato obrigatório de relatório em 10 seções (A a J), perfis avaliados (Paciente, Recepção, Médico, Gestor) e regras de validação clínica e regulatória.
+  - **LOCAL AFETADO**: `.agent/agents/medical-systems-domain-expert.md`.
+  - **RESULTADO**: Guia mestre e prompt normativo do especialista de domínio médico disponível no projeto.
+
+#### 3. Integração ao Orquestrador Chefe do Cana Med
+- **AÇÃO**: Criação do agente `.agent/agents/orchestrator.md` e do catálogo `.agent/agents/README.md`.
+  - **MOTIVO**: Estabelecer formalmente o fluxo de governança onde nenhuma funcionalidade ambulatorial, de agendamento ou prontuário é implementada sem submissão prévia ao parecer independente do `medical-systems-domain-expert`.
+  - **LOCAL AFETADO**: `.agent/agents/orchestrator.md`, `.agent/agents/README.md`.
+  - **RESULTADO**: Ciclo de vida definido com gate de homologação de domínio (Etapa 2 e 4 do fluxo do Orquestrador), prevenção de complexidade prematura no MVP e tolerância zero a riscos de segurança/privacidade de dados em saúde.
+
+---
+
+### [2026-10-09] — Especialização do Cana Med em Ginecologia, Criação do UI/UX Reviewer e Governança em Quatro Fases
+
+#### 1. Redefinição Estratégica e Normativa das Regras do Projeto
+- **AÇÃO**: Atualização das instruções centrais em `GEMINI.md`, `PROJECT_BRIEF.md`, `docs/visao-produto.md` e `docs/seguranca-e-conformidade.md`.
+  - **MOTIVO**: Redirecionar formalmente a plataforma Cana Med para especialização em **clínicas ginecológicas e saúde da mulher**, estabelecendo o **Prontuário Eletrônico do Paciente (PEP) ginecológico** como módulo primordial prioritário.
+  - **LOCAIS AFETADOS**: `GEMINI.md`, `PROJECT_BRIEF.md`, `docs/visao-produto.md`, `docs/seguranca-e-conformidade.md`.
+  - **RESULTADO**: Princípios estabelecidos de preservação da arquitetura (.NET 10, PostgreSQL, React 19/Vite, segregação de superfícies), foco em anamnese ginecológica, histórico menstrual, obstétrico, contraceptivo, exame físico/ginecológico, rastreamento preventivo e procedimentos ambulatoriais; limites explícitos de escopo (vedado pré-natal de alto risco ou reprodução assistida sem aprovação); requisitos estritos de segurança clínica, imutabilidade, adendos justificados e sigilo sob a LGPD (Art. 11).
+
+#### 2. Especialização do Medical Systems Domain Expert
+- **AÇÃO**: Atualização da definição do agente em `.agent/agents/medical-systems-domain-expert.md`.
+  - **MOTIVO**: Dotar o especialista de domínio de conhecimentos aprofundados sobre a consulta ginecológica, histórico obstétrico (GPA), ciclo menstrual (DUM/menopausa), métodos contraceptivos, rastreamento de colo/mama e ergonomia médica no consultório.
+  - **LOCAL AFETADO**: `.agent/agents/medical-systems-domain-expert.md`.
+  - **RESULTADO**: Agente preparado para atuar nas Fases A (Planejamento) e C (Validação), prevenindo sobrecarga de formulários rígidos e garantindo conformidade com CFM e LGPD.
+
+#### 3. Criação do Agente UI/UX Reviewer
+- **AÇÃO**: Registro do novo subagente `ui-ux-reviewer` via `define_subagent` no runtime do Antigravity e criação da especificação em `.agent/agents/ui-ux-reviewer.md`.
+  - **MOTIVO**: Atribuir responsabilidade explícita pela consistência estética, qualidade do frontend, observância dos tokens de design (`frontend/src/styles/theme.css`), ergonomia clínica, acessibilidade (WCAG AA) e estados de interface (carregamento, vazio, erro, sucesso).
+  - **LOCAIS AFETADOS**: Runtime Antigravity (`define_subagent`), `.agent/agents/ui-ux-reviewer.md`.
+  - **RESULTADO**: Agente ativado e apto a inspecionar o código de interface e a renderização visual, operando tanto no planejamento de telas quanto na validação pós-implementação.
+
+#### 4. Incorporação Obrigatória dos Agentes ao Ciclo de Quatro Fases
+- **AÇÃO**: Atualização do `.agent/agents/orchestrator.md`, `.agent/agents/README.md` e seção de governança no `GEMINI.md`.
+  - **MOTIVO**: Formalizar a obrigatoriedade da atuação coordenada dos agentes em 4 Fases lógicas:
+    - **Fase A (Planejamento):** Escopo pelo planejador $\rightarrow$ Parecer clínico ginecológico $\rightarrow$ Parecer visual/ergonômico $\rightarrow$ SPEC com critérios Given/When/Then;
+    - **Fase B (Implementação):** Implementador segue SPEC, reutiliza tokens/componentes, constrói estados completos e roda testes locais;
+    - **Fase C (Validação):** Auditoria técnica (testes 100% green) $\rightarrow$ Auditoria clínica do domínio $\rightarrow$ Auditoria visual do frontend $\rightarrow$ Triagem de severidade (P0/P1/P2);
+    - **Fase D (Conclusão / DoD):** Critérios atendidos com evidências registradas, zero bloqueadores P0 e registro de governança.
+  - **LOCAIS AFETADOS**: `.agent/agents/orchestrator.md`, `.agent/agents/README.md`, `GEMINI.md`.
+  - **RESULTADO**: Fluxo mestre blindado contra quebras de qualidade, regressões clínicas ou layouts inacabados.
+
+
 

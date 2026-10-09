@@ -49,8 +49,6 @@ public sealed class Appointment : Entity
     /// <summary>Origem do agendamento (desk, online, etc.) — SPEC-0015.</summary>
     public string Origin { get; private set; } = "desk";
 
-    /// <summary>Indica se a consulta foi marcada em regime de encaixe/sobre-agenda — SPEC-0025.</summary>
-    public bool IsOverbooking { get; private set; }
 
     /// <summary>Preenchido na exclusão lógica (RN-012); registros excluídos não bloqueiam a agenda.</summary>
     public DateTimeOffset? DeletedAt { get; private set; }
