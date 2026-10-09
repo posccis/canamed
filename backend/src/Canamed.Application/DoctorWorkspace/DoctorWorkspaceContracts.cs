@@ -45,3 +45,24 @@ public sealed record DoctorWorkspaceStateResponse(
     string? ActiveRoomName,
     ActiveConsultationDto? ActiveConsultation,
     IReadOnlyList<DoctorWaitingItemDto> WaitingQueue);
+
+public sealed record DoctorDashboardAppointmentDto(
+    Guid AppointmentId,
+    Guid PatientId,
+    string PatientName,
+    DateTimeOffset StartsAt,
+    DateTimeOffset EndsAt,
+    string Status,
+    string AppointmentTypeName,
+    string ConsultationCategory,
+    string? RoomName);
+
+public sealed record DoctorDashboardSummaryResponse(
+    int TodayTotalAppointments,
+    int TodayWaitingCount,
+    int TodayAttendedCount,
+    int TodayNoShowCount,
+    int PendingDraftRecordsCount,
+    ActiveConsultationDto? ActiveConsultation,
+    IReadOnlyList<DoctorDashboardAppointmentDto> UpcomingAppointments);
+

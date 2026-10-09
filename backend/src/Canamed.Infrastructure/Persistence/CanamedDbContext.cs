@@ -44,6 +44,14 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<Canamed.Domain.MedicalRecords.MedicalRecordAddendum> MedicalRecordAddenda => Set<Canamed.Domain.MedicalRecords.MedicalRecordAddendum>();
 
+    public DbSet<Canamed.Domain.MedicalRecords.GynecologicalProfile> GynecologicalProfiles => Set<Canamed.Domain.MedicalRecords.GynecologicalProfile>();
+
+    public DbSet<Canamed.Domain.MedicalRecords.PreventiveScreeningRecord> PreventiveScreeningRecords => Set<Canamed.Domain.MedicalRecords.PreventiveScreeningRecord>();
+
+    public DbSet<Canamed.Domain.MedicalRecords.GynecologicalConsultationData> GynecologicalConsultationData => Set<Canamed.Domain.MedicalRecords.GynecologicalConsultationData>();
+
+    public DbSet<Canamed.Domain.MedicalRecords.PatientExamAttachment> PatientExamAttachments => Set<Canamed.Domain.MedicalRecords.PatientExamAttachment>();
+
     public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocument> MedicalDocuments => Set<Canamed.Domain.MedicalDocuments.MedicalDocument>();
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();

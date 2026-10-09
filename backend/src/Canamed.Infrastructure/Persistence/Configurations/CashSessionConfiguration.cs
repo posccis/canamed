@@ -31,6 +31,9 @@ public sealed class CashSessionConfiguration : IEntityTypeConfiguration<CashSess
             .WithOne()
             .HasForeignKey(m => m.CashSessionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(c => c.Movements)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

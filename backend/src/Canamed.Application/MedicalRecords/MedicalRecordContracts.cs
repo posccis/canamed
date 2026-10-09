@@ -39,4 +39,5 @@ public sealed record MedicalRecordResponse(
     Guid? FinalizedBy,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    IReadOnlyList<MedicalRecordAddendumResponse> Addenda);
+    IReadOnlyList<MedicalRecordAddendumResponse> Addenda,
+    GynecologicalConsultationDataDto? GynecologicalData = null);

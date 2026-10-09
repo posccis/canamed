@@ -84,6 +84,15 @@ public static class AuditActions
     public const string MedicalDocumentSigned = "medical_document.signed";
     public const string MedicalDocumentCancelled = "medical_document.cancelled";
     public const string MedicalDocumentViewed = "medical_document.viewed";
+
+    public const string GynecologicalProfileViewed = "gynecological_profile.viewed";
+    public const string GynecologicalProfileUpdated = "gynecological_profile.updated";
+    public const string GynecologicalConsultationUpdated = "gynecological_consultation.updated";
+    public const string ScreeningRecordCreated = "screening_record.created";
+    public const string ScreeningRecordViewed = "screening_record.viewed";
+    public const string ExamAttachmentUploaded = "exam_attachment.uploaded";
+    public const string ExamAttachmentViewed = "exam_attachment.viewed";
+    public const string ExamAttachmentDeactivated = "exam_attachment.deactivated";
 }
 
 /// <summary>Tipos de recurso da trilha de auditoria.</summary>
@@ -110,4 +119,7 @@ public static class AuditResources
     public const string Privacy = "privacy";
     public const string MedicalRecords = "medical_records";
     public const string MedicalDocuments = "medical_documents";
+    public const string GynecologicalProfile = "gynecological_profiles";
+    public const string PreventiveScreenings = "preventive_screenings";
+    public const string ExamAttachments = "patient_exam_attachments";
 }

@@ -13,4 +13,26 @@ public interface IMedicalRecordRepository
     Task AddAsync(MedicalRecord record, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(MedicalRecord record, CancellationToken cancellationToken = default);
+
+    Task<GynecologicalProfile?> GetGynecologicalProfileAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default);
+
+    Task SaveGynecologicalProfileAsync(GynecologicalProfile profile, CancellationToken cancellationToken = default);
+
+    Task<GynecologicalConsultationData?> GetGynecologicalConsultationDataAsync(Guid medicalRecordId, CancellationToken cancellationToken = default);
+
+    Task SaveGynecologicalConsultationDataAsync(GynecologicalConsultationData data, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PreventiveScreeningRecord>> ListScreeningsByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default);
+
+    Task AddScreeningAsync(PreventiveScreeningRecord record, CancellationToken cancellationToken = default);
+
+    Task AddExamAttachmentAsync(PatientExamAttachment attachment, CancellationToken cancellationToken = default);
+
+    Task<PatientExamAttachment?> GetExamAttachmentByIdAsync(Guid id, Guid clinicId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PatientExamAttachment>> ListExamAttachmentsByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default);
+
+    Task UpdateExamAttachmentAsync(PatientExamAttachment attachment, CancellationToken cancellationToken = default);
+
+    Task<int> CountPendingDraftsAsync(Guid clinicId, Guid? doctorId, CancellationToken cancellationToken = default);
 }

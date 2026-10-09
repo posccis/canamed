@@ -12,6 +12,8 @@ namespace Canamed.Application.DoctorWorkspace;
 public sealed class DoctorWorkspaceService(
     IQueueRepository queueRepository,
     QueueService queueService,
+    IAgendaRepository agendaRepository,
+    IClinicOperationRepository clinicOperationRepository,
     ITriageRepository triageRepository,
     ICatalogRepository catalogRepository,
     IMedicalRecordRepository medicalRecordRepository,
@@ -27,16 +29,14 @@ public sealed class DoctorWorkspaceService(
             throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para acessar o consultório virtual.", "permission-denied");
         }
 
-        if (!Guid.TryParse(actor.UserId, out var doctorId))
-        {
-            doctorId = Guid.Empty;
-        }
+        var targetDoctorId = actor.ProfessionalId
+            ?? (Guid.TryParse(actor.UserId, out var parsedGuid) ? parsedGuid : (Guid?)null);
 
         var now = timeProvider.GetUtcNow();
         var today = DateOnly.FromDateTime(AgendaTimeZone.ToLocal(now).DateTime);
 
-        // Obter entradas da fila do dia para o médico
-        var entries = await queueRepository.ListAsync(actor.ClinicId, today, doctorId, cancellationToken);
+        // Obter entradas da fila do dia para o médico (ou para a clínica se não for médico específico)
+        var entries = await queueRepository.ListAsync(actor.ClinicId, today, targetDoctorId, cancellationToken);
 
         ActiveConsultationDto? activeConsultation = null;
         var waitingList = new List<DoctorWaitingItemDto>();
@@ -107,7 +107,7 @@ public sealed class DoctorWorkspaceService(
         }
 
         return new DoctorWorkspaceStateResponse(
-            DoctorId: doctorId,
+            DoctorId: targetDoctorId ?? Guid.Empty,
             DoctorName: actor.Name,
             ClinicId: actor.ClinicId,
             ActiveRoomId: null,
@@ -198,6 +198,121 @@ public sealed class DoctorWorkspaceService(
             StartedAt: queueEntry.StartedAt);
     }
 
+    public async Task<ActiveConsultationDto> StartConsultationByAppointmentAsync(
+        Guid appointmentId,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.WorkspaceAccess))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para iniciar consultas.", "permission-denied");
+        }
+
+        var appointment = await agendaRepository.FindAppointmentAsync(appointmentId, actor.ClinicId, cancellationToken);
+        if (appointment is null)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Não encontrado", "Agendamento não encontrado.", "appointment-not-found");
+        }
+
+        var existingQueueEntry = await queueRepository.FindOpenByAppointmentAsync(actor.ClinicId, appointmentId, cancellationToken);
+        Guid queueEntryId;
+
+        if (existingQueueEntry is not null)
+        {
+            queueEntryId = existingQueueEntry.Id;
+        }
+        else
+        {
+            var checkIn = await queueService.CheckInAsync(
+                new CheckInRequest(
+                    AppointmentId: appointmentId,
+                    PatientId: null,
+                    ProfessionalId: null,
+                    Priority: null),
+                cancellationToken);
+            queueEntryId = checkIn.Id;
+        }
+
+        return await StartConsultationAsync(new StartConsultationRequest(queueEntryId), cancellationToken);
+    }
+
+    public async Task<DoctorDashboardSummaryResponse> GetDashboardSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.WorkspaceAccess) && !actor.Has(Permissions.DashboardRead))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para acessar o painel do médico.", "permission-denied");
+        }
+
+        var targetDoctorId = actor.ProfessionalId
+            ?? (Guid.TryParse(actor.UserId, out var parsedGuid) ? parsedGuid : (Guid?)null);
+
+        var now = timeProvider.GetUtcNow();
+        var todayLocal = DateOnly.FromDateTime(AgendaTimeZone.ToLocal(now).DateTime);
+        var (fromUtc, toUtc) = AgendaTimeZone.LocalDayToUtcRange(todayLocal);
+
+        var appointments = await agendaRepository.ListAppointmentsAsync(
+            actor.ClinicId,
+            targetDoctorId,
+            fromUtc,
+            toUtc,
+            cancellationToken);
+
+        var todayTotal = appointments.Count;
+        var todayAttended = appointments.Count(a => a.Status == AppointmentStatus.Attended);
+        var todayNoShow = appointments.Count(a => a.Status == AppointmentStatus.NoShow);
+
+        var queueEntries = await queueRepository.ListAsync(actor.ClinicId, todayLocal, targetDoctorId, cancellationToken);
+        var todayWaiting = queueEntries.Count(q => q.Status == QueueStatus.Waiting || q.Status == QueueStatus.Called);
+
+        var pendingDrafts = await medicalRecordRepository.CountPendingDraftsAsync(actor.ClinicId, targetDoctorId, cancellationToken);
+
+        var workspaceState = await GetWorkspaceStateAsync(cancellationToken);
+
+        var upcoming = new List<DoctorDashboardAppointmentDto>();
+        foreach (var appt in appointments.OrderBy(a => a.StartsAt))
+        {
+            var patient = await catalogRepository.FindPatientAsync(appt.PatientId, actor.ClinicId, cancellationToken);
+            var patientName = patient?.Name ?? "Paciente";
+
+            var apptType = await catalogRepository.FindAppointmentTypeAsync(appt.AppointmentTypeId, actor.ClinicId, cancellationToken);
+            var typeName = apptType?.Name ?? "Consulta Médica";
+            var category = apptType?.Category switch
+            {
+                AppointmentCategory.FollowUp => "retorno",
+                AppointmentCategory.Single => "primeira_vez",
+                _ => "geral"
+            };
+
+            string? roomName = null;
+            if (appt.RoomId is { } roomId)
+            {
+                var room = await clinicOperationRepository.FindRoomAsync(actor.ClinicId, roomId, cancellationToken);
+                roomName = room?.Name;
+            }
+
+            upcoming.Add(new DoctorDashboardAppointmentDto(
+                AppointmentId: appt.Id,
+                PatientId: appt.PatientId,
+                PatientName: patientName,
+                StartsAt: appt.StartsAt,
+                EndsAt: appt.EndsAt,
+                Status: appt.Status.ToString().ToLowerInvariant(),
+                AppointmentTypeName: typeName,
+                ConsultationCategory: category,
+                RoomName: roomName));
+        }
+
+        return new DoctorDashboardSummaryResponse(
+            TodayTotalAppointments: todayTotal,
+            TodayWaitingCount: todayWaiting,
+            TodayAttendedCount: todayAttended,
+            TodayNoShowCount: todayNoShow,
+            PendingDraftRecordsCount: pendingDrafts,
+            ActiveConsultation: workspaceState.ActiveConsultation,
+            UpcomingAppointments: upcoming);
+    }
+
     public async Task FinishConsultationAsync(
         FinishConsultationRequest request,
         CancellationToken cancellationToken = default)
@@ -205,6 +320,17 @@ public sealed class DoctorWorkspaceService(
         ArgumentNullException.ThrowIfNull(request);
 
         await medicalRecordService.FinalizeAsync(request.MedicalRecordId, cancellationToken);
-        await queueService.CompleteAsync(request.QueueEntryId, cancellationToken);
+
+        if (request.QueueEntryId != Guid.Empty)
+        {
+            try
+            {
+                await queueService.CompleteAsync(request.QueueEntryId, cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Se a entrada da fila já foi concluída ou removida, preserva o encerramento do prontuário
+            }
+        }
     }
 }

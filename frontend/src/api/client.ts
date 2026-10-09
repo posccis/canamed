@@ -49,6 +49,40 @@ export async function apiPost<T>(path: string, body?: unknown, signal?: AbortSig
   return request<T>('POST', path, body, signal, customHeaders);
 }
 
+/** Executa um POST com multipart/form-data na API do CANAMED (para upload de exames e laudos). */
+export async function apiPostForm<T>(path: string, formData: FormData, signal?: AbortSignal): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-Canamed-Requested-With': 'canamed-spa',
+  };
+
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: formData,
+    signal,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  if (typeof response.text === 'function') {
+    const text = await response.text();
+    if (!text || !text.trim()) {
+      return undefined as T;
+    }
+    return JSON.parse(text) as T;
+  }
+
+  return (await response.json()) as T;
+}
+
 /** Executa um PUT com corpo JSON na API do CANAMED. */
 export async function apiPut<T>(path: string, body?: unknown, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
   return request<T>('PUT', path, body, signal, customHeaders);
@@ -91,6 +125,14 @@ async function request<T>(
 
   if (response.status === 204) {
     return undefined as T;
+  }
+
+  if (typeof response.text === 'function') {
+    const text = await response.text();
+    if (!text || !text.trim()) {
+      return undefined as T;
+    }
+    return JSON.parse(text) as T;
   }
 
   return (await response.json()) as T;

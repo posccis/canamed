@@ -56,6 +56,25 @@ public static class PrivacyEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequirePermissions(Permissions.PrivacyManage);
 
+        api.MapGet("/patients/{id:guid}/data-portability", async (
+            Guid id,
+            PrivacyService service,
+            CancellationToken token) =>
+        {
+            var result = await service.ExportDataPortabilityAsync(id, token);
+            return Results.Ok(result);
+        }).WithName("ExportPatientDataPortability");
+
+        api.MapPost("/patients/{id:guid}/anonymize", async (
+            Guid id,
+            AnonymizePatientRequest request,
+            PrivacyService service,
+            CancellationToken token) =>
+        {
+            var result = await service.AnonymizePatientAsync(id, request, token);
+            return Results.Ok(result);
+        }).WithName("AnonymizePatient");
+
         return api;
     }
 

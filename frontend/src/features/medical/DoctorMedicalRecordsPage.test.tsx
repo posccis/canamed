@@ -147,4 +147,100 @@ describe('DoctorMedicalRecordsPage Component', () => {
 
     expect(screen.getByPlaceholderText(/Justificativa formal obrigatória/i)).toBeInTheDocument();
   });
+
+  it('permite alternar entre abas de Ficha Ginecológica e Rastreamento Preventivo', async () => {
+    mocks.apiGet.mockImplementation(async (path: string) => {
+      if (path === '/patients') {
+        return [
+          {
+            id: 'patient-gyn',
+            name: 'Fernanda Lima',
+            phone: '81999998888',
+            email: 'fernanda@example.com',
+            birthDate: '1992-07-10',
+            isActive: true,
+          },
+        ];
+      }
+      if (path === '/patients/patient-gyn/medical-records') {
+        return [];
+      }
+      if (path === '/patients/patient-gyn/medical-documents') {
+        return [];
+      }
+      if (path === '/medical-records/patients/patient-gyn/gynecological-profile') {
+        return {
+          id: 'prof-1',
+          clinicId: 'clinic-1',
+          patientId: 'patient-gyn',
+          menarcheAge: 12,
+          cycleIntervalDays: 28,
+          cycleDurationDays: 4,
+          isCycleRegular: true,
+          flowIntensity: 'moderado',
+          gravida: 2,
+          para: 1,
+          cesareans: 1,
+          abortions: 0,
+          livingChildren: 1,
+          ectopicPregnancies: 0,
+          currentMethod: 'DIU de Cobre',
+          reproductivePlan: 'sem_desejo',
+          createdAt: '2026-10-01T10:00:00Z',
+          updatedAt: '2026-10-01T10:00:00Z',
+        };
+      }
+      if (path === '/medical-records/patients/patient-gyn/screenings') {
+        return [
+          {
+            id: 'scr-1',
+            clinicId: 'clinic-1',
+            patientId: 'patient-gyn',
+            examType: 'citopatologico',
+            performedAt: '2026-05-10T00:00:00Z',
+            resultSummary: 'Negativo para neoplasia intraepitelial ou malignidade',
+            classification: 'normal',
+            nextDueDate: '2027-05-10T00:00:00Z',
+            createdAt: '2026-05-10T00:00:00Z',
+          },
+        ];
+      }
+      return [];
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/medico/prontuario/patient-gyn']}>
+        <Routes>
+          <Route path="/medico/prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Fernanda Lima')).toBeInTheDocument();
+      expect(screen.getByText(/Obstétrico: G2 P1/i)).toBeInTheDocument();
+      expect(screen.getByText(/Método: DIU de Cobre/i)).toBeInTheDocument();
+    });
+
+    // Alterna para aba da Ficha Gineco-Obstétrica
+    const gynTabBtn = screen.getByRole('button', { name: /Ficha Gineco-Obstétrica/i });
+    fireEvent.click(gynTabBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Ficha Gineco-Obstétrica Longitudinal/i)).toBeInTheDocument();
+      expect(screen.getByText(/G2 P1 PC1 A0 F1/i)).toBeInTheDocument();
+    });
+
+    // Alterna para aba de Rastreamento Preventivo
+    const scrTabBtn = screen.getByRole('button', { name: /Rastreamento Preventivo/i });
+    fireEvent.click(scrTabBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Rastreamento Preventivo & Linha do Tempo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Citopatológico \(Papanicolau\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Negativo para neoplasia/i)).toBeInTheDocument();
+    });
+  });
 });
+
+

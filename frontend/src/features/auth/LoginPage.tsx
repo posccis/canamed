@@ -69,13 +69,13 @@ export function LoginPage({ onAuthenticated, notice, portalTitle, portalSubtitle
         <div className="login__brand">
           <div className="login__logo-wrapper">
             <img
-              src="/assets/brand/canadamed_logogrande_comtitulo-removebg-preview.png"
-              alt="CANA MED — Eficiência Para Quem Mais Precisa"
+              src="/assets/brand/canamed-mulher-logolonga.png"
+              alt="CANA MED Mulher — Eficiência Para Quem Mais Precisa"
               className="login__logo-large"
             />
           </div>
           <h1 id="login-heading" className="visually-hidden">
-            CANA MED
+            CANA MED Mulher
           </h1>
           <p className="login__tagline">Eficiência para quem mais precisa.</p>
         </div>

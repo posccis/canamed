@@ -19,6 +19,11 @@ public static class DoctorWorkspaceEndpoints
             .Produces<DoctorWorkspaceStateResponse>(StatusCodes.Status200OK)
             .RequirePermissions(Permissions.WorkspaceAccess);
 
+        workspace.MapGet("/dashboard/summary", GetDashboardSummaryAsync)
+            .WithName("GetDoctorDashboardSummary")
+            .Produces<DoctorDashboardSummaryResponse>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.WorkspaceAccess);
+
         workspace.MapPost("/call-patient", CallPatientAsync)
             .WithName("DoctorCallPatient")
             .Produces<QueueEntryResponse>(StatusCodes.Status200OK)
@@ -31,9 +36,16 @@ public static class DoctorWorkspaceEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequirePermissions(Permissions.WorkspaceAccess);
 
+        workspace.MapPost("/start-by-appointment/{appointmentId:guid}", StartByAppointmentAsync)
+            .WithName("DoctorStartConsultationByAppointment")
+            .Produces<ActiveConsultationDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequirePermissions(Permissions.WorkspaceAccess);
+
         workspace.MapPost("/finish-consultation", FinishConsultationAsync)
             .WithName("DoctorFinishConsultation")
-            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequirePermissions(Permissions.WorkspaceAccess);
 
@@ -45,6 +57,14 @@ public static class DoctorWorkspaceEndpoints
         CancellationToken cancellationToken)
     {
         var result = await service.GetWorkspaceStateAsync(cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetDashboardSummaryAsync(
+        DoctorWorkspaceService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.GetDashboardSummaryAsync(cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
     }
 
@@ -66,12 +86,21 @@ public static class DoctorWorkspaceEndpoints
         return Results.Ok(result);
     }
 
+    private static async Task<IResult> StartByAppointmentAsync(
+        DoctorWorkspaceService service,
+        Guid appointmentId,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.StartConsultationByAppointmentAsync(appointmentId, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
     private static async Task<IResult> FinishConsultationAsync(
         DoctorWorkspaceService service,
         [FromBody] FinishConsultationRequest request,
         CancellationToken cancellationToken)
     {
         await service.FinishConsultationAsync(request, cancellationToken).ConfigureAwait(false);
-        return Results.Ok();
+        return Results.NoContent();
     }
 }

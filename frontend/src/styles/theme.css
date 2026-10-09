@@ -52,6 +52,18 @@
   --sidebar-collapsed-width: 72px;
   --topbar-height: 74px;
   --transition-speed: 0.2s;
+
+  /* Controles de Formulário (SPEC-0029) */
+  --input-height: 42px;
+  --input-height-sm: 34px;
+  --input-border: #cbd5e1;
+  --input-border-hover: #94a3b8;
+  --input-border-focus: var(--color-primary);
+  --input-focus-ring: rgba(0, 128, 128, 0.16);
+  --input-radius: 8px;
+  --input-bg: #ffffff;
+  --input-bg-subtle: #f8fafc;
+  --input-bg-disabled: #f1f5f9;
 }
 
 body {
@@ -386,29 +398,164 @@ body {
   min-width: 160px;
 }
 
+/* ==========================================================================
+   Controles de Formulário Modernizados — SPEC-0029
+   ========================================================================== */
+
+.form__group,
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.form__label,
 .field__label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-secondary);
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
 }
 
-.field__input {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 0.5rem 0.65rem;
+.form__required {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.form__input,
+.field__input,
+.form__select {
+  height: var(--input-height, 42px);
+  border: 1.5px solid var(--input-border, #cbd5e1);
+  border-radius: var(--input-radius, 8px);
+  padding: 0 0.875rem;
   font-family: inherit;
-  font-size: 0.95rem;
-  color: var(--color-text);
-  background-color: #ffffff;
+  font-size: 0.925rem;
+  color: #1e293b;
+  background-color: var(--input-bg, #ffffff);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, background-color var(--transition-speed) ease;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.field__input:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 1px;
+.form__input:hover,
+.field__input:hover,
+.form__select:hover,
+.form__textarea:hover {
+  border-color: var(--input-border-hover, #94a3b8);
 }
 
+.form__input:focus,
+.field__input:focus,
+.form__select:focus,
+.form__textarea:focus,
+.form__input:focus-visible,
+.field__input:focus-visible,
+.form__select:focus-visible,
+.form__textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring, rgba(0, 128, 128, 0.16));
+}
+
+.form__input:disabled,
+.field__input:disabled,
+.form__select:disabled,
+.form__textarea:disabled {
+  background-color: var(--input-bg-disabled, #f1f5f9);
+  color: var(--color-text-muted, #64748b);
+  border-color: var(--color-border, #e2e8f0);
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.form__input--error,
+.field__input--error,
+.form__input[aria-invalid="true"] {
+  border-color: var(--color-danger) !important;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.16) !important;
+}
+
+/* Select Estilizado com Chevron SVG Personalizado */
+.form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23008080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+/* Textarea Clínica com respiro e tipografia confortável */
+.form__textarea,
 .field__input--multiline {
+  min-height: 90px;
+  border: 1.5px solid var(--input-border, #cbd5e1);
+  border-radius: var(--input-radius, 8px);
+  padding: 0.75rem 0.875rem;
+  font-family: inherit;
+  font-size: 0.925rem;
+  line-height: 1.5;
+  color: #1e293b;
+  background-color: var(--input-bg, #ffffff);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
   resize: vertical;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Checkbox e Radios Modernos */
+.form__checkbox,
+.form__radio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  margin: 0;
+}
+
+.form__checkbox-label,
+.form__radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  user-select: none;
+}
+
+/* Mensagens de Dica e Erro */
+.form__hint {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+.form__error {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .form {
@@ -424,12 +571,6 @@ body {
   padding-top: 0.75rem;
   margin-top: 0.75rem;
   border-top: 1px solid var(--color-border);
-}
-
-.form__hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-secondary);
 }
 
 .form__actions {
@@ -633,7 +774,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  z-index: 20;
+  z-index: 1000;
 }
 
 .modal__backdrop {
@@ -641,7 +782,8 @@ body {
   inset: 0;
   border: none;
   padding: 0;
-  background-color: rgb(15 23 42 / 45%);
+  background-color: rgb(15 23 42 / 60%);
+  backdrop-filter: blur(4px);
   cursor: pointer;
 }
 
@@ -650,10 +792,15 @@ body {
   width: min(560px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-  border-radius: 12px;
+  border-radius: var(--radius-lg, 12px);
   background-color: #ffffff;
-  padding: 1.25rem;
-  box-shadow: 0 20px 40px rgb(15 23 42 / 25%);
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  z-index: 1;
+}
+
+.modal__content--large {
+  width: min(840px, 95vw);
 }
 
 .modal__header {
@@ -668,6 +815,46 @@ body {
   margin: 0;
   font-size: 1.1rem;
   color: var(--color-secondary);
+}
+
+.modal__body {
+  padding: 0.5rem 0;
+}
+
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Fallback de compatibilidade caso utilizado como container legado */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: rgb(15 23 42 / 60%);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+.modal-backdrop > .modal,
+.modal-backdrop > .modal--large {
+  position: relative;
+  inset: auto;
+  width: min(840px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg, 12px);
+  background-color: #ffffff;
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -699,6 +886,7 @@ body {
   flex-shrink: 0;
   transition: width var(--transition-speed) ease;
   z-index: 30;
+  overflow-x: hidden;
 }
 
 .sidebar--collapsed {
@@ -755,15 +943,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   background-color: transparent;
   overflow: hidden;
   transition: transform var(--transition-speed) ease;
+  margin: 0 auto;
 }
 
 .sidebar__logo-icon {
-  width: 130px;
+  max-width: 38px;
+  max-height: 38px;
+  width: auto;
   height: auto;
   flex-shrink: 0;
   object-fit: contain;
@@ -1586,8 +1777,168 @@ body {
   min-height: 100vh;
   background: var(--color-surface);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
+
+.doctor-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.doctor-topbar {
+  height: var(--topbar-height, 56px);
+  background-color: var(--color-surface-white, #ffffff);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 4%);
+}
+
+/* ==========================================================================
+   Menu de Perfil Médico Superior (Topbar) — SPEC-0029
+   ========================================================================== */
+.doctor-profile-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.doctor-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.45rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.doctor-profile-trigger:hover,
+.doctor-profile-trigger[aria-expanded="true"] {
+  background: var(--color-highlight);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 6px rgb(15 23 42 / 6%);
+}
+
+.doctor-profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.doctor-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.doctor-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.doctor-profile-role {
+  font-size: 0.725rem;
+  color: var(--color-text-muted);
+}
+
+.doctor-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 270px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  z-index: 100;
+  animation: dropdown-fade 0.15s ease-out;
+}
+
+@keyframes dropdown-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.doctor-profile-dropdown__header {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0.35rem;
+}
+
+.doctor-profile-dropdown__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+}
+
+.doctor-profile-dropdown__meta {
+  font-size: 0.775rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.doctor-profile-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-speed) ease;
+}
+
+.doctor-profile-dropdown__item:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.doctor-profile-dropdown__item--danger {
+  color: var(--color-danger);
+}
+
+.doctor-profile-dropdown__item--danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 
 .doctor-header {
   display: flex;
@@ -1641,10 +1992,11 @@ body {
 
 .doctor-main {
   flex: 1;
-  padding: 1.25rem;
+  padding: 1.5rem;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1679,3 +2031,28 @@ body {
   padding: 0.35rem 0.7rem;
   font-size: 0.8rem;
 }
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+    transform: scale(0.95);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+    transform: scale(0.95);
+  }
+}
+
+.pulse-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #34d399;
+  display: inline-block;
+  animation: pulse-dot 2s infinite;
+}
+
