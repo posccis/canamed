@@ -58,6 +58,17 @@ public interface IAgendaRepository
         Guid? exceptAppointmentId,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Indica se o profissional já tem agendamento ativo no intervalo (usado no reagendamento autônomo).
+    /// </summary>
+    Task<bool> ProfessionalHasOverlappingAppointmentAsync(
+        Guid clinicId,
+        Guid professionalId,
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        Guid? exceptAppointmentId,
+        CancellationToken cancellationToken);
+
     /// <summary>Adiciona um agendamento ao contexto de persistência.</summary>
     void AddAppointment(Appointment appointment);
 

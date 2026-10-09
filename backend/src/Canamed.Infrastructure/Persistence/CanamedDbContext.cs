@@ -44,6 +44,12 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
 
     public DbSet<Canamed.Domain.Queue.TriageRecord> TriageRecords => Set<Canamed.Domain.Queue.TriageRecord>();
 
+    public DbSet<Canamed.Domain.MedicalRecords.MedicalRecord> MedicalRecords => Set<Canamed.Domain.MedicalRecords.MedicalRecord>();
+
+    public DbSet<Canamed.Domain.MedicalRecords.MedicalRecordAddendum> MedicalRecordAddenda => Set<Canamed.Domain.MedicalRecords.MedicalRecordAddendum>();
+
+    public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocument> MedicalDocuments => Set<Canamed.Domain.MedicalDocuments.MedicalDocument>();
+
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     public DbSet<User> Users => Set<User>();
@@ -53,6 +59,33 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
     public DbSet<UserSession> UserSessions => Set<UserSession>();
 
     public DbSet<LoginChallenge> LoginChallenges => Set<LoginChallenge>();
+
+    public DbSet<Canamed.Domain.Notifications.AppointmentNotification> AppointmentNotifications => Set<Canamed.Domain.Notifications.AppointmentNotification>();
+
+    public DbSet<Canamed.Domain.Notifications.PatientCommunicationPreference> PatientCommunicationPreferences => Set<Canamed.Domain.Notifications.PatientCommunicationPreference>();
+
+    public DbSet<Canamed.Domain.Portal.PatientOtpCode> PatientOtpCodes => Set<Canamed.Domain.Portal.PatientOtpCode>();
+
+    public DbSet<Canamed.Domain.Portal.PatientPortalSession> PatientPortalSessions => Set<Canamed.Domain.Portal.PatientPortalSession>();
+
+    public DbSet<Canamed.Domain.Portal.PatientCapabilityToken> PatientCapabilityTokens => Set<Canamed.Domain.Portal.PatientCapabilityToken>();
+    public DbSet<Canamed.Domain.Portal.PatientRegistrationDraft> PatientRegistrationDrafts => Set<Canamed.Domain.Portal.PatientRegistrationDraft>();
+
+    public DbSet<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog> MedicalDocumentAccessLogs => Set<Canamed.Domain.MedicalDocuments.MedicalDocumentAccessLog>();
+
+    public DbSet<Canamed.Domain.Privacy.PrivacyRequest> PrivacyRequests => Set<Canamed.Domain.Privacy.PrivacyRequest>();
+
+    public DbSet<Canamed.Domain.Privacy.PrivacyConsent> PrivacyConsents => Set<Canamed.Domain.Privacy.PrivacyConsent>();
+    public DbSet<Canamed.Domain.CashRegister.CashSession> CashSessions => Set<Canamed.Domain.CashRegister.CashSession>();
+    public DbSet<Canamed.Domain.CashRegister.CashMovement> CashMovements => Set<Canamed.Domain.CashRegister.CashMovement>();
+    public DbSet<Canamed.Domain.Queue.QueueCallEvent> QueueCallEvents => Set<Canamed.Domain.Queue.QueueCallEvent>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutContract> MedicalPayoutContracts => Set<Canamed.Domain.Financial.MedicalPayoutContract>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutBatch> MedicalPayoutBatches => Set<Canamed.Domain.Financial.MedicalPayoutBatch>();
+    public DbSet<Canamed.Domain.Financial.MedicalPayoutItem> MedicalPayoutItems => Set<Canamed.Domain.Financial.MedicalPayoutItem>();
+    public DbSet<Canamed.Domain.Financial.FinancialTransaction> FinancialTransactions => Set<Canamed.Domain.Financial.FinancialTransaction>();
+    public DbSet<Canamed.Domain.Inventory.InventoryItem> InventoryItems => Set<Canamed.Domain.Inventory.InventoryItem>();
+    public DbSet<Canamed.Domain.Inventory.InventoryMovement> InventoryMovements => Set<Canamed.Domain.Inventory.InventoryMovement>();
+    public DbSet<Canamed.Domain.Clinics.ClinicPolicy> ClinicPolicies => Set<Canamed.Domain.Clinics.ClinicPolicy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

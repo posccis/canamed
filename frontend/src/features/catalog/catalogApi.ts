@@ -95,3 +95,8 @@ export function deactivatePatient(id: string, signal?: AbortSignal): Promise<voi
 export function activatePatient(id: string, signal?: AbortSignal): Promise<void> {
   return apiPost<void>(`/patients/${id}/activate`, undefined, signal);
 }
+
+/** Lista os pacientes cadastrados na clínica. */
+export function fetchPatients(signal?: AbortSignal): Promise<ManagedPatient[]> {
+  return apiGet<ManagedPatient[]>('/patients', signal);
+}

@@ -84,6 +84,21 @@ Informações organizadas para apoiar decisões da gestão, priorizando clareza 
 
 Fluxos administrativos e operacionais do dia a dia da clínica.
 
+### 5.7 Superfícies dedicadas e jornada digital do paciente
+
+O produto é organizado em superfícies com endereços próprios, para que cada papel veja apenas o que
+lhe cabe e cada funcionalidade possa ser compartilhada por link (SPEC-0026 / ADR-0011):
+
+- **Sistema (`/app`)** — recepção, gestão, financeiro, caixa, DPO e a **Central de Links**;
+- **Paciente (`/p/{clínica}`)** — agendar, confirmar, reagendar, cancelar, fazer check-in, acompanhar a
+  fila, ver documentos e exercer direitos da LGPD, sem nunca entrar no sistema interno;
+- **Profissional (`/medico`)** — agenda, fila do dia, atendimento com PEP e documentos;
+- **Saguão (`/sala/tv`)** — painel de chamada, sem login.
+
+O totem físico deixa de ser produto: o check-in passa a ser feito no celular do paciente por QR Code/link
+e, excepcionalmente, no balcão. A primeira entrega usa rotas em *path*; a evolução para subdomínio por
+clínica reaproveita as mesmas telas.
+
 ## 6. Fluxos Macro (preliminares)
 
 Os fluxos abaixo são um recorte de alto nível para orientar as SPECs. Nenhum deles está especificado:

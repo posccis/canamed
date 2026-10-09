@@ -46,6 +46,12 @@ public sealed class Appointment : Entity
     /// <summary>Motivo do cancelamento, obrigatório na operação (RN-006).</summary>
     public string? CancellationReason { get; private set; }
 
+    /// <summary>Origem do agendamento (desk, online, etc.) — SPEC-0015.</summary>
+    public string Origin { get; private set; } = "desk";
+
+    /// <summary>Indica se a consulta foi marcada em regime de encaixe/sobre-agenda — SPEC-0025.</summary>
+    public bool IsOverbooking { get; private set; }
+
     /// <summary>Preenchido na exclusão lógica (RN-012); registros excluídos não bloqueiam a agenda.</summary>
     public DateTimeOffset? DeletedAt { get; private set; }
 
@@ -66,7 +72,8 @@ public sealed class Appointment : Entity
         DateTimeOffset now,
         Guid? roomId = null,
         bool isOverbooking = false,
-        string? overbookingReason = null)
+        string? overbookingReason = null,
+        string origin = "desk")
     {
         if (clinicId == Guid.Empty)
         {
@@ -112,6 +119,7 @@ public sealed class Appointment : Entity
             Status = AppointmentStatus.Scheduled,
             IsOverbooking = isOverbooking,
             OverbookingReason = isOverbooking ? overbookingReason?.Trim() : null,
+            Origin = origin,
         };
 
         appointment.MarkCreated(now);
@@ -244,6 +252,13 @@ public sealed class Appointment : Entity
     public void MarkPaymentRefunded(DateTimeOffset now)
     {
         PaymentStatus = "estornado";
+        MarkUpdated(now);
+    }
+
+    /// <summary>Marca a consulta como encaixe emergencial (SPEC-0025).</summary>
+    public void MarkAsOverbooking(DateTimeOffset now)
+    {
+        IsOverbooking = true;
         MarkUpdated(now);
     }
 

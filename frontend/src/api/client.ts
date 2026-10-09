@@ -40,30 +40,37 @@ type ProblemDetails = {
  * Executa um GET na API do CANAMED.
  * Os tipos de retorno vêm do OpenAPI gerado pelo backend (RN-004).
  */
-export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
-  return request<T>('GET', path, undefined, signal);
+export async function apiGet<T>(path: string, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
+  return request<T>('GET', path, undefined, signal, customHeaders);
 }
 
 /** Executa um POST com corpo JSON na API do CANAMED. */
-export async function apiPost<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
-  return request<T>('POST', path, body, signal);
+export async function apiPost<T>(path: string, body?: unknown, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
+  return request<T>('POST', path, body, signal, customHeaders);
 }
 
 /** Executa um PUT com corpo JSON na API do CANAMED. */
-export async function apiPut<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
-  return request<T>('PUT', path, body, signal);
+export async function apiPut<T>(path: string, body?: unknown, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
+  return request<T>('PUT', path, body, signal, customHeaders);
 }
 
 /** Executa um DELETE na API do CANAMED. */
-export async function apiDelete<T>(path: string, signal?: AbortSignal): Promise<T> {
-  return request<T>('DELETE', path, undefined, signal);
+export async function apiDelete<T>(path: string, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
+  return request<T>('DELETE', path, undefined, signal, customHeaders);
 }
 
-async function request<T>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  signal?: AbortSignal,
+  customHeaders?: Record<string, string>,
+): Promise<T> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
     // Proteção CSRF da sessão em cookie (RN-016 da SPEC-0003).
     'X-Canamed-Requested-With': 'canamed-spa',
+    ...customHeaders,
   };
 
   if (body !== undefined) {

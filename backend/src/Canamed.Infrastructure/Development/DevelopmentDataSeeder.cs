@@ -66,6 +66,13 @@ public static class DevelopmentDataSeeder
         {
             // Bancos já existentes recebem apenas o que falta da classificação assistencial
             // (SPEC-0004), sem duplicar catálogo nem sobrescrever dados do desenvolvedor.
+            // O slug é normalizado para o valor de demonstração quando veio do preenchimento da
+            // migration (SPEC-0026/RN-003), sem sobrescrever slugs escolhidos pelo desenvolvedor.
+            if (existingClinic.Slug.StartsWith("clinic-", StringComparison.Ordinal))
+            {
+                existingClinic.ChangeSlug(DevelopmentDefaults.DemoClinicSlug, now);
+            }
+
             await EnsureDemoClassificationAsync(dbContext, existingClinic.Id, now, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -75,7 +82,9 @@ public static class DevelopmentDataSeeder
         dbContext.Clinics.Add(Clinic.Create(
             "Clínica Demonstração (dados sintéticos)",
             now,
-            DevelopmentDefaults.DemoClinicId));
+            DevelopmentDefaults.DemoClinicId,
+            DevelopmentDefaults.DemoClinicSlug,
+            "Cana Med"));
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

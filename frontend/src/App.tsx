@@ -1,114 +1,91 @@
-import { useState, useEffect } from 'react';
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 
-import { AgendaPage } from './features/agenda/AgendaPage';
-import { LoginPage } from './features/auth/LoginPage';
-import { MfaEnrollmentPanel } from './features/auth/MfaEnrollmentPanel';
-import { useSession } from './features/auth/useSession';
-import { UsersPanel } from './features/auth/UsersPanel';
-import { CatalogPanel } from './features/catalog/CatalogPanel';
-import { DashboardPanel } from './features/dashboard/DashboardPanel';
-import { OperationPanel } from './features/clinics/OperationPanel';
-import { QueuePanel } from './features/queue/QueuePanel';
-import { Sidebar, type AppView } from './features/layout/Sidebar';
-import { Topbar } from './features/layout/Topbar';
-import { ToastProvider } from './features/layout/Toast';
-import { GlobalSearchModal } from './features/layout/GlobalSearchModal';
+import { DoctorApp } from './app/DoctorApp';
+import { HomePage } from './features/home/HomePage';
+import { PatientLayout } from './app/PatientLayout';
+import { StaffApp } from './app/StaffApp';
+import { TvDisplay } from './features/admin/TvDisplay';
+import {
+  PatientAppointmentPage,
+  PatientCancelPage,
+  PatientConfirmPage,
+  PatientReschedulePage,
+} from './features/patient/pages/PatientAppointmentPages';
+import { PatientCheckInPage } from './features/patient/pages/PatientCheckInPage';
+import { PatientDocumentPage } from './features/patient/pages/PatientDocumentPage';
+import { PatientDocumentValidationPage } from './features/patient/pages/PatientDocumentValidationPage';
+import { PatientHub } from './features/patient/pages/PatientHub';
+import { PatientRegistrationPage } from './features/patient/pages/PatientRegistrationPage';
+import {
+  PatientAppointmentsPage,
+  PatientBookingPage,
+  PatientDocumentsPage,
+} from './features/patient/pages/PatientPortalPages';
+import { PatientQueuePage } from './features/patient/pages/PatientQueuePage';
+import { PrivacyPortal } from './features/patient/PrivacyPortal';
+import { DEFAULT_CLINIC_SLUG, LOBBY_TV_PATH, STAFF_PATHS } from './navigation/routes';
 
-export function App() {
-  const { state, reload, end } = useSession();
-  const [view, setView] = useState<AppView>('dashboard');
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setSearchOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  if (state.status === 'loading') {
-    return (
-      <div className="page">
-        <p className="form__hint">Verificando a sessão…</p>
-      </div>
-    );
-  }
-
-  if (state.status === 'anonymous') {
-    return <LoginPage onAuthenticated={reload} notice={state.message} />;
-  }
-
-  if (state.status === 'error') {
-    return (
-      <div className="page">
-        <div className="alert alert--error" role="alert">
-          <p>{state.message}</p>
-          <button type="button" className="button button--secondary" onClick={reload}>
-            Tentar novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (state.session.mfaPending) {
-    return <MfaEnrollmentPanel onActivated={reload} onSignOut={() => void end()} />;
-  }
-
+function NotFound() {
   return (
-    <ToastProvider>
-      <div className="app-shell">
-        <Sidebar
-          session={state.session}
-          view={view}
-          onChangeView={setView}
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((value) => !value)}
-          mobileOpen={mobileOpen}
-          onCloseMobile={() => setMobileOpen(false)}
-        />
+    <div className="page">
+      <h1 className="page__title">Página não encontrada</h1>
+      <p className="form__hint">O endereço acessado não existe ou foi alterado.</p>
+      <Link className="button button--primary" to={STAFF_PATHS.dashboard}>
+        Ir para o sistema
+      </Link>
+    </div>
+  );
+}
 
-        <div className="app-content-wrapper">
-          <Topbar
-            session={state.session}
-            view={view}
-            onToggleMobile={() => setMobileOpen((value) => !value)}
-            onSignOut={() => void end()}
-            onOpenSearch={() => setSearchOpen(true)}
-          />
+/**
+ * Raiz do roteamento por URL (SPEC-0026 / ADR-0011).
+ *
+ * O roteador vive em `App` para que o roteamento seja a fonte única de navegação em toda a aplicação,
+ * inclusive nos testes.
+ */
+export function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
 
-          <main className="app-main">
-            {view === 'dashboard' ? (
-              <DashboardPanel onNavigate={setView} />
-            ) : view === 'users' ? (
-              <UsersPanel />
-            ) : view === 'catalog' ? (
-              <CatalogPanel />
-            ) : view === 'operation' ? (
-              <OperationPanel />
-            ) : view === 'queue' ? (
-              <QueuePanel />
-            ) : (
-              <AgendaPage />
-            )}
-          </main>
-        </div>
+        {/* Sistema interno — recepção, gestão e administração */}
+        <Route path="/app/*" element={<StaffApp />} />
 
-        <GlobalSearchModal
-          isOpen={searchOpen}
-          onClose={() => setSearchOpen(false)}
-          onNavigate={(targetView) => {
-            setView(targetView);
-            setSearchOpen(false);
-          }}
-        />
-      </div>
-    </ToastProvider>
+        {/* Superfície dedicada do profissional de saúde */}
+        <Route path="/medico/*" element={<DoctorApp />} />
+
+        {/* Exibição pública do saguão (TV) */}
+        <Route path={LOBBY_TV_PATH} element={<TvDisplay />} />
+
+        {/* Superfície pública do paciente */}
+        <Route path="/p" element={<Navigate to={`/p/${DEFAULT_CLINIC_SLUG}`} replace />} />
+        <Route path="/p/:slug" element={<PatientLayout />}>
+          <Route index element={<PatientHub />} />
+          <Route path="agendar" element={<PatientBookingPage />} />
+          <Route path="agendar/profissional/:professionalSlug" element={<PatientBookingPage />} />
+          <Route path="agendar/especialidade/:specialtySlug" element={<PatientBookingPage />} />
+          <Route path="consultas" element={<PatientAppointmentsPage />} />
+          <Route path="c/:token" element={<PatientAppointmentPage />} />
+          <Route path="c/:token/confirmar" element={<PatientConfirmPage />} />
+          <Route path="c/:token/remarcar" element={<PatientReschedulePage />} />
+          <Route path="c/:token/cancelar" element={<PatientCancelPage />} />
+          <Route path="documentos" element={<PatientDocumentsPage />} />
+          <Route path="documentos/:token" element={<PatientDocumentPage />} />
+          <Route path="privacidade" element={<PrivacyPortal />} />
+          <Route path="privacidade/:protocol" element={<PrivacyPortal />} />
+          <Route path="cadastro" element={<PatientRegistrationPage />} />
+          <Route path="cadastro/:token" element={<PatientRegistrationPage />} />
+          <Route path="check-in" element={<PatientCheckInPage />} />
+          <Route path="check-in/:token" element={<PatientCheckInPage />} />
+          <Route path="fila" element={<PatientQueuePage />} />
+          <Route path="fila/:token" element={<PatientQueuePage />} />
+          <Route path="validar/:token" element={<PatientDocumentValidationPage />} />
+          <Route path="*" element={<Navigate to="." replace />} />
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

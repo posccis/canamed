@@ -1,25 +1,48 @@
-import type { Session } from '../auth/authApi';
-import type { AppView } from './Sidebar';
+import { useState } from 'react';
+import { type Session, switchClinic } from '../auth/authApi';
+import type { StaffView } from '../../navigation/routes';
 
 type TopbarProps = {
   session: Session;
-  view: AppView;
+  view: StaffView;
   onToggleMobile: () => void;
   onSignOut: () => void;
   onOpenSearch?: () => void;
+  onReloadSession?: () => void;
 };
 
-const VIEW_TITLES: Record<AppView, string> = {
+const VIEW_TITLES: Record<StaffView, string> = {
   dashboard: 'Painel Operacional',
   agenda: 'Agenda de Consultas',
   queue: 'Recepção e Fila de Espera',
   operation: 'Gestão Operacional',
   catalog: 'Catálogo Assistencial',
   users: 'Gestão de Usuários',
+  cashier: 'Frente de Caixa & Turno',
+  financial: 'Gestão Financeira & Repasses',
+  inventory: 'Estoque & Insumos Médicos',
+  dpo: 'Governança LGPD & Painel do DPO',
+  policies: 'Políticas de Agendamento & Encaixes',
+  tv: 'Painel de Chamada para TV',
+  links: 'Central de Links',
 };
 
-export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch }: TopbarProps) {
+export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch, onReloadSession }: TopbarProps) {
   const initial = session.user.name.trim().charAt(0).toUpperCase() || 'U';
+  const [switching, setSwitching] = useState(false);
+
+  async function handleClinicChange(newClinicId: string) {
+    if (!newClinicId || newClinicId === session.clinicId || switching) return;
+    setSwitching(true);
+    try {
+      await switchClinic(newClinicId);
+      onReloadSession?.();
+    } catch {
+      // Ignora erro de troca de clínica
+    } finally {
+      setSwitching(false);
+    }
+  }
 
   return (
     <header className="topbar">
@@ -38,9 +61,40 @@ export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch 
           </svg>
         </button>
         <h2 className="topbar__title">{VIEW_TITLES[view]}</h2>
-        <span className="topbar__clinic-tag">
-          {session.clinicName}
-        </span>
+
+        {session.clinics && session.clinics.length > 1 ? (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.9rem' }}>🏥</span>
+            <select
+              aria-label="Selecionar Unidade ou Clínica"
+              className="topbar__clinic-tag"
+              style={{
+                cursor: 'pointer',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-primary)',
+                fontWeight: 600,
+                padding: '0.25rem 0.5rem',
+                borderRadius: '6px',
+                outline: 'none',
+              }}
+              value={session.clinicId}
+              disabled={switching}
+              onChange={(e) => void handleClinicChange(e.target.value)}
+            >
+              {session.clinics.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.role})
+                </option>
+              ))}
+            </select>
+            {switching && <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Trocando...</span>}
+          </div>
+        ) : (
+          <span className="topbar__clinic-tag">
+            {session.clinicName}
+          </span>
+        )}
       </div>
 
       <div className="topbar__right">

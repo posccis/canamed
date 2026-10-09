@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Patient } from '../agenda/agendaApi';
+import type { StaffView } from '../../navigation/routes';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (view: 'dashboard' | 'agenda' | 'queue' | 'operation' | 'catalog' | 'users') => void;
+  onNavigate: (view: StaffView) => void;
+  /** Abre a superfície dedicada do médico em `/medico` (SPEC-0026/RN-001). */
+  onOpenDoctor: () => void;
   patients?: Patient[];
 }
 
@@ -16,7 +19,13 @@ interface ActionItem {
   action: () => void;
 }
 
-export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }: GlobalSearchModalProps) {
+export function GlobalSearchModal({
+  isOpen,
+  onClose,
+  onNavigate,
+  onOpenDoctor,
+  patients = [],
+}: GlobalSearchModalProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +81,16 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
       }
     },
     {
+      id: 'nav-workspace',
+      category: 'Navegação',
+      title: 'Meu Consultório & PEP',
+      description: 'Consultório virtual, fila médica, prontuário SOAP e emissão de documentos',
+      action: () => {
+        onOpenDoctor();
+        onClose();
+      }
+    },
+    {
       id: 'nav-queue',
       category: 'Navegação',
       title: 'Fila de Espera & Recepção',
@@ -108,6 +127,76 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate, patients = [] }
       description: 'Acessos, perfis e segurança da equipe',
       action: () => {
         onNavigate('users');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-cashier',
+      category: 'Navegação',
+      title: 'Frente de Caixa & Fechamento',
+      description: 'Controle de gaveta, sangrias, suprimentos e conferência cega de turno',
+      action: () => {
+        onNavigate('cashier');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-tv',
+      category: 'Navegação',
+      title: 'Painel TV da Recepção',
+      description: 'Display de chamada de senhas com sintetizador de voz e áudio',
+      action: () => {
+        onNavigate('tv');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-financial',
+      category: 'Navegação',
+      title: 'Financeiro & Repasses Médicos',
+      description: 'Contratos de comissão, fechamento de produção e DRE simplificado',
+      action: () => {
+        onNavigate('financial');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-inventory',
+      category: 'Navegação',
+      title: 'Estoque & Insumos Médicos',
+      description: 'Controle de insumos, lotes, estoque mínimo e validade ANVISA',
+      action: () => {
+        onNavigate('inventory');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-dpo',
+      category: 'Navegação',
+      title: 'Painel do DPO & Governança LGPD',
+      description: 'Atendimento a titulares de dados (SLA 15 dias) e inventário ROPA',
+      action: () => {
+        onNavigate('dpo');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-policies',
+      category: 'Navegação',
+      title: 'Políticas de Agendamento & Encaixes',
+      description: 'Cota diária de overbooking e prazos de cancelamento/marcação',
+      action: () => {
+        onNavigate('policies');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-links',
+      category: 'Navegação',
+      title: 'Central de Links do Paciente',
+      description: 'Copie os endereços de agendamento, check-in, consulta e privacidade',
+      action: () => {
+        onNavigate('links');
         onClose();
       }
     }

@@ -30,12 +30,17 @@ Nunca inclua segredos, credenciais ou dados reais de pacientes em um ADR.
 | [0008](0008-autenticacao-autorizacao-e-auditoria.md) | Autenticação, autorização e auditoria | Aceito | 2026-09-28 |
 | [0009](0009-identidade-de-desenvolvimento-e-autorizacao-temporaria.md) | Identidade de desenvolvimento e autorização temporária | Substituído por ADR-0010 | 2026-09-30 |
 | [0010](0010-sessao-de-usuario-e-substituicao-da-identidade-de-desenvolvimento.md) | Sessão de usuário e substituição da identidade de desenvolvimento | Aceito | 2026-10-01 |
+| [0011](0011-roteamento-por-url-e-superficies-dedicadas.md) | Roteamento por URL e superfícies dedicadas (sistema, paciente, médico e saguão) | Aceito | 2026-10-03 |
 
 ## Decisões pendentes
 
 Ficam pendentes apenas decisões ainda não abertas como ADR: hospedagem e região dos dados (LGPD) e
 CI/CD hospedada.
 
-Não há ADRs aguardando aprovação. Os ADRs 0006, 0007 e 0008 foram aprovados em 2026-09-28, o ADR-0009
-em 2026-09-30 (substituído pelo ADR-0010 em 2026-10-01) e o ADR-0010 foi aprovado em 2026-10-01 junto da
+O [ADR-0011](0011-roteamento-por-url-e-superficies-dedicadas.md) foi **aprovado em 2026-10-03** e
+sustenta a [SPEC-0026](../specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md): roteamento
+por URL e separação das superfícies de sistema, paciente, médico e saguão, com a primeira entrega em
+*path* (`/p/{slug}`) e evolução futura para subdomínio. Os ADRs 0006, 0007 e 0008 foram aprovados em
+2026-09-28, o ADR-0009 em 2026-09-30 (substituído pelo ADR-0010 em 2026-10-01) e o ADR-0010 foi aprovado
+em 2026-10-01 junto da
 [SPEC-0003](../specs/0003-spec-autenticacao-autorizacao-e-auditoria.md).

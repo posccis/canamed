@@ -158,8 +158,8 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
         var now = DateTimeOffset.UtcNow;
 
         context.Clinics.AddRange(
-            Clinic.Create("Clínica Teste A (sintética)", now, ClinicAId),
-            Clinic.Create("Clínica Teste B (sintética)", now, ClinicBId));
+            Clinic.Create("Clínica Teste A (sintética)", now, ClinicAId, "clinica-teste-a"),
+            Clinic.Create("Clínica Teste B (sintética)", now, ClinicBId, "clinica-teste-b"));
 
         context.Professionals.AddRange(
             Professional.Create(ClinicAId, "Profissional Teste A (sintético)", now, ProfessionalAId),
@@ -170,7 +170,9 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
             "Paciente Teste A",
             "(81) 90000-0000",
             now,
-            PatientAId));
+            PatientAId,
+            document: "12345678900",
+            birthDate: new DateOnly(1980, 5, 10)));
 
         context.Specialties.Add(Specialty.Create(ClinicAId, "Ortopedia Teste", now, SpecialtyAId));
 

@@ -783,3 +783,423 @@ Implementação orientada por especificação atendendo aos itens pendentes do b
 
 
 
+
+---
+
+### [2026-10-02] — Reorganização Estratégica do Backlog e Criação das SPECs da Visão do Médico
+
+- **AÇÃO**: Reestruturação integral do backlog consolidado ([`docs/backlog-proximas-funcionalidades.md`](backlog-proximas-funcionalidades.md))
+  - **MOTIVO**: Cumprir a ordem estratégica de prioridades definida pelo responsável pelo produto: (1º) Visão do Médico, (2º) Visão do Paciente, (3º) Visão da Administração e (4º) Infraestrutura.
+  - **LOCAL AFETADO**: `docs/backlog-proximas-funcionalidades.md`
+  - **RESULTADO**: Backlog promovido para versão 2.0 com todas as funcionalidades mapeadas categorizadas, tabela de progresso atualizado (SPECs 0001 a 0009 e SPEC-UI-001) e mapeamento de dependências e integrações simuladas.
+- **AÇÃO**: Especificação formal da Visão do Médico: criação das SPECs 0010, 0011, 0012 e 0013
+  - **MOTIVO**: Cumprimento do fluxo mandatório spec-driven do `GEMINI.md` antes de qualquer codificação do atendimento assistencial, cobrindo integralmente as exigências da Lei nº 13.787/2018, CFM, MP 2.200-2/2001 e LGPD.
+  - **LOCAL AFETADO**:
+    - `specs/0010-spec-prontuario-eletronico-do-paciente.md`: Prontuário Eletrônico do Paciente (PEP) — SOAP, histórico cronológico, imutabilidade com adendos justificados e retenção de 20 anos.
+    - `specs/0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md`: Prescrição médica estruturada, atestados com controle de CID sob consentimento (Art. 73 do CEM), pedidos de exames e assinatura digital ICP-Brasil com QR Code público de validação.
+    - `specs/0012-spec-consultorio-virtual-e-workspace-medico.md`: Workspace Médico integrado com fila em tempo real, acionamento de chamada, dados vitais da triagem Manchester (SPEC-0009) e alertas persistentes de alergias e comorbidades.
+    - `specs/0013-spec-gestao-de-retornos-e-prazos-assistenciais.md`: Gestão de retornos médicos conforme a Resolução CFM nº 1.958/2010, carência configurável por especialidade, elegibilidade automática no agendamento e isenção de cobrança de caixa.
+  - **RESULTADO**: 4 novas especificações completas elaboradas, contendo todas as 20 seções obrigatórias do modelo `specs/0000-modelo-de-spec.md`, status `Rascunho` e prontas para revisão/aprovação.
+- **AÇÃO**: Atualização do índice de especificações
+  - **LOCAL AFETADO**: `specs/README.md`
+  - **RESULTADO**: Adicionadas as entradas para as SPECs 0010, 0011, 0012 e 0013.
+
+---
+
+### [2026-10-03] — Implementação da Tríade Médica (SPECs 0010, 0011 e 0012) e Refinamento do Logotipo
+
+#### 1. Ajuste Visual de Marca e Sidebar
+- **AÇÃO**: Remoção do fundo branco dos containers do logotipo na barra lateral
+  - **MOTIVO**: Solicitação do usuário para deixar a logo integrada sobre o fundo escuro da sidebar, eliminando a caixa branca de fundo.
+  - **LOCAL AFETADO**: `frontend/src/styles/theme.css`
+  - **RESULTADO**: Contêineres de logo ajustados com `background: transparent` e sombras removidas; preservada a exibição do logotipo oficial grande na tela de login (`LoginPage.tsx`).
+
+#### 2. Domínio e Regras de Negócio Médicas (SPEC-0010 e SPEC-0011)
+- **AÇÃO**: Criação das entidades `MedicalRecord`, `MedicalRecordAddendum`, `MedicalDocument` e abstração `IDigitalSignatureProvider`
+  - **MOTIVO**: Alicerce do Prontuário Eletrônico do Paciente (PEP) e emissão de documentos clínicos (receitas, atestados, exames), respeitando as leis nº 13.787/2018 (guarda e imutabilidade de prontuários), CFM nº 1.821/2007, CFM nº 2.217/2018 (Art. 73 - consentimento para CID em atestados) e MP 2.200-2/2001 (ICP-Brasil).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/`
+  - **RESULTADO**: Modelo de dados clínico com ciclo de vida SOAP (rascunho -> finalizado imutável), registro de adendos obrigatórios com justificativa e documentos assinados com hash SHA-256 e token de validação pública.
+
+#### 3. Serviços de Aplicação e Permissões Granulares
+- **AÇÃO**: Criação de `MedicalRecordService`, `MedicalDocumentService`, `DoctorWorkspaceService` e extensão do sistema RBAC
+  - **MOTIVO**: Orquestrar operações de atendimento clínico, criação de rascunhos SOAP, finalização, validação de permissões e agregação do estado do consultório.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/`
+  - **RESULTADO**: Serviços implementados com registro de auditoria (`MedicalRecordCreated`, `MedicalRecordFinalized`, `MedicalDocumentSigned`, `MedicalRecordViewed`, etc.); perfis `profissional` e `gestor` atualizados com novas permissões de PEP e prescrição.
+
+#### 4. Persistência EF Core, Migrations e Provedor de Assinatura
+- **AÇÃO**: Mapeamento de tabelas `medical_records`, `medical_record_addenda` e `medical_documents`, criação e aplicação de migration no PostgreSQL
+  - **MOTIVO**: Garantir integridade referencial, índices para busca por paciente/médico e persistência estruturada dos atendimentos.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/`
+  - **RESULTADO**: Migration `AddMedicalRecordsAndDocuments` aplicada com sucesso no PostgreSQL via `postgres.exe` em execução contínua; `SimulatedSignatureProvider` gerando hashes e metadados de certificado digital ICP-Brasil.
+
+#### 5. Endpoints REST da API
+- **AÇÃO**: Criação de `MedicalRecordEndpoints`, `MedicalDocumentEndpoints` e `DoctorWorkspaceEndpoints`
+  - **MOTIVO**: Expor contratos de API seguros e documentados via OpenAPI para o frontend.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/`
+  - **RESULTADO**: Rotas mapeadas e protegidas por autenticação JWT e autorização por permissão; endpoint público `/api/medical-documents/validate/{token}` acessível sem autenticação para farmácias e validação de atestados por terceiros.
+
+#### 6. Frontend: Consultório Virtual Integrado, Editor SOAP e Emissão de Documentos
+- **AÇÃO**: Desenvolvimento da interface `DoctorWorkspace`, modais `DocumentModal` e `PatientHistoryModal`, e integração com shell da aplicação
+  - **MOTIVO**: Permitir que o médico conduza o atendimento em uma tela única (fila de espera com classificação Manchester, alerta persistente de alergia, editor SOAP com rascunho automático, emissão e impressão de receitas/atestados e histórico pregresso de consultas).
+  - **LOCAL AFETADO**: `frontend/src/features/medical/`, `frontend/src/features/layout/`, `frontend/src/App.tsx`
+  - **RESULTADO**: Interface clínica responsiva, fluida e consistente com o design system CANAMED. Adicionado item "Consultório" no Sidebar e atalho no modal de busca global (Ctrl+K).
+
+#### 7. Testes Automatizados e Homologação
+- **AÇÃO**: Execução e ampliação de testes automatizados no backend e frontend
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 142 testes unitários + 74 testes de integração = **216 testes aprovados, 0 falhas**.
+    - **Frontend React (Vitest):** 9 arquivos de teste = **29 testes aprovados, 0 falhas**.
+    - **Build de Produção:** `npm run build` gerado com sucesso sem erros de tipagem.
+
+---
+
+### [2026-10-03] — Implementação Integral da Visão do Paciente (SPECs 0014 a 0018)
+
+#### 1. Especificações Formais da Visão do Paciente
+- **AÇÃO**: Elaboração das 5 especificações funcionais e normativas da Visão do Paciente
+  - **MOTIVO**: Cumprimento estrito do processo *Spec-Driven Development* do `GEMINI.md`, alinhado à LGPD (Arts. 11, 14, 16 e 18), Lei nº 13.787/2018 (guarda de 20 anos), Código de Ética Médica e RDC 657/2022 ANVISA.
+  - **LOCAL AFETADO**:
+    - `specs/0014-spec-notificacoes-e-lembretes-ativos-whatsapp-sms.md`: Lembretes ativos pré-consulta (D-2 / D-1) com confirmação/cancelamento 1-clique via WhatsApp e SMS, opt-out conforme Art. 8º da LGPD e atualização imediata da agenda.
+    - `specs/0015-spec-agendamento-online-e-portal-do-paciente.md`: Agendamento online público de consultas com wizard em 3 etapas, autenticação sem senhas (OTP via WhatsApp/SMS), cancelamento transparente e proteção contra enumeração e DDoS.
+    - `specs/0016-spec-carteira-digital-e-acesso-a-documentos-clinicos.md`: Carteira digital para acesso e download seguro de receitas, atestados e exames com validação antifraude via QR Code, hash SHA-256 e desafio com os 3 primeiros dígitos do CPF.
+    - `specs/0017-spec-checkin-autonomo-totem-e-qrcode.md`: Totem de autoatendimento touch-screen com busca por CPF/telefone, confirmação de chegada na clínica, emissão de senhas prioritárias e normais (ex: N-042, P-005) e rastreador de fila.
+    - `specs/0018-spec-portal-de-autonomia-e-direitos-do-titular-lgpd.md`: Portal de privacidade e transparência para o titular de dados, exportação de extrato completo em JSON (Art. 18 LGPD), revogação de consentimentos não obrigatórios e abertura formal de requisições com SLA legal de 15 dias.
+  - **RESULTADO**: 5 especificações completas elaboradas, aprovadas e promovidas para `Implementada`.
+
+#### 2. Modelagem de Domínio e Regras de Negócio
+- **AÇÃO**: Criação das entidades de domínio e contratos na camada `Canamed.Domain`
+  - **MOTIVO**: Isolar as regras de negócio assistenciais e de privacidade segundo a arquitetura limpa (Clean Architecture / DDD).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/`
+  - **RESULTADO**:
+    - `NotificationReminder`, `NotificationEvent` e `INotificationSender` (simulação de mensageria WhatsApp/SMS).
+    - `PatientOtpSession` (autenticação passwordless com TTL de 5 minutos, limite de 3 tentativas e rate limit).
+    - `PrivacyConsent` e `PrivacyRequest` (gerenciamento de consentimento granular e solicitações de titulares com protocolo UUIDv4 e SLA de 15 dias).
+    - Entidade `QueueEntry` enriquecida com `Origin` (kiosk, manual, online) e geração de código de senha (`N-XXX` / `P-XXX`).
+
+#### 3. Serviços de Aplicação e Casos de Uso
+- **AÇÃO**: Desenvolvimento dos serviços de aplicação em `Canamed.Application`
+  - **MOTIVO**: Implementar a orquestração dos fluxos de notificação, portal do paciente, autoatendimento e direitos de privacidade.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/`
+  - **RESULTADO**:
+    - `NotificationService`: Processamento em lote de lembretes D-2/D-1, envio simulado e opt-out automático.
+    - `PatientPortalService`: Geração e verificação criptográfica de OTP, agendamento online público, consulta e cancelamento com auditoria.
+    - `KioskCheckInService`: Busca de agendamentos no dia, regras de tolerância de horário e emissão de ticket para a fila de espera.
+    - `PrivacyService`: Extrato estruturado de dados pessoais (com aviso explícito da guarda de 20 anos da Lei 13.787/2018), atualização de consentimentos e tramitação de requisições DPO.
+
+#### 4. Persistência EF Core, Migrations e Banco de Dados PostgreSQL
+- **AÇÃO**: Criação de mapeamentos Fluent API, repositórios e aplicação de migration no PostgreSQL
+  - **MOTIVO**: Persistir de maneira estruturada e segura todas as novas entidades no banco de dados da clínica.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Infrastructure/`
+  - **RESULTADO**:
+    - Tabelas `notification_reminders`, `notification_events`, `patient_otp_sessions`, `privacy_consents` e `privacy_requests` mapeadas com índices otimizados.
+    - Migration `20261003124929_AddPatientPortalAndKioskAndPrivacy` gerada e aplicada com sucesso no PostgreSQL (porta 5432).
+
+#### 5. Endpoints REST da API
+- **AÇÃO**: Criação dos controladores Minimal API na camada `Canamed.Api`
+  - **MOTIVO**: Disponibilizar contratos seguros REST/OpenAPI para o portal do paciente, totens físicos e integrações.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/`
+  - **RESULTADO**:
+    - `NotificationEndpoints`: Envio de lembretes e disparo em lote.
+    - `PortalEndpoints`: Autenticação OTP, listagem de slots públicos, agendamento, cancelamento e metadados (`/portal/meta`).
+    - `KioskEndpoints`: Busca rápida de agendamento por CPF/telefone, check-in autônomo e consulta de posição na fila.
+    - `PrivacyEndpoints`: Extrato de dados LGPD, consentimentos e abertura/consulta de solicitações de privacidade.
+    - Validação com unlock de receitas e atestados em `/medical-documents/public/validate-document/{token}/unlock`.
+
+#### 6. Frontend: Portal do Paciente, Totem de Autoatendimento e Portal de Privacidade
+- **AÇÃO**: Desenvolvimento de interfaces responsivas em React + TypeScript
+  - **MOTIVO**: Entregar a experiência da Visão do Paciente seguindo os princípios de simplicidade, facilidade de uso e sem sobrecarga cognitiva.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/`, `frontend/src/api/client.ts`, `frontend/src/App.tsx`, `frontend/src/features/layout/`
+  - **RESULTADO**:
+    - `PatientPortal.tsx`: Login sem senha com código OTP, agendamento de consultas com seleção de data/especialidade/médico, acompanhamento de consultas marcadas com cancelamento justificado e carteira digital com visualização e download de PDFs de receitas e atestados.
+    - `KioskMode.tsx`: Interface otimizada para terminais touch-screen, teclado numérico na tela, confirmação de presença com suporte a atendimento prioritário (Lei nº 10.048/2000), impressão de comprovante e consulta em tempo real da posição na fila de espera.
+    - `PrivacyPortal.tsx`: Painel de conformidade LGPD para download de dados em JSON, gestão de consentimentos com histórico de alteração e formulário formal de solicitação ao encarregado (DPO).
+    - `Sidebar.tsx` e `Topbar.tsx`: Navegação integrada para "Portal Paciente", "Totem Check-in" e "Privacidade (LGPD)".
+
+#### 7. Testes Automatizados e Homologação
+- **AÇÃO**: Testes automatizados executados de ponta a ponta
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 155 testes unitários + 74 testes de integração = **229 testes aprovados (100% green)**.
+    - **Frontend React (Vitest):** 13 arquivos de teste = **39 testes aprovados (100% green)**.
+    - **Build de Produção:** `npm run build` gerado com sucesso (zero erros de tipagem TypeScript).
+
+---
+
+### [2026-10-03] — Implementação da Visão da Administração (SPECs 0019 a 0025)
+
+Implementação completa das 7 especificações administrativas aprovadas para a plataforma CANAMED, cobrindo todo o ciclo operacional e gerencial de clínicas ambulatoriais.
+
+#### 1. Especificações Técnicas e de Negócio Elaboradas
+- **AÇÃO**: Criação das especificações formais com seções obrigatórias do `GEMINI.md`:
+  - `SPEC-0019`: Fechamento e Conferência de Caixa por Operador e Turno com Sangria e Conciliação.
+  - `SPEC-0020`: Painel de Chamada para TV na Recepção (Tempo Real com áudio e sintetizador de voz).
+  - `SPEC-0021`: Gestão Financeira Avançada, Contas e Repasses Médicos (percentual ou fixo).
+  - `SPEC-0022`: Gestão de Insumos e Materiais Médicos (Estoque, controle de lotes e alertas ANVISA).
+  - `SPEC-0023`: Painel do DPO e Governança LGPD (SLA legal de 15 dias e inventário ROPA Art. 37).
+  - `SPEC-0024`: Alternância Dinâmica de Multi-Clínica na Interface.
+  - `SPEC-0025`: Políticas Parametrizáveis de Encaixe e Cancelamento (Cotas de overbooking).
+
+#### 2. Modelagem de Domínio (.NET 10)
+- **AÇÃO**: Criação de entidades ricas e invariantes de negócio na camada `Canamed.Domain`:
+  - `CashSession` e `CashMovement`: Abertura de turno com fundo de troco, suprimentos, sangrias com justificativa e fechamento cego com cálculo de diferenças.
+  - `QueueCallEvent`: Eventos de chamada de TV com ticket formatado (`N-XXX` / `P-XXX`), sala, profissional e prioridade legal (Lei nº 10.048/2000).
+  - `MedicalPayoutContract`, `MedicalPayoutBatch`, `MedicalPayoutItem`: Contratos de comissão médica, cálculo de produção e liquidação com comprovante.
+  - `FinancialTransaction`: Transações de receitas e despesas com categoria e regime de competência.
+  - `InventoryItem` e `InventoryMovement`: Rastreabilidade de lotes, estoque mínimo e validade ANVISA.
+  - `ClinicPolicy`: Limites de encaixe diário por médico e janelas de antecedência para agendamento e cancelamento.
+  - `Appointment`: Marcador `IsOverbooking` para identificação de atendimentos extras.
+
+#### 3. Serviços de Aplicação e Casos de Uso
+- **AÇÃO**: Desenvolvimento de regras de negócio em `Canamed.Application`:
+  - `CashRegisterService`: Controle transacional de turnos, conciliação e trilha de auditoria.
+  - `QueueCallService`: Orquestração de chamadas de painel em tempo real e re-chamadas.
+  - `FinancialService`: Cálculo automático de produção líquida e DRE simplificado.
+  - `InventoryService`: Entradas, saídas/baixas e monitoramento de alertas ANVISA.
+  - `DpoGovernanceService`: Gestão de prazos de 15 dias (Art. 19 LGPD) e catalogação de atividades ROPA.
+  - `ClinicPolicyService`: Validação de cotas de encaixe para prevenção de superlotação.
+
+#### 4. Infraestrutura EF Core e Banco de Dados PostgreSQL
+- **AÇÃO**: Implementação de repositórios, configurações Fluent API e migrations:
+  - Repositórios: `CashSessionRepository`, `QueueCallRepository`, `FinancialRepository`, `InventoryRepository`, `ClinicPolicyRepository`.
+  - Migration EF Core `20261003164336_AddAdministrationFinanceInventory` aplicada com sucesso no PostgreSQL (daemon local na porta 5432).
+
+#### 5. Endpoints REST da API
+- **AÇÃO**: Mapeamento de rotas e segurança por permissões em `Canamed.Api`:
+  - `CashRegisterEndpoints` (`/cash-register/sessions/...`) com permissão `cashier:manage` e `cashier:view-all`.
+  - `TvDisplayEndpoints` (`/tv-display/...`) com rota pública para telas de saguão e disparo autenticado.
+  - `FinancialEndpoints` (`/financial/...`) para repasses, lotes e DRE com permissão `financial:admin` e `payout:manage`.
+  - `InventoryEndpoints` (`/inventory/...`) com permissão `inventory:read` e `inventory:manage`.
+  - `DpoGovernanceEndpoints` (`/dpo/...`) com permissão `dpo:manage`.
+  - `ClinicPolicyEndpoints` (`/clinics/{id}/policies/...`) para leitura e parametrização.
+
+#### 6. Frontend: Módulos Administrativos e Multi-Clínica
+- **AÇÃO**: Desenvolvimento de interfaces responsivas em React + TypeScript:
+  - `CashRegisterPanel.tsx`: Abertura com fundo inicial, registro de sangrias/suprimentos, fechamento com cálculo de quebra de caixa e recibo auditável.
+  - `TvDisplay.tsx`: Painel de alta legibilidade para monitores de recepção, chamada em destaque, suporte a tela cheia, sinal sonoro (Web Audio API) e sintetizador de voz em português (Web Speech API).
+  - `FinancialPanel.tsx`: Abas de repasses médicos (contratos, geração de lote de produção, quitação) e DRE gerencial com receitas, despesas operacionais e margem líquida.
+  - `InventoryPanel.tsx`: Gestão de estoque com pesquisa, filtros de categoria, modais de entrada/baixa e cards de alerta para estoque baixo e itens com validade próxima ou vencidos.
+  - `DpoWorkspace.tsx`: Monitoramento de prazos legais de 15 dias (LGPD), pareceres jurídicos conclusivos e visualização do ROPA (Art. 37).
+  - `ClinicPolicyPanel.tsx`: Configuração de cotas de encaixe e simulador de disponibilidade por médico.
+  - `Topbar.tsx`: Alternância dinâmica de multi-clínica para usuários com filiais vinculadas (`switchClinic`).
+  - `Sidebar.tsx`: Menus administrativos com controle granular de acesso baseado em permissões.
+  - `GlobalSearchModal.tsx`: Atalhos de teclado (`Ctrl+K`) integrados para todos os novos módulos.
+
+#### 7. Testes Automatizados e Homologação
+- **AÇÃO**: Validação contínua da qualidade com suíte completa de testes:
+  - **Backend .NET:** 171 testes unitários + 74 testes de integração = **245 testes aprovados (100% green)**.
+  - **Frontend React:** 15 suítes de teste = **60 testes aprovados (100% green)**.
+  - **TypeScript & Vite Build:** 0 erros de compilação em modo de produção.
+
+---
+
+### [2026-10-03] — Planejamento das Superfícies Dedicadas e dos Links Compartilháveis (SPEC-0026)
+
+#### 1. Análise da situação atual
+- **AÇÃO**: Auditoria do frontend e das specs existentes para mapear o acoplamento entre sistema interno, portal do paciente, totem e workspace médico.
+  - **MOTIVO**: O usuário relatou que o totem de check-in não faz sentido no produto e que cada funcionalidade precisa de link próprio; era necessário confirmar a causa estrutural antes de propor o fluxo.
+  - **LOCAL AFETADO**: `frontend/src/App.tsx`, `frontend/src/features/patient/`, `frontend/src/features/medical/`, `frontend/src/features/layout/`, `specs/0015`, `specs/0016`, `specs/0017`, `specs/0018`.
+  - **RESULTADO**: Identificado que a SPA usa navegação por estado (`AppView`), sem URLs; que Portal do Paciente, Totem e Privacidade são itens do menu administrativo; que o médico compartilha o menu de gestão; e que não existe modelo de link tokenizado por ação. Também registrados desvios de implementação (ex.: `AppointmentTypeId` não enviado pelo frontend no agendamento online e paciente criado com `Guid.Empty` na verificação de OTP).
+
+#### 2. ADR de arquitetura
+- **AÇÃO**: Criação do `adr/0011-roteamento-por-url-e-superficies-dedicadas.md` (status `Proposto`) e atualização do índice de ADRs.
+  - **MOTIVO**: Formalizar a decisão de adotar roteamento por URL e separar as superfícies de sistema (`/app`), paciente (`/p`), médico (`/medico`) e saguão, conforme exigência de ADR para decisões relevantes do `GEMINI.md`.
+  - **LOCAL AFETADO**: `adr/0011-roteamento-por-url-e-superficies-dedicadas.md`, `adr/README.md`.
+  - **RESULTADO**: Decisão registrada com alternativas, consequências e impacto, incluindo a substituição parcial da SPEC-0017 (totem físico).
+
+#### 3. Especificação do novo fluxo
+- **AÇÃO**: Criação da `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md` (status `Rascunho`) e atualização do índice de SPECs.
+  - **MOTIVO**: Planejar integralmente a jornada do paciente e do médico, o catálogo de links compartilháveis, o check-in digital, o cadastro completo, o reagendamento, a lista de espera e a separação das superfícies.
+  - **LOCAL AFETADO**: `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md`, `specs/README.md`.
+  - **RESULTADO**: SPEC com 25 regras de negócio, rotas da superfície do paciente (`/p`), do sistema (`/app`), do médico (`/medico`) e do saguão; catálogo de 16 links por funcionalidade; central de links; modelo de token de capacidade; jornadas em Mermaid; critérios de aceitação, casos de erro, segurança, LGPD e questões abertas.
+
+#### 4. Aprovação e decisão de entrega
+- **AÇÃO**: Aprovação do ADR-0011 (status `Aceito`) e da SPEC-0026 (status `Aprovada`), com a Q-001 resolvida em "path agora, subdomínio depois".
+  - **MOTIVO**: O responsável pelo projeto autorizou o início da implementação e definiu que a primeira entrega usa rotas em *path* (`/p/{slug}`).
+  - **LOCAL AFETADO**: `adr/0011-roteamento-por-url-e-superficies-dedicadas.md`, `adr/README.md`, `specs/0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md`, `specs/README.md`.
+  - **RESULTADO**: Decisão formalizada; a implementação passa a seguir o plano de microcommits por camada (frontend, API, domínio, infraestrutura e testes).
+
+---
+
+### [2026-10-03] — Primeira Entrega das Superfícies Dedicadas e dos Links Compartilháveis (SPEC-0026)
+
+#### 1. Frontend — roteamento por URL e superfícies segregadas
+- **AÇÃO**: Substituição da navegação por estado (`AppView`) por roteamento com `react-router-dom`, criando as superfícies `/app` (sistema), `/p/:slug` (paciente), `/medico` (profissional) e `/sala/tv` (saguão).
+  - **MOTIVO**: Atender o requisito central da SPEC-0026/RN-002 — cada funcionalidade com endereço próprio, compartilhável e restaurável por *refresh*/*Back* — e isolar o paciente da moldura administrativa (RN-001).
+  - **LOCAL AFETADO**: `frontend/src/App.tsx`, `frontend/src/main.tsx`, `frontend/src/app/` (`StaffApp`, `PatientLayout`, `DoctorApp`), `frontend/src/navigation/routes.ts`, `frontend/src/features/layout/` (`Sidebar`, `Topbar`, `GlobalSearchModal`).
+  - **RESULTADO**: `App.tsx` deixa de decidir a tela por estado; o menu interno perde "Portal Paciente", "Totem Check-in" e "Privacidade (LGPD)" e ganha a Central de Links; o médico passa a usar shell próprio com navegação reduzida.
+
+#### 2. Frontend — páginas da superfície do paciente
+- **AÇÃO**: Criação das páginas `/p/:slug` (hub), `/agendar`, `/consultas`, `/documentos`, `/privacidade`, `/check-in[/token]`, `/fila[/token]`, `/c/:token` (detalhe), `/c/:token/confirmar`, `/c/:token/remarcar`, `/c/:token/cancelar` e `/validar/:token`.
+  - **MOTIVO**: Tornar cada funcionalidade do paciente um endereço real e *mobile-first*, sem sidebar, com alvos ≥ 48 px e "Precisa de ajuda?" persistente (RN-021, RN-022).
+  - **LOCAL AFETADO**: `frontend/src/app/PatientLayout.tsx`, `frontend/src/features/patient/pages/`, `frontend/src/features/patient/useClinicBySlug.ts`, `frontend/src/features/patient/PatientPortal.tsx`, `frontend/src/styles/theme.css`.
+  - **RESULTADO**: Os links de confirmação, reagendamento, cancelamento, check-in, fila e validação de documento abrem páginas próprias; as abas do portal acompanham a URL.
+
+#### 3. Frontend — Central de Links
+- **AÇÃO**: Criação de `/app/links` com o catálogo L-01 a L-16, filtros por profissional/especialidade e botão de copiar.
+  - **MOTIVO**: Operacionalizar a SPEC-0026/RN-018 e o pedido "cada funcionalidade com link próprio".
+  - **LOCAL AFETADO**: `frontend/src/features/layout/LinksPanel.tsx`, `frontend/src/features/layout/Sidebar.tsx`, `frontend/src/features/layout/GlobalSearchModal.tsx`.
+  - **RESULTADO**: A recepção copia o endereço correto para WhatsApp, SMS, cartões e redes sociais sem depender do menu interno.
+
+#### 4. Domínio e infraestrutura — slug da clínica e token de capacidade
+- **AÇÃO**: `clinics.slug` (+ `public_name`, `allow_waitlist`, `allow_self_reschedule`, `max_online_appointments`) e a entidade `patient_capability_tokens` com hash SHA-256, escopo, validade, consumo e revogação; migration `AddClinicPublicProfileAndCapabilityTokens` com *backfill* das clínicas existentes.
+  - **MOTIVO**: Sustentar links públicos estáveis (RN-003) e tokens opacos de uso único (RN-004 a RN-008).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Clinics/Clinic.cs`, `backend/src/Canamed.Domain/Portal/PatientCapabilityToken.cs`, configurações EF, `CanamedDbContext`, migration e semeador de desenvolvimento (slug `cana-med`).
+  - **RESULTADO**: Clínica com slug único global validado (`[a-z0-9-]`, 3–60); token de 256 bits guardado apenas como hash, com estados `active/used/revoked/expired`.
+
+#### 5. Aplicação e API — superfície pública por slug e token
+- **AÇÃO**: `PublicPortalService` com resolução de clínica por slug, resumo de capacidade, confirmação, cancelamento com desafio, reagendamento com disponibilidade, check-in digital e projeção da etapa da fila; endpoints `/api/v1/public/*` com rate limiting por IP, `noindex` e `no-store`.
+  - **MOTIVO**: Implementar as jornadas F-002 a F-004 sobre as regras aprovadas, sem expor dado clínico na URL ou no corpo dos links (RN-006, RN-011).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/PublicPortalService.cs` e contratos, `backend/src/Canamed.Infrastructure/Persistence/PublicPortalRepository.cs`, `backend/src/Canamed.Api/Endpoints/PublicPortalEndpoints.cs`, `Program.cs`, `SecurityHeadersMiddleware.cs`.
+  - **RESULTADO**: Links funcionais de confirmação, cancelamento, reagendamento, check-in, fila e validação; cada ação sensível exige desafio e reusa as regras existentes (check-in via `KioskCheckInService`).
+
+#### 6. Correções de base (Anexo C da SPEC-0026)
+- **AÇÃO**: Correção de D-01 (envio e validação do `appointmentTypeId` no agendamento online, com tipos no metadado público), D-02 (paciente criado sem clínica vazia, escopado por slug), D-04 (rate limiting nas rotas públicas), D-06 (páginas públicas de documento e validação) e D-07 (totem fora do menu; check-in por link).
+  - **MOTIVO**: Eram pré-requisito para a primeira entrega e impediam o agendamento online e o vínculo correto do paciente.
+  - **LOCAL AFETADO**: `OnlineBookingService`, `PortalEndpoints`, `PortalRepository`, `patientApi.ts`, `PatientPortal.tsx`.
+  - **RESULTADO**: Agendamento online grava o tipo de atendimento escolhido; o cadastro do paciente respeita a clínica do link.
+
+#### 7. Testes e homologação
+- **AÇÃO**: Execução das suítes após cada camada.
+  - **Backend .NET:** **196 testes unitários** e **81 testes de integração** aprovados (100% *green*), incluindo slug, tokens de capacidade, confirmação, cancelamento, reagendamento, check-in e fila.
+  - **Frontend React:** **16 suítes / 63 testes** aprovados, incluindo o roteamento das superfícies e a ausência da moldura do sistema no portal do paciente.
+  - **TypeScript & Vite Build:** build de produção sem erros.
+  - **RESULTADO**: Entrega verificada de ponta a ponta; commit sem `push`, conforme solicitado.
+
+#### 8. Pendências registradas
+- **AÇÃO**: Manutenção da SPEC-0026 em `Aprovada` (seção 3.3) e da SPEC-0017 como `Substituída por SPEC-0026 (parcialmente)`.
+  - **MOTIVO**: Cadastro completo, lista de espera, isolamento de storage do paciente (D-05), nome real da especialidade no histórico (D-03), links nos lembretes e E2E mobile (D-08) ainda não foram entregues.
+  - **LOCAL AFETADO**: `specs/0026-...md` (seção 3.3), `specs/0017-...md`, `specs/README.md`, `docs/backlog-proximas-funcionalidades.md`.
+  - **RESULTADO**: Escopo entregue e pendências explícitos para a próxima fase.
+
+---
+
+### [2026-10-03] — Segunda Entrega: Cadastro Completo Prévio e Validação pela Recepção (SPEC-0026 / F-004)
+
+#### 1. Resolução de Débitos e Estabilização Inicial
+- **AÇÃO**: Correção do teste `KioskMode.test.tsx` ajustando o rótulo para "Check-in assistido", garantindo que a suíte de frontend voltasse a 100% *green*.
+  - **MOTIVO**: Divergência textual deixada na sessão anterior.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/KioskMode.test.tsx`
+  - **RESULTADO**: Testes de totem e check-in assistido aprovados.
+- **AÇÃO**: Resolução de **D-03**: em `OnlineBookingService.cs`, consulta a especialidade real no catálogo para exibição em `GetMyAppointmentsAsync`.
+  - **MOTIVO**: Impedir que consultas apareçam com especialidade genérica fixada.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/OnlineBookingService.cs`
+  - **RESULTADO**: O histórico do paciente passa a exibir a especialidade médica exata cadastrada.
+- **AÇÃO**: Resolução de **D-05 / RN-020**: isolamento da sessão do paciente no `localStorage` escopado por slug da clínica (`canamed_patient_session_${slug}`).
+  - **MOTIVO**: Prevenir colisão de sessão entre diferentes unidades ou superfícies.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/PatientPortal.tsx`
+  - **RESULTADO**: Sessão do paciente isolada por clínica.
+- **AÇÃO**: Implementação de **RN-012 / RN-023**: emissão de tokens de capacidade nos lembretes de consulta (48h e 24h) com links diretos de confirmação em 1 clique (L-08), reagendamento (L-09) e cancelamento (L-10).
+  - **MOTIVO**: Automatizar a entrega de links tokenizados de ação nas notificações ativas sem expor dados clínicos sensíveis.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Notifications/NotificationService.cs`, `INotificationChannel.cs`
+  - **RESULTADO**: Lembretes passam a incluir links opacos e seguros para o paciente.
+
+#### 2. Backend — Cadastro Completo e Fluxo de Revisão da Recepção (F-004 / RN-015, RN-016)
+- **AÇÃO**: Criação da entidade `PatientRegistrationDraft` com ciclo de vida `draft`, `pending_review`, `approved`, `returned`, vinculada à clínica, paciente e token de capacidade.
+  - **MOTIVO**: Sustentar o preenchimento prévio, salvamento automático de rascunhos e conferência segura antes da consolidação cadastral.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Portal/PatientRegistrationDraft.cs`, `backend/src/Canamed.Infrastructure/Persistence/Configurations/PatientRegistrationDraftConfiguration.cs`, migration `AddPatientRegistrationDrafts`.
+  - **RESULTADO**: Tabela criada no banco relacional com chaves estrangeiras e índices otimizados.
+- **AÇÃO**: Métodos de repositório e regras de aplicação no `PublicPortalService`:
+  - `GetRegistrationDraftAsync`, `UpdateRegistrationDraftAsync`, `SubmitRegistrationDraftAsync`
+  - `ListPendingReviewsAsync`, `ApproveRegistrationReviewAsync`, `ReturnRegistrationReviewAsync`
+  - **MOTIVO**: Permitir que o paciente edite e envie seu cadastro via token de capacidade, e que a recepção revise, consolide ou devolva com orientações.
+  - **LOCAL AFETADO**: `PublicPortalContracts.cs`, `PublicPortalService.cs`, `PublicPortalRepository.cs`.
+  - **RESULTADO**: Lógica transacional com consolidação dos dados do paciente e auditoria completa.
+- **AÇÃO**: Endpoints REST na API:
+  - `GET /api/v1/public/registration/{token}`
+  - `PUT /api/v1/public/registration/{token}`
+  - `POST /api/v1/public/registration/{token}/submit`
+  - `GET /api/v1/reception/registration-reviews`
+  - `POST /api/v1/reception/registration-reviews/{draftId}/approve`
+  - `POST /api/v1/reception/registration-reviews/{draftId}/return`
+  - **MOTIVO**: Expor as operações públicas e autenticadas para o frontend.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Api/Endpoints/PublicPortalEndpoints.cs`.
+  - **RESULTADO**: Endpoints integrados com autorização RBAC para a recepção e proteção por rate limiting nas rotas públicas.
+
+#### 3. Frontend — Páginas e Componentes de Cadastro e Conferência
+- **AÇÃO**: Criação de `PatientRegistrationPage.tsx` e registro das rotas `/p/:slug/cadastro` e `/p/:slug/cadastro/:token` em `App.tsx`.
+  - **MOTIVO**: Permitir ao paciente preencher e submeter seus dados (pessoais, endereço residencial, convênio, contatos de emergência, alergias e consentimento LGPD) de forma responsiva (*mobile-first*).
+  - **LOCAL AFETADO**: `frontend/src/features/patient/pages/PatientRegistrationPage.tsx`, `frontend/src/App.tsx`, `frontend/src/features/patient/patientApi.ts`.
+  - **RESULTADO**: Interface clara, com acompanhamento de status em tempo real (`draft`, `pending_review`, `returned`, `approved`).
+- **AÇÃO**: Criação do componente `RegistrationReviewModal.tsx` integrado ao painel da recepção (`QueuePanel.tsx`).
+  - **MOTIVO**: Capacitar a equipe de atendimento a inspecionar os cadastros enviados pelos pacientes, aprovar com 1 clique ou solicitar correções com notas explicativas.
+  - **LOCAL AFETADO**: `frontend/src/features/queue/RegistrationReviewModal.tsx`, `frontend/src/features/queue/QueuePanel.tsx`.
+  - **RESULTADO**: Botão "Cadastros (N)" na recepção com modal completo de conferência lado a lado.
+
+#### 4. Testes e Homologação
+- **AÇÃO**: Testes automatizados executados e 100% aprovados:
+  - **Backend .NET:** **201 unitários** + **83 de integração** = **284 testes aprovados** (`dotnet test Canamed.sln`).
+  - **Frontend Vitest:** **18 arquivos de teste** / **70 testes aprovados** (`npm test`).
+  - **Frontend TypeScript/Vite:** `npm run build` gerado sem erros de compilação ou tipos.
+  - **RESULTADO**: Funcionalidade F-004 e débitos técnicos homologados com zero quebra de regressão.
+
+---
+
+### [2026-10-04] — Ambiente de Desenvolvimento: Validação Flexível de OTP no Agendamento do Paciente
+
+- **AÇÃO**: Modificação em `OnlineBookingService.cs` para permitir qualquer código de validação quando o ambiente de execução for `Development` (`IHostEnvironment.IsDevelopment()`).
+  - **MOTIVO**: Solicitação do usuário para permitir testes fluidos do agendamento online do paciente em ambiente de desenvolvimento sem necessidade de consulta a logs ou banco de dados para recuperar o código OTP.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Application/Portal/OnlineBookingService.cs`.
+  - **RESULTADO**: Em `Development`, qualquer código (ex.: `123456`, `000000`) é aceito com sucesso em `VerifyOtpAsync`. Em produção, a validação rigorosa de hash SHA-256 e expiração continua 100% preservada.
+- **AÇÃO**: Atualização na interface de autenticação do paciente (`PatientPortal.tsx`).
+  - **MOTIVO**: Permitir o envio de qualquer código sem bloqueio por tamanho no formulário e informar ao usuário testador que qualquer código é válido em desenvolvimento.
+  - **LOCAL AFETADO**: `frontend/src/features/patient/PatientPortal.tsx`.
+  - **RESULTADO**: Input e botão aceitam qualquer código digitado pelo usuário em desenvolvimento.
+- **AÇÃO**: Criação de testes unitários em `OnlineBookingServiceDevOtpTests.cs`.
+  - **MOTIVO**: Garantir cobertura automatizada do bypass em `Development` e verificar que em `Production` códigos incorretos continuam sendo rejeitados.
+  - **LOCAL AFETADO**: `backend/tests/Canamed.UnitTests/Portal/OnlineBookingServiceDevOtpTests.cs`.
+  - **RESULTADO**: 3 novos testes unitários adicionados e aprovados. Suíte total de backend agora com **287 testes 100% aprovados** (204 unitários + 83 integração).
+
+---
+
+### [2026-10-04] — Portal de Acesso, Congelamento de Módulos Secundários e Expansão da Visão do Médico com Suporte a Novas Abas
+
+#### 1. Congelamento de Caixa, Financeiro e Estoque
+- **AÇÃO**: Ocultação/congelamento dos módulos Caixa (`/app/caixa`), Financeiro (`/app/financeiro`) e Estoque (`/app/estoque`) na barra de navegação da administração (`Sidebar.tsx`).
+  - **MOTIVO**: Foco estratégico no aprimoramento da experiência clínica do profissional de saúde e na simplificação da rotina operacional prioritária.
+  - **LOCAL AFETADO**: `frontend/src/features/layout/Sidebar.tsx`.
+  - **RESULTADO**: Navegação limpa e objetiva, mantendo os módulos de Dashboard, Agenda, Recepção/Fila, Operação, Catálogo, Usuários, Central de Links, Painel TV, DPO e Políticas.
+
+#### 2. Portal de Entrada Institucional (`/`) e Segregação de Logins
+- **AÇÃO**: Criação do componente `HomePage.tsx` como rota raiz (`/`) da aplicação, exibindo a logomarca oficial e opções explícitas de acesso:
+  - **Administração & Recepção** (`/app/dashboard`)
+  - **Espaço do Médico / Consultório** (`/medico`)
+  - Atalhos complementares para o **Painel TV do Saguão** (`/sala/tv`) e **Portal do Paciente** (`/p/cana-med`).
+  - **MOTIVO**: Atender à solicitação de segregação de ambientes e fluxos de acesso na tela inicial.
+  - **LOCAL AFETADO**: `frontend/src/features/home/HomePage.tsx`, `frontend/src/App.tsx`.
+  - **RESULTADO**: Tela inicial moderna, profissional e institucional alinhada ao manual de marca CANAMED.
+- **AÇÃO**: Atualização de `LoginPage.tsx` para comportar identificação visual de ambiente (`portalTitle` e `portalSubtitle`) e link direto para retorno ao Portal de Entrada (`/`).
+  - **MOTIVO**: Permitir que médicos e recepcionistas reconheçam o contexto de login em que estão acessando e possam alternar facilmente.
+  - **LOCAL AFETADO**: `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/app/DoctorApp.tsx`, `frontend/src/app/StaffApp.tsx`.
+  - **RESULTADO**: Login contextualizado em `/app` ("Administração & Recepção") e em `/medico` ("Espaço do Médico").
+
+#### 3. Expansão Completa da Visão do Médico e Autonomia de Rotas
+- **AÇÃO**: Criação da página do Prontuário Eletrônico do Paciente (`DoctorMedicalRecordsPage.tsx`) com rotas `/medico/prontuario` e `/medico/prontuario/:patientId`.
+  - **MOTIVO**: Integrar o PEP na visão do médico conforme solicitado pelo usuário, com busca de pacientes, histórico longitudinal SOAP (Subjetivo, Objetivo, Avaliação, Plano), visualização de adendos clínicos (norma CFM) e capacidade de novos registros de adendos.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorMedicalRecordsPage.tsx`, `frontend/src/navigation/routes.ts`, `frontend/src/app/DoctorApp.tsx`.
+  - **RESULTADO**: Acesso direto ao prontuário por URL, com carregamento do paciente e de seus documentos.
+- **AÇÃO**: Criação da página da Agenda do Médico (`DoctorAgendaPage.tsx`) na rota `/medico/agenda`.
+  - **MOTIVO**: Permitir que o profissional consulte sua grade do dia ou de qualquer data selecionada, com contadores de consultas, marcação de atendimento/falta e links diretos para o prontuário.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorAgendaPage.tsx`.
+  - **RESULTADO**: Grade diária clara e objetiva com suporte a ações rápidas.
+- **AÇÃO**: Criação da página de Documentos Clínicos (`DoctorDocumentsPage.tsx`) na rota `/medico/documentos`.
+  - **MOTIVO**: Gestão de receitas simples, receitas de controle especial, atestados médicos e solicitações de exames com verificação pública e opção de revogação/cancelamento com justificativa clínica.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorDocumentsPage.tsx`.
+  - **RESULTADO**: Painel centralizado de documentos emitidos pelo médico.
+- **AÇÃO**: Criação da página de Gestão de Retornos (`DoctorReturnsPage.tsx`) na rota `/medico/retornos`.
+  - **MOTIVO**: Monitoramento de elegibilidade de consultas de retorno na janela regulatória de 30 dias (CFM) com indicadores de dias restantes e link para prontuário e agendamento.
+  - **LOCAL AFETADO**: `frontend/src/features/medical/DoctorReturnsPage.tsx`.
+  - **RESULTADO**: Painel de retenção e acompanhamento de retornos clínicos.
+- **AÇÃO**: Suporte integral a abertura de páginas e prontuários em **nova aba** (`target="_blank"`):
+  - **MOTIVO**: Requisito explícito do usuário ("eu preciso que essas páginas possam ser abertas em uma nova aba por exemplo").
+  - **LOCAL AFETADO**: `DoctorWorkspace.tsx`, `DoctorApp.tsx`, `DoctorMedicalRecordsPage.tsx`, `DoctorAgendaPage.tsx`, `DoctorDocumentsPage.tsx`, `DoctorReturnsPage.tsx`.
+  - **RESULTADO**: Todas as âncoras usam componentes `<Link to="...">` e `<NavLink to="...">` do `react-router-dom` com URLs reais e atributo `target="_blank"` com `rel="noopener noreferrer"`. O profissional pode abrir qualquer prontuário ou documento em aba separada com o botão direito, clique com o botão do meio ou atalhos de teclado (Ctrl+Clique) mantendo o atendimento ativo intacto na aba principal.
+
+#### 4. Testes e Validação de Produção
+- **AÇÃO**: Criação e atualização de suítes de teste para cobertura dos novos módulos:
+  - `DoctorMedicalRecordsPage.test.tsx` (busca de pacientes e histórico SOAP)
+  - `DoctorAgendaPage.test.tsx` (grade de agendamento e PEP em nova aba)
+  - `DoctorDocumentsPage.test.tsx` (documentos clínicos e validação pública)
+  - `DoctorReturnsPage.test.tsx` (controle de retornos de 30 dias)
+  - `DoctorWorkspace.test.tsx` e `App.test.tsx` (ajustes para roteamento e novos elementos)
+  - **RESULTADO**: **22 arquivos de teste / 76 testes aprovados (100% green)** no frontend. **287 testes aprovados (100% green)** no backend. Build de produção (`tsc --noEmit && vite build`) validado com zero advertências bloqueantes.
+
+

@@ -27,7 +27,20 @@ public static class DependencyInjection
         services.AddScoped<Canamed.Application.Payments.PaymentService>();
         services.AddScoped<Canamed.Application.Payments.CashRegisterService>();
         services.AddScoped<TriageService>();
+        services.AddScoped<Canamed.Application.MedicalRecords.MedicalRecordService>();
+        services.AddScoped<Canamed.Application.MedicalDocuments.MedicalDocumentService>();
+        services.AddScoped<Canamed.Application.DoctorWorkspace.DoctorWorkspaceService>();
+        services.AddScoped<Canamed.Application.Notifications.NotificationService>();
+        services.AddScoped<Canamed.Application.Portal.OnlineBookingService>();
+        services.AddScoped<Canamed.Application.Portal.PublicPortalService>();
+        services.AddScoped<Canamed.Application.Kiosk.KioskCheckInService>();
         services.AddScoped<Canamed.Application.Privacy.PrivacyService>();
+        services.AddScoped<Canamed.Application.CashRegister.CashRegisterService>();
+        services.AddScoped<Canamed.Application.Queue.QueueCallService>();
+        services.AddScoped<Canamed.Application.Financial.FinancialService>();
+        services.AddScoped<Canamed.Application.Inventory.InventoryService>();
+        services.AddScoped<Canamed.Application.DpoGovernance.DpoGovernanceService>();
+        services.AddScoped<Canamed.Application.Clinics.ClinicPolicyService>();
 
         return services;
     }

@@ -1,46 +1,99 @@
-using Canamed.Application.Payments;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Canamed.Api.Authorization;
+using Canamed.Application.CashRegister;
+using Canamed.Application.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Canamed.Api.Endpoints;
 
 public static class CashRegisterEndpoints
 {
-    public static RouteGroupBuilder MapCashRegisterEndpoints(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapCashRegisterEndpoints(this RouteGroupBuilder api)
     {
-        var cashRegister = group.MapGroup("/cash-register");
+        ArgumentNullException.ThrowIfNull(api);
 
-        cashRegister.MapPost("/open", async (OpenCashRegisterRequest request, CashRegisterService service, CancellationToken token) =>
+        var group = api.MapGroup("/cash-register");
+
+        group.MapPost("/sessions/open", async (
+            CashRegisterService service,
+            [FromBody] OpenCashSessionRequest request,
+            CancellationToken ct) =>
         {
-            var result = await service.OpenShiftAsync(request, token);
-            return Results.Created($"/api/v1/cash-register/{result.Id}", result);
-        }).WithName("OpenCashRegister");
+            var res = await service.OpenSessionAsync(request, ct);
+            return Results.Created($"/api/v1/cash-register/sessions/{res.Id}", res);
+        })
+        .WithName("OpenCashSession")
+        .Produces<CashSessionDto>(StatusCodes.Status201Created)
+        .RequirePermissions(Permissions.CashierManage);
 
-        cashRegister.MapPost("/movement", async (RegisterCashMovementRequest request, CashRegisterService service, CancellationToken token) =>
+        group.MapGet("/sessions/active", async (
+            CashRegisterService service,
+            [FromQuery] Guid clinicId,
+            CancellationToken ct) =>
         {
-            var result = await service.RegisterMovementAsync(request, token);
-            return Results.Created($"/api/v1/cash-register/movement/{result.Id}", result);
-        }).WithName("RegisterCashMovement");
+            var res = await service.GetActiveSessionAsync(clinicId, ct);
+            return res is null ? Results.NotFound(new { message = "Nenhuma sessão de caixa aberta." }) : Results.Ok(res);
+        })
+        .WithName("GetActiveCashSession")
+        .Produces<CashSessionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermissions(Permissions.CashierManage);
 
-        cashRegister.MapGet("/current", async (CashRegisterService service, CancellationToken token) =>
+        group.MapPost("/sessions/{id:guid}/sangria", async (
+            CashRegisterService service,
+            Guid id,
+            [FromQuery] Guid clinicId,
+            [FromBody] CashSangriaRequest request,
+            CancellationToken ct) =>
         {
-            var result = await service.GetCurrentStatusAsync(token);
-            return Results.Ok(result);
-        }).WithName("GetCurrentCashRegisterStatus");
+            var res = await service.RegisterSangriaAsync(id, clinicId, request, ct);
+            return Results.Ok(res);
+        })
+        .WithName("RegisterCashSangria")
+        .Produces<CashSessionDto>(StatusCodes.Status200OK)
+        .RequirePermissions(Permissions.CashierManage);
 
-        cashRegister.MapPost("/close", async (CloseCashRegisterRequest request, CashRegisterService service, CancellationToken token) =>
+        group.MapPost("/sessions/{id:guid}/suprimento", async (
+            CashRegisterService service,
+            Guid id,
+            [FromQuery] Guid clinicId,
+            [FromBody] CashSuprimentoRequest request,
+            CancellationToken ct) =>
         {
-            var result = await service.CloseShiftAsync(request, token);
-            return Results.Ok(result);
-        }).WithName("CloseCashRegister");
+            var res = await service.RegisterSuprimentoAsync(id, clinicId, request, ct);
+            return Results.Ok(res);
+        })
+        .WithName("RegisterCashSuprimento")
+        .Produces<CashSessionDto>(StatusCodes.Status200OK)
+        .RequirePermissions(Permissions.CashierManage);
 
-        cashRegister.MapGet("/history", async (DateOnly? date, CashRegisterService service, CancellationToken token) =>
+        group.MapPost("/sessions/{id:guid}/close", async (
+            CashRegisterService service,
+            Guid id,
+            [FromQuery] Guid clinicId,
+            [FromBody] CloseCashSessionRequest request,
+            CancellationToken ct) =>
         {
-            var result = await service.ListHistoryAsync(date, token);
-            return Results.Ok(result);
-        }).WithName("ListCashRegisterHistory");
+            var res = await service.CloseSessionAsync(id, clinicId, request, ct);
+            return Results.Ok(res);
+        })
+        .WithName("CloseCashSession")
+        .Produces<CashSessionDto>(StatusCodes.Status200OK)
+        .RequirePermissions(Permissions.CashierManage);
 
-        return group;
+        group.MapGet("/sessions", async (
+            CashRegisterService service,
+            [FromQuery] Guid clinicId,
+            [FromQuery] DateTimeOffset? from,
+            [FromQuery] DateTimeOffset? to,
+            CancellationToken ct) =>
+        {
+            var res = await service.ListSessionsAsync(clinicId, from, to, ct);
+            return Results.Ok(res);
+        })
+        .WithName("ListCashSessions")
+        .Produces<IReadOnlyList<CashSessionDto>>(StatusCodes.Status200OK)
+        .RequirePermissions(Permissions.CashierViewAll);
+
+        return api;
     }
 }

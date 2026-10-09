@@ -18,7 +18,9 @@ import {
 } from './queueApi';
 import { formatMinutes, queuePriorityLabels, queueStatusLabels } from './queueLabels';
 import { TriageModal } from './TriageModal';
+import { RegistrationReviewModal } from './RegistrationReviewModal';
 import { PaymentModal } from '../payments/PaymentModal';
+import { patientApi } from '../patient/patientApi';
 import { exportToCsv } from '../../utils/exportCsv';
 import { useToast } from '../layout/Toast';
 
@@ -49,9 +51,22 @@ export function QueuePanel() {
 
   const [triageEntry, setTriageEntry] = useState<{ id: string; patientName: string } | null>(null);
   const [paymentEntry, setPaymentEntry] = useState<{ appointmentId: string; patientName: string } | null>(null);
+  const [showRegistrationReviews, setShowRegistrationReviews] = useState(false);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   const toast = useToast();
 
   const reload = useCallback(() => setAttempt((value) => value + 1), []);
+
+  const refreshPendingReviews = useCallback(() => {
+    patientApi
+      .listPendingRegistrationReviews()
+      .then((data) => setPendingReviewsCount(data.length))
+      .catch(() => setPendingReviewsCount(0));
+  }, []);
+
+  useEffect(() => {
+    refreshPendingReviews();
+  }, [refreshPendingReviews, attempt]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -177,6 +192,14 @@ export function QueuePanel() {
             </button>
             <button type="button" className="button button--ghost" onClick={reload}>
               Atualizar
+            </button>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setShowRegistrationReviews(true)}
+              title="Validação e conferência de cadastros prévios enviados pelos pacientes (SPEC-0026 / F-004)"
+            >
+              Cadastros {pendingReviewsCount > 0 ? `(${pendingReviewsCount})` : ''}
             </button>
             <button
               type="button"
@@ -409,6 +432,16 @@ export function QueuePanel() {
           onSuccess={() => {
             toast.showSuccess(`Pagamento de ${paymentEntry.patientName} registrado.`);
             reload();
+          }}
+        />
+      ) : null}
+
+      {showRegistrationReviews ? (
+        <RegistrationReviewModal
+          isOpen={true}
+          onClose={() => setShowRegistrationReviews(false)}
+          onReviewCompleted={() => {
+            refreshPendingReviews();
           }}
         />
       ) : null}

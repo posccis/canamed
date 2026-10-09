@@ -71,10 +71,31 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0007](0007-spec-painel-gerencial-e-indicadores-operacionais.md) | Painel Gerencial e Indicadores Operacionais (Dashboard) | Implementada | 2026-10-01 |
 | [0008](0008-spec-fluxo-de-pagamento-e-cobranca.md) | Fluxo de Pagamento e Cobrança no Balcão | Implementada | 2026-10-01 |
 | [0009](0009-spec-triagem-e-classificacao-de-risco.md) | Apoio ao Processo de Triagem e Classificação de Risco | Implementada | 2026-10-01 |
-| [0010](0010-spec-encaixe-e-overbooking-na-agenda.md) | Encaixe e Overbooking com Justificativa na Agenda | Implementada | 2026-10-02 |
-| [0011](0011-spec-fechamento-de-caixa-sangria-e-conferencia.md) | Fechamento de Caixa, Sangria e Conferência por Operador | Implementada | 2026-10-02 |
-| [0012](0012-spec-direitos-do-titular-lgpd.md) | Governança de Privacidade e Direitos do Titular (LGPD) | Implementada | 2026-10-02 |
+| [0010](0010-spec-prontuario-eletronico-do-paciente.md) | Prontuário Eletrônico do Paciente (PEP) | Implementada | 2026-10-02 |
+| [0011](0011-spec-prescricao-eletronica-atestados-e-documentos-clinicos.md) | Prescrição Eletrônica, Atestados e Exames (ICP-Brasil) | Implementada | 2026-10-02 |
+| [0012](0012-spec-consultorio-virtual-e-workspace-medico.md) | Consultório Virtual e Workspace Médico Integrado | Implementada | 2026-10-02 |
+| [0013](0013-spec-gestao-de-retornos-e-prazos-assistenciais.md) | Gestão de Retornos e Prazos Assistenciais (CFM 1.958/2010) | Rascunho | 2026-10-02 |
+| [0014](0014-spec-notificacoes-e-lembretes-ativos-whatsapp-sms.md) | Notificações e Lembretes Ativos (WhatsApp / SMS) | Implementada | 2026-10-03 |
+| [0015](0015-spec-agendamento-online-e-portal-do-paciente.md) | Agendamento Online e Portal do Paciente (OTP) | Implementada | 2026-10-03 |
+| [0016](0016-spec-carteira-digital-e-acesso-a-documentos-clinicos.md) | Carteira Digital e Acesso a Documentos Clínicos | Implementada | 2026-10-03 |
+| [0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) | Check-in Autônomo na Recepção (Totem / QR Code) | Substituída por SPEC-0026 (parcialmente) | 2026-10-03 |
+| [0018](0018-spec-portal-de-autonomia-e-direitos-do-titular-lgpd.md) | Portal de Autonomia e Direitos do Titular (LGPD) | Implementada | 2026-10-03 |
+| [0019](0019-spec-fechamento-e-conferencia-de-caixa.md) | Fechamento e Conferência de Caixa por Operador | Implementada | 2026-10-03 |
+| [0020](0020-spec-painel-de-chamada-tv-recepcao.md) | Painel de Chamada para TV na Recepção (Tempo Real) | Implementada | 2026-10-03 |
+| [0021](0021-spec-gestao-financeira-e-repasses-medicos.md) | Gestão Financeira Avançada e Repasses Médicos | Implementada | 2026-10-03 |
+| [0022](0022-spec-gestao-de-insumos-e-estoque-clinico.md) | Gestão de Insumos e Materiais Médicos (Estoque) | Implementada | 2026-10-03 |
+| [0023](0023-spec-painel-do-dpo-governanca-lgpd.md) | Painel do DPO / Governança LGPD | Implementada | 2026-10-03 |
+| [0024](0024-spec-multi-clinica-e-alternancia-de-contexto.md) | Alternância de Multi-Clínica na Interface | Implementada | 2026-10-03 |
+| [0025](0025-spec-politicas-de-encaixe-e-cancelamento.md) | Políticas Parametrizáveis de Encaixe e Cancelamento | Implementada | 2026-10-03 |
+| [0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) | Jornada Digital do Paciente, Superfícies Dedicadas e Links Compartilháveis | Aprovada | 2026-10-03 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
+
+> A [SPEC-0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) propõe, sobre o
+> [ADR-0011](../adr/0011-roteamento-por-url-e-superficies-dedicadas.md), a separação das superfícies de
+> sistema, paciente, médico e saguão por URL, bem como a substituição parcial da
+> [SPEC-0017](0017-spec-checkin-autonomo-totem-e-qrcode.md) (totem físico) pelo check-in digital por
+> QR Code/link. A SPEC-0017 permanece válida quanto às regras de tolerância, prioridade legal e
+> emissão de senha até a aprovação da SPEC-0026.
 
 A [SPEC-0001](0001-spec-de-fundacao.md) está **aprovada** (v1.0) e é a base do esqueleto do monorepo.
 Está implementada, com P-002 (migrations) e P-003 (tipos do frontend gerados a partir do OpenAPI)
