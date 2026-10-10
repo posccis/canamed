@@ -696,6 +696,92 @@ Resolução de inconsistência de coluna no banco de dados, definição do Dashb
     - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
     - **Build de Produção:** `npm run build` executado com sucesso (zero erros de tipagem TypeScript e bundles otimizados gerados).
 
+---
+
+### [2026-10-02] — Adequação do Ambiente Local e Provisionamento do PostgreSQL
+
+#### 1. Diagnóstico e Resolução de Ferramental
+- **AÇÃO**: Configuração do Node.js v24.21.0 e npm 11.19.0 no PATH do usuário
+  - **MOTIVO**: Node.js instalado via `fnm` não estava exposto no PATH padrão de sessões Windows.
+  - **LOCAL AFETADO**: Variável de ambiente `PATH` do usuário (`HKCU\Environment\Path`)
+  - **RESULTADO**: `node` e `npm` disponíveis globalmente em qualquer terminal.
+- **AÇÃO**: Instalação das dependências do Frontend
+  - **MOTIVO**: `frontend/node_modules` estava ausente, impedindo build e testes.
+  - **LOCAL AFETADO**: `frontend/node_modules/`
+  - **RESULTADO**: 209 pacotes instalados com integridade e TypeScript / Vite / Vitest operacionais.
+- **AÇÃO**: Instalação global do `dotnet-ef` 10.0.12
+  - **MOTIVO**: Gestão e aplicação de migrations via linha de comando.
+  - **LOCAL AFETADO**: `.dotnet/tools`
+  - **RESULTADO**: Ferramenta `dotnet-ef` disponível para comandos do Entity Framework Core.
+- **AÇÃO**: Recriação da solução `Canamed.sln` e ajuste do `.gitignore`
+  - **MOTIVO**: `Canamed.sln` não estava versionado devido à regra `*.sln` no `.gitignore`, quebrando os scripts unificados do `package.json`.
+  - **LOCAL AFETADO**: `Canamed.sln`, `.gitignore`
+  - **RESULTADO**: Solução clássica gerada contendo os 6 projetos da arquitetura e regra `!Canamed.sln` adicionada ao `.gitignore`.
+
+#### 2. Provisionamento do PostgreSQL 18.6 Portátil no Disco C:
+- **AÇÃO**: Download e extração dos binários oficiais do PostgreSQL 18.6-1 em `C:\Tools\PostgreSQL\18.6`
+  - **MOTIVO**: A máquina física atual possui apenas a unidade `C:` (SSD com >300 GB livres), sem disco físico `D:`.
+  - **LOCAL AFETADO**: `C:\Tools\PostgreSQL\18.6`, `C:\Tools\PostgreSQL\data`
+  - **RESULTADO**: Binários extraídos sem instalação de serviços do Windows.
+- **AÇÃO**: Inicialização do cluster, criação de bancos e credenciais seguras
+  - **MOTIVO**: Atender ao ADR-0007 e habilitar os ambientes `canamed_dev` e `canamed_test`.
+  - **LOCAL AFETADO**: `C:\Tools\PostgreSQL\data`, `C:\Tools\PostgreSQL\postgres-superuser.txt`, `.env`
+  - **RESULTADO**:
+    - Cluster inicializado com autenticação `scram-sha-256`, escuta restrita a `127.0.0.1:5432` e logs em `$pgData\log`.
+    - Role `canamed_app` criada com privilégios nas bases `canamed_dev` e `canamed_test`.
+    - Arquivo `.env` local criado com credenciais seguras e não versionado (`git check-ignore` verificado).
+    - Binários do PostgreSQL adicionados ao PATH do usuário (`C:\Tools\PostgreSQL\18.6\pgsql\bin`).
+- **AÇÃO**: Aplicação das migrations do Entity Framework Core
+  - **MOTIVO**: Sincronizar o schema das 7 migrations existentes com a base `canamed_dev`.
+  - **LOCAL AFETADO**: Banco `canamed_dev`
+  - **RESULTADO**: 7 migrations aplicadas com sucesso via `dotnet ef database update`.
+
+#### 3. Verificação Integral do Ambiente
+- **AÇÃO**: Execução dos comandos unificados de build e teste
+  - **MOTIVO**: Validar o critério de aceitação de prontidão completa do ambiente.
+  - **LOCAL AFETADO**: Raiz do repositório
+  - **RESULTADO**:
+    - `npm run build`: Compilação de backend e frontend com **0 avisos e 0 erros**.
+    - `npm test`: **229 testes aprovados (100% de sucesso, 0 falhas)**:
+      - 128 testes unitários .NET
+      - 74 testes de integração .NET com banco real
+      - 27 testes frontend Vitest
+
+---
+
+### [2026-10-02] — Implementação das SPECs 0010, 0011 e 0012 (Encaixe, Fechamento de Caixa e LGPD)
+
+Implementação orientada por especificação atendendo aos itens pendentes do backlog funcional do CANAMED.
+
+#### 1. SPEC-0010 — Encaixe e Overbooking com Justificativa na Agenda
+- **AÇÃO**: Extensão do domínio `Appointment` com suporte a `IsOverbooking` e `OverbookingReason` obrigatório (mínimo 5 caracteres), permissão `agenda:overbooking` e atualização da constraint GiST (`ex_appointments_professional_no_overlap`) para excluir sobreposições autorizadas marcadas com `is_overbooking = false`.
+  - **MOTIVO**: Resolver a dívida funcional D-04 e formalizar a reavaliação de Q-002, permitindo encaixes de urgência sem conflito espúrio na agenda e mantendo integridade e auditoria (`audit_events`).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Agenda/Appointment.cs`, `backend/src/Canamed.Application/Agenda/AgendaService.cs`, `backend/src/Canamed.Infrastructure/Persistence/Migrations/20261002133743_AddOverbookingAndCashRegister.cs`, `backend/tests/Canamed.IntegrationTests/Agenda/OverbookingEndpointsTests.cs`.
+  - **RESULTADO**: Encaixes com justificativa gravada e auditada com sucesso; bloqueio mantido para sobreposições sem justificativa/flag.
+
+#### 2. SPEC-0011 — Fechamento de Caixa, Sangria e Conferência por Operador
+- **AÇÃO**: Criação das entidades `CashRegisterShift` e `CashMovement`, repositório `ICashRegisterRepository` / `CashRegisterRepository` com `SaveChangesAsync`, serviço `CashRegisterService` e endpoints `/api/v1/cash-register/*` (abertura, sangria, suprimento, status atual com saldo físico em gaveta, fechamento com cálculo de divergência e histórico).
+  - **MOTIVO**: Atender ao item B-04 do backlog para gestão financeira e conferência de tesouraria de balcão segregada por operador.
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Payments/CashRegisterShift.cs`, `backend/src/Canamed.Domain/Payments/CashMovement.cs`, `backend/src/Canamed.Application/Payments/CashRegisterService.cs`, `backend/src/Canamed.Api/Endpoints/CashRegisterEndpoints.cs`, `backend/tests/Canamed.IntegrationTests/Payments/CashRegisterEndpointsTests.cs`.
+  - **RESULTADO**: Turno de caixa por operador implementado com controle de saldo, bloqueio de sangria excedente e registro de auditoria completo.
+
+#### 3. SPEC-0012 — Governança de Privacidade e Direitos do Titular (LGPD)
+- **AÇÃO**: Implementação dos fluxos de atendimento ao Art. 18 da LGPD via `PrivacyService` e rotas `/api/v1/patients/{id}/data-portability` (exportação de dossiê completo) e `/api/v1/patients/{id}/anonymize` (anonimização com substituição de dados pessoais cadastrais preservando histórico clínico e trilha imutável).
+  - **MOTIVO**: Conformidade obrigatória com a LGPD e articulação com a Lei nº 13.787/2018 (guarda mínima de prontuário e histórico).
+  - **LOCAL AFETADO**: `backend/src/Canamed.Domain/Agenda/Patient.cs`, `backend/src/Canamed.Application/Privacy/`, `backend/src/Canamed.Api/Endpoints/PrivacyEndpoints.cs`, `backend/tests/Canamed.IntegrationTests/Catalog/PrivacyEndpointsTests.cs`.
+  - **RESULTADO**: Dossiê de portabilidade e anonimização validados com sucesso; impedimento de anonimização com consultas futuras ativas verificado.
+
+#### 4. Verificação de Integridade Integral
+- **AÇÃO**: Execução de todas as suítes de testes automatizados e builds de produção.
+  - **LOCAL AFETADO**: Solução inteira (`Canamed.sln` e `frontend`)
+  - **RESULTADO**:
+    - **Backend .NET (10.0):** 138 testes unitários + 82 testes de integração = **220 testes aprovados, 0 falhas**.
+    - **Frontend React/TypeScript (Vitest):** 27 testes aprovados = **27 testes aprovados, 0 falhas**.
+    - **Total Geral:** **247 testes aprovados (100% de sucesso)**.
+    - **Build:** `dotnet build` e `npm run build` concluídos com **0 erros e 0 avisos**.
+
+
+
 
 
 ---
@@ -1115,5 +1201,60 @@ Implementação completa das 7 especificações administrativas aprovadas para a
   - `DoctorReturnsPage.test.tsx` (controle de retornos de 30 dias)
   - `DoctorWorkspace.test.tsx` e `App.test.tsx` (ajustes para roteamento e novos elementos)
   - **RESULTADO**: **22 arquivos de teste / 76 testes aprovados (100% green)** no frontend. **287 testes aprovados (100% green)** no backend. Build de produção (`tsc --noEmit && vite build`) validado com zero advertências bloqueantes.
+
+---
+
+### [2026-10-09] — Criação e Integração do Agente Medical Systems Domain Expert ao Orquestrador
+
+#### 1. Definição Dinâmica de Subagente no Runtime
+- **AÇÃO**: Registro do subagente `medical-systems-domain-expert` via `define_subagent` no runtime do Antigravity.
+  - **MOTIVO**: Atender à solicitação do usuário de criar um especialista de domínio em sistemas de informação em saúde (HIS), prontuário eletrônico (PEP/EHR), fluxos ambulatoriais, UX clínica, segurança e regulação (LGPD, CFM, ANVISA).
+  - **LOCAL AFETADO**: Runtime Antigravity (`define_subagent`).
+  - **RESULTADO**: Subagente ativado e imediatamente invocável pelo orquestrador via `invoke_subagent`.
+
+#### 2. Especificação do Agente no Projeto
+- **AÇÃO**: Criação do arquivo de definição `.agent/agents/medical-systems-domain-expert.md`.
+  - **MOTIVO**: Documentar de forma versionada no repositório a identidade, missão, método de análise em 8 passos, formato obrigatório de relatório em 10 seções (A a J), perfis avaliados (Paciente, Recepção, Médico, Gestor) e regras de validação clínica e regulatória.
+  - **LOCAL AFETADO**: `.agent/agents/medical-systems-domain-expert.md`.
+  - **RESULTADO**: Guia mestre e prompt normativo do especialista de domínio médico disponível no projeto.
+
+#### 3. Integração ao Orquestrador Chefe do Cana Med
+- **AÇÃO**: Criação do agente `.agent/agents/orchestrator.md` e do catálogo `.agent/agents/README.md`.
+  - **MOTIVO**: Estabelecer formalmente o fluxo de governança onde nenhuma funcionalidade ambulatorial, de agendamento ou prontuário é implementada sem submissão prévia ao parecer independente do `medical-systems-domain-expert`.
+  - **LOCAL AFETADO**: `.agent/agents/orchestrator.md`, `.agent/agents/README.md`.
+  - **RESULTADO**: Ciclo de vida definido com gate de homologação de domínio (Etapa 2 e 4 do fluxo do Orquestrador), prevenção de complexidade prematura no MVP e tolerância zero a riscos de segurança/privacidade de dados em saúde.
+
+---
+
+### [2026-10-09] — Especialização do Cana Med em Ginecologia, Criação do UI/UX Reviewer e Governança em Quatro Fases
+
+#### 1. Redefinição Estratégica e Normativa das Regras do Projeto
+- **AÇÃO**: Atualização das instruções centrais em `GEMINI.md`, `PROJECT_BRIEF.md`, `docs/visao-produto.md` e `docs/seguranca-e-conformidade.md`.
+  - **MOTIVO**: Redirecionar formalmente a plataforma Cana Med para especialização em **clínicas ginecológicas e saúde da mulher**, estabelecendo o **Prontuário Eletrônico do Paciente (PEP) ginecológico** como módulo primordial prioritário.
+  - **LOCAIS AFETADOS**: `GEMINI.md`, `PROJECT_BRIEF.md`, `docs/visao-produto.md`, `docs/seguranca-e-conformidade.md`.
+  - **RESULTADO**: Princípios estabelecidos de preservação da arquitetura (.NET 10, PostgreSQL, React 19/Vite, segregação de superfícies), foco em anamnese ginecológica, histórico menstrual, obstétrico, contraceptivo, exame físico/ginecológico, rastreamento preventivo e procedimentos ambulatoriais; limites explícitos de escopo (vedado pré-natal de alto risco ou reprodução assistida sem aprovação); requisitos estritos de segurança clínica, imutabilidade, adendos justificados e sigilo sob a LGPD (Art. 11).
+
+#### 2. Especialização do Medical Systems Domain Expert
+- **AÇÃO**: Atualização da definição do agente em `.agent/agents/medical-systems-domain-expert.md`.
+  - **MOTIVO**: Dotar o especialista de domínio de conhecimentos aprofundados sobre a consulta ginecológica, histórico obstétrico (GPA), ciclo menstrual (DUM/menopausa), métodos contraceptivos, rastreamento de colo/mama e ergonomia médica no consultório.
+  - **LOCAL AFETADO**: `.agent/agents/medical-systems-domain-expert.md`.
+  - **RESULTADO**: Agente preparado para atuar nas Fases A (Planejamento) e C (Validação), prevenindo sobrecarga de formulários rígidos e garantindo conformidade com CFM e LGPD.
+
+#### 3. Criação do Agente UI/UX Reviewer
+- **AÇÃO**: Registro do novo subagente `ui-ux-reviewer` via `define_subagent` no runtime do Antigravity e criação da especificação em `.agent/agents/ui-ux-reviewer.md`.
+  - **MOTIVO**: Atribuir responsabilidade explícita pela consistência estética, qualidade do frontend, observância dos tokens de design (`frontend/src/styles/theme.css`), ergonomia clínica, acessibilidade (WCAG AA) e estados de interface (carregamento, vazio, erro, sucesso).
+  - **LOCAIS AFETADOS**: Runtime Antigravity (`define_subagent`), `.agent/agents/ui-ux-reviewer.md`.
+  - **RESULTADO**: Agente ativado e apto a inspecionar o código de interface e a renderização visual, operando tanto no planejamento de telas quanto na validação pós-implementação.
+
+#### 4. Incorporação Obrigatória dos Agentes ao Ciclo de Quatro Fases
+- **AÇÃO**: Atualização do `.agent/agents/orchestrator.md`, `.agent/agents/README.md` e seção de governança no `GEMINI.md`.
+  - **MOTIVO**: Formalizar a obrigatoriedade da atuação coordenada dos agentes em 4 Fases lógicas:
+    - **Fase A (Planejamento):** Escopo pelo planejador $\rightarrow$ Parecer clínico ginecológico $\rightarrow$ Parecer visual/ergonômico $\rightarrow$ SPEC com critérios Given/When/Then;
+    - **Fase B (Implementação):** Implementador segue SPEC, reutiliza tokens/componentes, constrói estados completos e roda testes locais;
+    - **Fase C (Validação):** Auditoria técnica (testes 100% green) $\rightarrow$ Auditoria clínica do domínio $\rightarrow$ Auditoria visual do frontend $\rightarrow$ Triagem de severidade (P0/P1/P2);
+    - **Fase D (Conclusão / DoD):** Critérios atendidos com evidências registradas, zero bloqueadores P0 e registro de governança.
+  - **LOCAIS AFETADOS**: `.agent/agents/orchestrator.md`, `.agent/agents/README.md`, `GEMINI.md`.
+  - **RESULTADO**: Fluxo mestre blindado contra quebras de qualidade, regressões clínicas ou layouts inacabados.
+
 
 

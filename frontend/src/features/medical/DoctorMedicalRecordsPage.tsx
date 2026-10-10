@@ -3,13 +3,21 @@ import { useParams, Link } from 'react-router-dom';
 import {
   getPatientMedicalRecordHistory,
   addMedicalRecordAddendum,
+  getGynecologicalProfile,
+  getPatientScreenings,
   type MedicalRecordResponse,
+  type GynecologicalProfileDto,
+  type PreventiveScreeningDto,
 } from './medicalRecordsApi';
 import {
   getPatientMedicalDocuments,
   type MedicalDocumentResponse,
 } from './medicalDocumentsApi';
 import { fetchPatients, type ManagedPatient } from '../catalog/catalogApi';
+import { GynecologicalProfileCard } from './GynecologicalProfileCard';
+import { PreventiveScreeningList } from './PreventiveScreeningList';
+import { GynecologicalExamSection } from './GynecologicalExamSection';
+import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
 import { DocumentModal } from './DocumentModal';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -26,6 +34,8 @@ export function DoctorMedicalRecordsPage() {
   const [selectedPatient, setSelectedPatient] = useState<ManagedPatient | null>(null);
   const [records, setRecords] = useState<MedicalRecordResponse[]>([]);
   const [documents, setDocuments] = useState<MedicalDocumentResponse[]>([]);
+  const [gynProfile, setGynProfile] = useState<GynecologicalProfileDto | null>(null);
+  const [screenings, setScreenings] = useState<PreventiveScreeningDto[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
 
   // Estado para novo adendo
@@ -37,8 +47,8 @@ export function DoctorMedicalRecordsPage() {
   // Modal de documento
   const [docModalOpen, setDocModalOpen] = useState(false);
 
-  // Aba ativa na ficha do paciente: 'records' | 'documents'
-  const [activeTab, setActiveTab] = useState<'records' | 'documents'>('records');
+  // Aba ativa na ficha do paciente: 'records' | 'gynProfile' | 'screenings' | 'documents'
+  const [activeTab, setActiveTab] = useState<'records' | 'gynProfile' | 'screenings' | 'documents' | 'attachments'>('records');
 
   // Carrega catálogo de pacientes
   useEffect(() => {
@@ -70,6 +80,8 @@ export function DoctorMedicalRecordsPage() {
       setSelectedPatient(null);
       setRecords([]);
       setDocuments([]);
+      setGynProfile(null);
+      setScreenings([]);
       return;
     }
 
@@ -94,11 +106,19 @@ export function DoctorMedicalRecordsPage() {
     Promise.all([
       getPatientMedicalRecordHistory(patientId),
       getPatientMedicalDocuments(patientId),
+      getGynecologicalProfile(patientId).catch(() => null),
+      getPatientScreenings(patientId).catch(() => []),
     ])
-      .then(([recData, docData]) => {
+      .then(([recData, docData, profData, scrData]) => {
         if (active) {
           setRecords(recData);
           setDocuments(docData);
+          if (profData && typeof profData === 'object' && 'gravida' in profData) {
+            setGynProfile(profData as GynecologicalProfileDto);
+          }
+          if (Array.isArray(scrData)) {
+            setScreenings(scrData as PreventiveScreeningDto[]);
+          }
         }
       })
       .catch((err: unknown) => {
@@ -164,7 +184,7 @@ export function DoctorMedicalRecordsPage() {
         <div>
           <h1 className="page__title">Prontuário Eletrônico do Paciente (PEP)</h1>
           <p className="form__hint">
-            Histórico clínico longitudinal, evolução estruturada (SOAP) e rastreabilidade conforme diretrizes do CFM e LGPD.
+            Histórico longitudinal da saúde da mulher, ficha obstétrica (GPA), rastreamento preventivo e evolução clínica conforme diretrizes CFM e LGPD.
           </p>
         </div>
 
@@ -288,7 +308,7 @@ export function DoctorMedicalRecordsPage() {
       ) : (
         /* Visualização Detalhada do Prontuário do Paciente */
         <div>
-          {/* Card Resumo do Paciente */}
+          {/* Card Resumo do Paciente com Indicadores Ginecológicos */}
           <div
             style={{
               background: '#ffffff',
@@ -322,11 +342,51 @@ export function DoctorMedicalRecordsPage() {
                   PEP ATIVO
                 </span>
               </div>
-              <p className="form__hint" style={{ margin: 0 }}>
+              <p className="form__hint" style={{ margin: '0 0 0.5rem 0' }}>
                 {selectedPatient?.phone ? `Telefone: ${selectedPatient.phone}` : ''}
                 {selectedPatient?.birthDate ? ` • Nasc: ${new Date(selectedPatient.birthDate).toLocaleDateString('pt-BR')}` : ''}
                 {selectedPatient?.email ? ` • E-mail: ${selectedPatient.email}` : ''}
               </p>
+
+              {/* Destaque Obstétrico & Contraceptivo Rápido */}
+              {gynProfile && (
+                <div style={{ display: 'inline-flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.8rem' }}>
+                  <span
+                    style={{
+                      background: '#f0fdfa',
+                      color: 'var(--color-primary-dark)',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 600,
+                      border: '1px solid #99f6e4',
+                    }}
+                  >
+                    🤰 Obstétrico: G{gynProfile.gravida} P{gynProfile.para} (Cesáreas: {gynProfile.cesareans}, Abortos: {gynProfile.abortions}, Vivos: {gynProfile.livingChildren})
+                  </span>
+                  <span
+                    style={{
+                      background: '#f8fafc',
+                      color: '#334155',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    💊 Método: {gynProfile.currentMethod || 'Nenhum'}
+                  </span>
+                  <span
+                    style={{
+                      background: '#f8fafc',
+                      color: '#334155',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    🔄 Ciclo: {gynProfile.cycleIntervalDays || 28}d ({gynProfile.isCycleRegular ? 'Regular' : 'Irregular'})
+                  </span>
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -340,14 +400,37 @@ export function DoctorMedicalRecordsPage() {
             </div>
           </div>
 
-          {/* Abas: Evolução SOAP vs Documentos */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--color-neutral-border)', paddingBottom: '0.5rem' }}>
+          {/* Abas Segregadas: Evolução SOAP vs Ficha Ginecológica vs Rastreamento vs Documentos */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              marginBottom: '1.25rem',
+              borderBottom: '1px solid var(--color-neutral-border)',
+              paddingBottom: '0.5rem',
+              overflowX: 'auto',
+            }}
+          >
             <button
               type="button"
               className={`button ${activeTab === 'records' ? 'button--primary' : 'button--ghost'} button--small`}
               onClick={() => setActiveTab('records')}
             >
-              📋 Evolução Clínica & Histórico SOAP ({records.length})
+              📋 Evolução Clínica & Histórico ({records.length})
+            </button>
+            <button
+              type="button"
+              className={`button ${activeTab === 'gynProfile' ? 'button--primary' : 'button--ghost'} button--small`}
+              onClick={() => setActiveTab('gynProfile')}
+            >
+              🌸 Ficha Gineco-Obstétrica (GPA / Ciclos)
+            </button>
+            <button
+              type="button"
+              className={`button ${activeTab === 'screenings' ? 'button--primary' : 'button--ghost'} button--small`}
+              onClick={() => setActiveTab('screenings')}
+            >
+              🛡️ Rastreamento Preventivo ({screenings.length})
             </button>
             <button
               type="button"
@@ -356,11 +439,32 @@ export function DoctorMedicalRecordsPage() {
             >
               📄 Documentos e Receitas ({documents.length})
             </button>
+            <button
+              type="button"
+              className={`button ${activeTab === 'attachments' ? 'button--primary' : 'button--ghost'} button--small`}
+              onClick={() => setActiveTab('attachments')}
+            >
+              📁 Exames Anteriores Anexados
+            </button>
           </div>
 
           {loadingRecords ? (
             <p className="form__hint">Carregando prontuário e registros clínicos…</p>
+          ) : activeTab === 'gynProfile' ? (
+            /* Ficha Gineco-Obstétrica Longitudinal */
+            <GynecologicalProfileCard
+              profile={gynProfile}
+              onProfileUpdated={(updated) => setGynProfile(updated)}
+            />
+          ) : activeTab === 'screenings' ? (
+            /* Rastreamento Preventivo (Papanicolau, HPV, Mamografia, USG) */
+            <PreventiveScreeningList
+              patientId={patientId}
+              screenings={screenings}
+              onScreeningAdded={(newScr) => setScreenings((prev) => [newScr, ...prev])}
+            />
           ) : activeTab === 'records' ? (
+            /* Histórico de Atendimentos SOAP e Exames Ginecológicos */
             records.length === 0 ? (
               <div
                 style={{
@@ -424,7 +528,117 @@ export function DoctorMedicalRecordsPage() {
                       </span>
                     </div>
 
-                    {/* Grade SOAP */}
+                    {/* Dados Ginecológicos Especializados da Consulta (se existirem) */}
+                    {record.gynecologicalData && (
+                      <div
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid var(--color-neutral-border)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '1rem',
+                          marginBottom: '1rem',
+                        }}
+                      >
+                        <h4 style={{ fontSize: '0.95rem', color: 'var(--color-primary-dark)', margin: '0 0 0.5rem 0' }}>
+                          🌸 Dados Clínicos Ginecológicos do Atendimento
+                        </h4>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                          <div>
+                            <span className="form__hint" style={{ fontSize: '0.75rem' }}>DUM (Última Menstruação)</span>
+                            <strong>
+                              {record.gynecologicalData.dum
+                                ? new Date(record.gynecologicalData.dum).toLocaleDateString('pt-BR')
+                                : record.gynecologicalData.isMenopausal
+                                ? 'Menopausa / Climatério'
+                                : record.gynecologicalData.isDumUncertain
+                                ? 'DUM Incerta'
+                                : 'Não informada'}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="form__hint" style={{ fontSize: '0.75rem' }}>Vida Sexual Ativa</span>
+                            <strong>
+                              {record.gynecologicalData.isSexuallyActive === true
+                                ? 'Sim'
+                                : record.gynecologicalData.isSexuallyActive === false
+                                ? 'Não'
+                                : 'Não informada'}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="form__hint" style={{ fontSize: '0.75rem' }}>Dispareunia</span>
+                            <strong style={{ textTransform: 'capitalize' }}>
+                              {record.gynecologicalData.dyspareunia || 'Ausente'}
+                            </strong>
+                          </div>
+                          {record.gynecologicalData.procedurePerformed && (
+                            <div>
+                              <span className="form__hint" style={{ fontSize: '0.75rem' }}>Procedimento Realizado</span>
+                              <strong style={{ color: '#005F6A' }}>
+                                💉 {record.gynecologicalData.procedurePerformed}
+                              </strong>
+                              {record.gynecologicalData.procedureBatch && (
+                                <div style={{ fontSize: '0.75rem', color: '#475569' }}>
+                                  ({record.gynecologicalData.procedureBatch})
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Exame Físico Ginecológico Segmentado em modo Somente Leitura */}
+                        <div style={{ marginTop: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.35rem' }}>
+                            Exame Físico Ginecológico Segmentado:
+                          </span>
+                          <GynecologicalExamSection
+                            exam={{
+                              breastsIsNormal: record.gynecologicalData.breastsIsNormal,
+                              breastsFindings: record.gynecologicalData.breastsFindings || '',
+                              abdomenIsNormal: record.gynecologicalData.abdomenIsNormal,
+                              abdomenFindings: record.gynecologicalData.abdomenFindings || '',
+                              externalGenitaliaIsNormal: record.gynecologicalData.externalGenitaliaIsNormal,
+                              externalGenitaliaFindings: record.gynecologicalData.externalGenitaliaFindings || '',
+                              speculumExamIsNormal: record.gynecologicalData.speculumExamIsNormal,
+                              speculumExamFindings: record.gynecologicalData.speculumExamFindings || '',
+                              bimanualPalpationIsNormal: record.gynecologicalData.bimanualPalpationIsNormal,
+                              bimanualPalpationFindings: record.gynecologicalData.bimanualPalpationFindings || '',
+                            }}
+                            onChange={() => {}}
+                            readOnly={true}
+                          />
+                        </div>
+
+                        {/* Prescrições e Orientações Segregadas */}
+                        {(record.gynecologicalData.prescriptionNotes || record.gynecologicalData.generalOrientationNotes) && (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem', marginTop: '0.75rem', fontSize: '0.85rem' }}>
+                            {record.gynecologicalData.prescriptionNotes && (
+                              <div style={{ background: '#ffffff', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}>
+                                <strong style={{ color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.25rem' }}>
+                                  💊 Prescrição Medicamentosa:
+                                </strong>
+                                <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#1e293b' }}>
+                                  {record.gynecologicalData.prescriptionNotes}
+                                </p>
+                              </div>
+                            )}
+                            {record.gynecologicalData.generalOrientationNotes && (
+                              <div style={{ background: '#ffffff', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}>
+                                <strong style={{ color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.25rem' }}>
+                                  📋 Orientações Assistenciais & Retorno:
+                                </strong>
+                                <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#1e293b' }}>
+                                  {record.gynecologicalData.generalOrientationNotes}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Grade SOAP Tradicional */}
                     <div
                       style={{
                         display: 'grid',
@@ -579,6 +793,9 @@ export function DoctorMedicalRecordsPage() {
                 ))}
               </div>
             )
+          ) : activeTab === 'attachments' ? (
+            /* Aba de Exames Anteriores Anexados */
+            <PatientExamAttachmentsSection patientId={patientId!} canEdit={true} />
           ) : (
             /* Aba de Documentos do Paciente */
             documents.length === 0 ? (

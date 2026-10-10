@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddSingleton<ITotpService, TotpService>();
         services.AddSingleton<ISecretProtector, DataProtectionSecretProtector>();
         services.AddSingleton<IMfaPolicy, ConfigurationMfaPolicy>();
+        services.AddSingleton<IFileStorage, Canamed.Infrastructure.Storage.LocalFileStorage>();
         services.AddScoped<ICurrentActorAccessor, CurrentActorAccessor>();
         services.AddScoped<IAgendaRepository, AgendaRepository>();
         services.AddScoped<IQueueRepository, QueueRepository>();

@@ -30,6 +30,12 @@ public interface IAgendaRepository
         IReadOnlyCollection<Guid> appointmentIds,
         CancellationToken cancellationToken);
 
+    /// <summary>Lista todos os agendamentos de um paciente na clínica (SPEC-0012).</summary>
+    Task<IReadOnlyList<Appointment>> ListAppointmentsByPatientAsync(
+        Guid clinicId,
+        Guid patientId,
+        CancellationToken cancellationToken);
+
     /// <summary>
     /// Lista agendamentos de um período **rastreados para alteração** (usado pelo fechamento do dia).
     /// </summary>

@@ -30,6 +30,11 @@ public sealed class MedicalRecordConfiguration : IEntityTypeConfiguration<Medica
             .HasForeignKey(a => a.MedicalRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(r => r.GynecologicalData)
+            .WithOne()
+            .HasForeignKey<GynecologicalConsultationData>(d => d.MedicalRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Navigation(r => r.Addenda)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
     }

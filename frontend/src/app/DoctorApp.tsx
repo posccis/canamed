@@ -1,32 +1,30 @@
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 
+import { DoctorDashboardPage } from '../features/medical/DoctorDashboardPage';
 import { DoctorWorkspace } from '../features/medical/DoctorWorkspace';
 import { DoctorMedicalRecordsPage } from '../features/medical/DoctorMedicalRecordsPage';
 import { DoctorAgendaPage } from '../features/medical/DoctorAgendaPage';
 import { DoctorDocumentsPage } from '../features/medical/DoctorDocumentsPage';
 import { DoctorReturnsPage } from '../features/medical/DoctorReturnsPage';
+import { DoctorSidebar } from '../features/medical/DoctorSidebar';
+import { DoctorProfileMenu } from '../features/medical/DoctorProfileMenu';
 import { LoginPage } from '../features/auth/LoginPage';
 import { MfaEnrollmentPanel } from '../features/auth/MfaEnrollmentPanel';
 import { useSession } from '../features/auth/useSession';
 import { ToastProvider } from '../features/layout/Toast';
 import { DOCTOR_PATHS } from '../navigation/routes';
 
-const DOCTOR_NAV = [
-  { to: DOCTOR_PATHS.home, label: 'Hoje / Consultório', end: true },
-  { to: DOCTOR_PATHS.records, label: 'Prontuário (PEP)', end: false },
-  { to: DOCTOR_PATHS.agenda, label: 'Minha Agenda', end: false },
-  { to: DOCTOR_PATHS.queue, label: 'Minha fila', end: false },
-  { to: DOCTOR_PATHS.documents, label: 'Documentos', end: false },
-  { to: DOCTOR_PATHS.returns, label: 'Retornos', end: false },
-] as const;
-
 /**
  * Superfície do profissional de saúde (`/medico`).
- * Shell reduzido, sem menus administrativos (SPEC-0026 / RN-001, seção 9.4).
- * Suporte completo a navegação por URL e abertura em novas abas do navegador.
+ * Layout moderno com Sidebar expansível/colapsável, responsivo e integrado ao Dashboard Clínico.
+ * Shell reduzido, sem menus administrativos (SPEC-0026 / RN-001, seção 9.4 e SPEC-0028).
  */
 export function DoctorApp() {
   const { state, reload, end } = useSession();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   if (state.status === 'loading') {
     return (
@@ -67,50 +65,52 @@ export function DoctorApp() {
   return (
     <ToastProvider>
       <div className="doctor-shell">
-        <header className="doctor-header">
-          <div className="doctor-header__brand">
-            <img
-              src="/assets/brand/canadamed_logogrande_comtitulo-removebg-preview.png"
-              alt="CANA MED — Eficiência Para Quem Mais Precisa"
-            />
-          </div>
+        <DoctorSidebar
+          session={state.session}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((v) => !v)}
+          mobileOpen={mobileOpen}
+          onCloseMobile={() => setMobileOpen(false)}
+          onSignOut={() => void end()}
+        />
 
-          <nav className="doctor-header__nav" aria-label="Navegação do profissional">
-            {DOCTOR_NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `doctor-header__nav-item ${isActive ? 'doctor-header__nav-item--active' : ''}`
-                }
+        <div className="doctor-content-wrapper">
+          <header className="doctor-topbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button
+                type="button"
+                className="mobile-menu-btn"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label="Abrir menu de navegação"
+                title="Abrir menu"
               >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+                <Menu size={20} />
+              </button>
+              <span style={{ fontWeight: 600, color: 'var(--color-primary-dark)', fontSize: '0.95rem' }}>
+                🌸 Cana Med Mulher • Espaço Clínico
+              </span>
+            </div>
 
-          <div className="doctor-header__user">
-            <span className="doctor-header__user-name">{state.session.user.name}</span>
-            <span className="doctor-header__user-clinic">{state.session.clinicName}</span>
-            <button type="button" className="button button--ghost" onClick={() => void end()}>
-              Sair
-            </button>
-          </div>
-        </header>
+            <DoctorProfileMenu
+              session={state.session}
+              onSignOut={() => void end()}
+            />
+          </header>
 
-        <main className="doctor-main">
-          <Routes>
-            <Route index element={<DoctorWorkspace />} />
-            <Route path="prontuario" element={<DoctorMedicalRecordsPage />} />
-            <Route path="prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
-            <Route path="agenda" element={<DoctorAgendaPage />} />
-            <Route path="fila" element={<DoctorWorkspace />} />
-            <Route path="documentos" element={<DoctorDocumentsPage />} />
-            <Route path="retornos" element={<DoctorReturnsPage />} />
-            <Route path="*" element={<Navigate to={DOCTOR_PATHS.home} replace />} />
-          </Routes>
-        </main>
+          <main className="doctor-main">
+            <Routes>
+              <Route index element={<DoctorDashboardPage />} />
+              <Route path="consultorio" element={<DoctorWorkspace />} />
+              <Route path="prontuario" element={<DoctorMedicalRecordsPage />} />
+              <Route path="prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
+              <Route path="agenda" element={<DoctorAgendaPage />} />
+              <Route path="fila" element={<DoctorWorkspace />} />
+              <Route path="documentos" element={<DoctorDocumentsPage />} />
+              <Route path="retornos" element={<DoctorReturnsPage />} />
+              <Route path="*" element={<Navigate to={DOCTOR_PATHS.home} replace />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </ToastProvider>
   );

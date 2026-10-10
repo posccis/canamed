@@ -88,6 +88,9 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0024](0024-spec-multi-clinica-e-alternancia-de-contexto.md) | Alternância de Multi-Clínica na Interface | Implementada | 2026-10-03 |
 | [0025](0025-spec-politicas-de-encaixe-e-cancelamento.md) | Políticas Parametrizáveis de Encaixe e Cancelamento | Implementada | 2026-10-03 |
 | [0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) | Jornada Digital do Paciente, Superfícies Dedicadas e Links Compartilháveis | Aprovada | 2026-10-03 |
+| [0027](0027-spec-prontuario-eletronico-ginecologico.md) | Prontuário Eletrônico do Paciente Especializado em Ginecologia (PEP Ginecológico) | Implementada | 2026-10-09 |
+| [0028](0028-spec-evolucao-modulo-medico-dashboard-anexos-sidebar.md) | Evolução do Módulo Médico: Dashboard Clínico, Anexo de Exames Anteriores, Início de Atendimento e Sidebar Moderna | Implementada | 2026-10-09 |
+| [0029](0029-spec-modernizacao-visual-frontend-navegacao.md) | Modernização Visual do Frontend, Controles de Formulário e Redesign da Navegação Médica | Implementada | 2026-10-09 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 > A [SPEC-0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) propõe, sobre o

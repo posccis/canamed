@@ -53,6 +53,36 @@ public static class MedicalRecordEndpoints
             .Produces<IReadOnlyList<MedicalRecordResponse>>(StatusCodes.Status200OK)
             .RequirePermissions(Permissions.RecordsRead);
 
+        records.MapGet("/patients/{patientId:guid}/gynecological-profile", GetGynecologicalProfileAsync)
+            .WithName("GetGynecologicalProfile")
+            .Produces<GynecologicalProfileDto>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsRead);
+
+        records.MapPut("/patients/{patientId:guid}/gynecological-profile", UpdateGynecologicalProfileAsync)
+            .WithName("UpdateGynecologicalProfile")
+            .Produces<GynecologicalProfileDto>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsCreate);
+
+        records.MapGet("/patients/{patientId:guid}/screenings", ListScreeningsAsync)
+            .WithName("ListPatientScreenings")
+            .Produces<IReadOnlyList<PreventiveScreeningDto>>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsRead);
+
+        records.MapPost("/patients/{patientId:guid}/screenings", AddScreeningAsync)
+            .WithName("AddPatientScreening")
+            .Produces<PreventiveScreeningDto>(StatusCodes.Status201Created)
+            .RequirePermissions(Permissions.RecordsCreate);
+
+        records.MapGet("/{id:guid}/gynecological", GetGynecologicalConsultationDataAsync)
+            .WithName("GetGynecologicalConsultationData")
+            .Produces<GynecologicalConsultationDataDto>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsRead);
+
+        records.MapPut("/{id:guid}/gynecological", UpdateGynecologicalConsultationDataAsync)
+            .WithName("UpdateGynecologicalConsultationData")
+            .Produces<GynecologicalConsultationDataDto>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsCreate);
+
         return api;
     }
 
@@ -109,6 +139,63 @@ public static class MedicalRecordEndpoints
         CancellationToken cancellationToken)
     {
         var result = await service.GetHistoryByPatientIdAsync(patientId, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetGynecologicalProfileAsync(
+        MedicalRecordService service,
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.GetGynecologicalProfileAsync(patientId, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> UpdateGynecologicalProfileAsync(
+        MedicalRecordService service,
+        Guid patientId,
+        [FromBody] UpdateGynecologicalProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.UpdateGynecologicalProfileAsync(patientId, request, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> ListScreeningsAsync(
+        MedicalRecordService service,
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.ListScreeningsAsync(patientId, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> AddScreeningAsync(
+        MedicalRecordService service,
+        Guid patientId,
+        [FromBody] CreatePreventiveScreeningRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.AddScreeningAsync(patientId, request, cancellationToken).ConfigureAwait(false);
+        return Results.Created($"/api/v1/medical-records/patients/{patientId}/screenings/{result.Id}", result);
+    }
+
+    private static async Task<IResult> GetGynecologicalConsultationDataAsync(
+        MedicalRecordService service,
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.GetGynecologicalConsultationDataAsync(id, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> UpdateGynecologicalConsultationDataAsync(
+        MedicalRecordService service,
+        Guid id,
+        [FromBody] UpdateGynecologicalConsultationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.UpdateGynecologicalConsultationDataAsync(id, request, cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
     }
 }

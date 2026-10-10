@@ -30,6 +30,13 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
             .HasMaxLength(20)
             .HasDefaultValue("pendente")
             .IsRequired();
+        builder.Property(appointment => appointment.IsOverbooking)
+            .HasColumnName("is_overbooking")
+            .HasDefaultValue(false)
+            .IsRequired();
+        builder.Property(appointment => appointment.OverbookingReason)
+            .HasColumnName("overbooking_reason")
+            .HasMaxLength(500);
         builder.Property(appointment => appointment.CancellationReason).HasMaxLength(500);
         builder.Property(appointment => appointment.Origin).HasMaxLength(30).HasDefaultValue("desk").IsRequired();
         builder.Property(appointment => appointment.DurationMinutes).IsRequired();

@@ -127,6 +127,21 @@ public sealed class AgendaRepository(CanamedDbContext dbContext) : IAgendaReposi
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<Appointment>> ListAppointmentsByPatientAsync(
+        Guid clinicId,
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Appointments
+            .AsNoTracking()
+            .Where(appointment => appointment.ClinicId == clinicId
+                && appointment.PatientId == patientId
+                && appointment.DeletedAt == null)
+            .OrderByDescending(appointment => appointment.StartsAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyList<Appointment>> ListAppointmentsForUpdateAsync(
         Guid clinicId,
         Guid? professionalId,

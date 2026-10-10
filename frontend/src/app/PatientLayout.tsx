@@ -39,8 +39,8 @@ export function PatientLayout() {
         <header className="patient-header">
           <Link to={paths.base} className="patient-header__brand" aria-label="CANA MED — início">
             <img
-              src="/assets/brand/canadamed_logogrande_comtitulo-removebg-preview.png"
-              alt="CANA MED — Eficiência Para Quem Mais Precisa"
+              src="/assets/brand/canamed-mulher-logolonga.png"
+              alt="CANA MED Mulher — Eficiência Para Quem Mais Precisa"
             />
           </Link>
 

@@ -68,6 +68,12 @@ public static class AuditActions
     public const string PaymentRefunded = "payment.refunded";
     public const string TriageRecorded = "triage.recorded";
 
+    public const string AppointmentOverbooked = "appointment.overbooked";
+    public const string CashRegisterOpened = "cashier.opened";
+    public const string CashRegisterClosed = "cashier.closed";
+    public const string CashMovementRegistered = "cashier.movement";
+    public const string PatientDataExported = "privacy.patient_exported";
+    public const string PatientAnonymized = "privacy.patient_anonymized";
     public const string MedicalRecordCreated = "medical_record.created";
     public const string MedicalRecordDraftUpdated = "medical_record.draft_updated";
     public const string MedicalRecordFinalized = "medical_record.finalized";
@@ -78,6 +84,15 @@ public static class AuditActions
     public const string MedicalDocumentSigned = "medical_document.signed";
     public const string MedicalDocumentCancelled = "medical_document.cancelled";
     public const string MedicalDocumentViewed = "medical_document.viewed";
+
+    public const string GynecologicalProfileViewed = "gynecological_profile.viewed";
+    public const string GynecologicalProfileUpdated = "gynecological_profile.updated";
+    public const string GynecologicalConsultationUpdated = "gynecological_consultation.updated";
+    public const string ScreeningRecordCreated = "screening_record.created";
+    public const string ScreeningRecordViewed = "screening_record.viewed";
+    public const string ExamAttachmentUploaded = "exam_attachment.uploaded";
+    public const string ExamAttachmentViewed = "exam_attachment.viewed";
+    public const string ExamAttachmentDeactivated = "exam_attachment.deactivated";
 }
 
 /// <summary>Tipos de recurso da trilha de auditoria.</summary>
@@ -100,6 +115,11 @@ public static class AuditResources
     public const string ClinicClosures = "clinic_closures";
     public const string Payments = "payments";
     public const string Triage = "triage";
+    public const string CashRegister = "cash_register";
+    public const string Privacy = "privacy";
     public const string MedicalRecords = "medical_records";
     public const string MedicalDocuments = "medical_documents";
+    public const string GynecologicalProfile = "gynecological_profiles";
+    public const string PreventiveScreenings = "preventive_screenings";
+    public const string ExamAttachments = "patient_exam_attachments";
 }

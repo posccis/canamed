@@ -142,6 +142,41 @@ public sealed class AppointmentTests
     }
 
     [Fact]
+    public void Schedule_ComOverbooking_DeveGravarFlagEJustificativa()
+    {
+        var startsAt = Now.AddHours(2);
+        var appointment = Appointment.Schedule(
+            ClinicId,
+            ProfessionalId,
+            PatientId,
+            TypeId,
+            startsAt,
+            30,
+            Now,
+            isOverbooking: true,
+            overbookingReason: "Encaixe de urgência aprovado pelo médico");
+
+        Assert.True(appointment.IsOverbooking);
+        Assert.Equal("Encaixe de urgência aprovado pelo médico", appointment.OverbookingReason);
+    }
+
+    [Fact]
+    public void Reschedule_ComOverbooking_DeveAtualizarFlagEJustificativa()
+    {
+        var appointment = Schedule(Now.AddHours(2), 30);
+        Assert.False(appointment.IsOverbooking);
+
+        appointment.Reschedule(
+            Now.AddHours(4),
+            Now,
+            isOverbooking: true,
+            overbookingReason: "Remarcado como encaixe a pedido do paciente");
+
+        Assert.True(appointment.IsOverbooking);
+        Assert.Equal("Remarcado como encaixe a pedido do paciente", appointment.OverbookingReason);
+    }
+
+    [Fact]
     public void Schedule_DeveRecusarIdentificadoresVazios()
     {
         Assert.Throws<ArgumentException>(() => Appointment.Schedule(

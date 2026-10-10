@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   fetchAgendaDay,
   markAppointmentAttended,
@@ -7,6 +7,7 @@ import {
   type Appointment,
   type AgendaDay,
 } from '../agenda/agendaApi';
+import { doctorStartConsultationByAppointment } from './doctorWorkspaceApi';
 import { useSession } from '../auth/useSession';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -14,6 +15,7 @@ import { DOCTOR_PATHS } from '../../navigation/routes';
 export function DoctorAgendaPage() {
   const { state: sessionState } = useSession();
   const { addToast } = useToast();
+  const navigate = useNavigate();
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return new Date().toISOString().slice(0, 10);
@@ -21,6 +23,20 @@ export function DoctorAgendaPage() {
   const [agenda, setAgenda] = useState<AgendaDay | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+
+  async function handleStartConsultation(appointmentId: string, patientName: string) {
+    setActionInProgress(appointmentId);
+    try {
+      await doctorStartConsultationByAppointment(appointmentId);
+      addToast(`Atendimento iniciado: ${patientName}`, 'success');
+      navigate('/medico/consultorio');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao iniciar consulta.';
+      addToast(msg, 'error');
+    } finally {
+      setActionInProgress(null);
+    }
+  }
 
   const loadDay = useCallback(async (date: string) => {
     setLoading(true);
@@ -271,6 +287,15 @@ export function DoctorAgendaPage() {
                         <button
                           type="button"
                           className="button button--primary button--small"
+                          onClick={() => handleStartConsultation(app.id, app.patientName)}
+                          disabled={actionInProgress === app.id}
+                          title="Iniciar atendimento no consultório e abrir prontuário"
+                        >
+                          ▶ Iniciar Atendimento
+                        </button>
+                        <button
+                          type="button"
+                          className="button button--secondary button--small"
                           onClick={() => handleMarkAttended(app.id)}
                           disabled={actionInProgress === app.id}
                         >

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Canamed.Application.Abstractions;
 using Canamed.Application.Errors;
 using Canamed.Application.Identity;
@@ -68,7 +69,7 @@ public sealed class CashRegisterService
                 "CashSession",
                 session.Id.ToString(),
                 now,
-                $"{{\"initialFloat\":{session.InitialFloat}}}"));
+                JsonSerializer.Serialize(new { initialFloat = session.InitialFloat })));
 
             return MapToDto(session);
         }, cancellationToken);
@@ -107,7 +108,18 @@ public sealed class CashRegisterService
                 userId = Guid.NewGuid();
             }
 
-            session.RegisterSangria(request.Amount, request.Reason, userId, now);
+            try
+            {
+                session.RegisterSangria(request.Amount, request.Reason, userId, now);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new CanamedException(ProblemKind.Validation, "Validação de caixa", ex.Message, "CASH_SANGRIA_EXCEEDS_BALANCE");
+            }
+            catch (ArgumentException ex)
+            {
+                throw new CanamedException(ProblemKind.Validation, "Validação de caixa", ex.Message, "CASH_SANGRIA_INVALID");
+            }
 
             await _repository.UpdateAsync(session, ct);
             _auditRepository.Add(AuditEvent.Record(
@@ -118,7 +130,7 @@ public sealed class CashRegisterService
                 "CashSession",
                 session.Id.ToString(),
                 now,
-                $"{{\"amount\":{request.Amount},\"reason\":\"{request.Reason}\"}}"));
+                JsonSerializer.Serialize(new { amount = request.Amount, reason = request.Reason })));
 
             return MapToDto(session);
         }, cancellationToken);
@@ -143,7 +155,14 @@ public sealed class CashRegisterService
                 userId = Guid.NewGuid();
             }
 
-            session.RegisterSuprimento(request.Amount, request.Reason, userId, now);
+            try
+            {
+                session.RegisterSuprimento(request.Amount, request.Reason, userId, now);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new CanamedException(ProblemKind.Validation, "Validação de caixa", ex.Message, "CASH_SUPRIMENTO_INVALID");
+            }
 
             await _repository.UpdateAsync(session, ct);
             _auditRepository.Add(AuditEvent.Record(
@@ -154,7 +173,7 @@ public sealed class CashRegisterService
                 "CashSession",
                 session.Id.ToString(),
                 now,
-                $"{{\"amount\":{request.Amount},\"reason\":\"{request.Reason}\"}}"));
+                JsonSerializer.Serialize(new { amount = request.Amount, reason = request.Reason })));
 
             return MapToDto(session);
         }, cancellationToken);
@@ -174,13 +193,20 @@ public sealed class CashRegisterService
             var session = await _repository.GetByIdAsync(sessionId, clinicId, ct)
                 ?? throw new CanamedException(ProblemKind.NotFound, "Não encontrado", "Sessão de caixa não encontrada.", "CASH_SESSION_NOT_FOUND");
 
-            session.Close(
-                request.CashDeclared,
-                request.PixDeclared,
-                request.DebitDeclared,
-                request.CreditDeclared,
-                request.Notes,
-                now);
+            try
+            {
+                session.Close(
+                    request.CashDeclared,
+                    request.PixDeclared,
+                    request.DebitDeclared,
+                    request.CreditDeclared,
+                    request.Notes,
+                    now);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new CanamedException(ProblemKind.Validation, "Validação de caixa", ex.Message, "CASH_SESSION_CLOSE_INVALID");
+            }
 
             await _repository.UpdateAsync(session, ct);
             _auditRepository.Add(AuditEvent.Record(
@@ -191,7 +217,7 @@ public sealed class CashRegisterService
                 "CashSession",
                 session.Id.ToString(),
                 now,
-                $"{{\"cashDeclared\":{request.CashDeclared},\"difference\":{session.CashDifference}}}"));
+                JsonSerializer.Serialize(new { cashDeclared = request.CashDeclared, difference = session.CashDifference })));
 
             return MapToDto(session);
         }, cancellationToken);

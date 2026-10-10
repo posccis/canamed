@@ -67,6 +67,7 @@ export function staffViewFromPath(pathname: string): StaffView {
 /** Superfície do profissional de saúde (`/medico`). */
 export const DOCTOR_PATHS = {
   home: '/medico',
+  consultation: '/medico/consultorio',
   agenda: '/medico/agenda',
   queue: '/medico/fila',
   records: '/medico/prontuario',

@@ -36,6 +36,8 @@ public sealed class MedicalRecord : Entity
 
     public IReadOnlyList<MedicalRecordAddendum> Addenda => _addenda.AsReadOnly();
 
+    public GynecologicalConsultationData? GynecologicalData { get; private set; }
+
     public static MedicalRecord Create(
         Guid clinicId,
         Guid patientId,

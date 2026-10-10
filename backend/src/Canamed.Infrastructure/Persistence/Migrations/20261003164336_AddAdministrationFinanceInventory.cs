@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,12 +11,9 @@ namespace Canamed.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "is_overbooking",
-                table: "appointments",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.Sql("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS is_overbooking boolean NOT NULL DEFAULT FALSE;");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS cash_movements CASCADE;");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS cash_register_shifts CASCADE;");
 
             migrationBuilder.CreateTable(
                 name: "cash_sessions",
@@ -329,9 +326,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "medical_payout_batches");
 
-            migrationBuilder.DropColumn(
-                name: "is_overbooking",
-                table: "appointments");
+            // is_overbooking pertence originariamente a 20261002133743_AddOverbookingAndCashRegister
         }
     }
 }

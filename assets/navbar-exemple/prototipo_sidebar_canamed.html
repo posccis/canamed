@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANA MED - Protótipo de Interface</title>
+    
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Ícones Phosphor -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS com configuração da Identidade Visual -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cana: {
+                            primary: '#008080',    /* Teal Verde Água Profundo */
+                            secondary: '#005F6A',  /* Azul Petróleo Confiável */
+                            accent: '#66CDAA',     /* Verde Menta Vibrante */
+                            dark: '#333333',       /* Grafite Profissional */
+                            light: '#F5F5F5',      /* Off-White Suave */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar para um visual mais limpo */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D1D5DB; 
+        }
+    </style>
+</head>
+<body class="bg-cana-light text-cana-dark font-sans h-screen flex overflow-hidden">
+
+    <!-- 
+      SOLUÇÃO: Sidebar com fundo branco (bg-white) e borda sutil. 
+      Isso garante 100% de contraste com a logo colorida e cria um visual SaaS limpo.
+    -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
+        
+        <!-- Header da Sidebar / Logo -->
+        <div class="h-20 flex items-center justify-center px-6 border-b border-gray-100">
+            <!-- Utilizando a logo longa fornecida -->
+            <img src="canamed-mulher-logolonga.png" alt="CANA MED Mulher" class="h-10 object-contain w-full" onerror="this.src='https://placehold.co/400x120/ffffff/008080?text=CANA+MED'">
+        </div>
+
+        <!-- Navegação Principal -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Principal</p>
+            
+            <!-- Item Ativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 bg-teal-50 text-cana-primary rounded-lg relative group transition-colors">
+                <!-- Indicador de ativo (Accent Color) -->
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-cana-accent rounded-r-md"></div>
+                <i class="ph ph-squares-four text-xl mr-3 text-cana-primary"></i>
+                <span class="font-semibold text-sm">Painel Resumo</span>
+            </a>
+
+            <!-- Item Inativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <i class="ph ph-calendar-blank text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                <span class="font-medium text-sm">Agenda</span>
+            </a>
+
+            <!-- Item Inativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <i class="ph ph-users text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                <span class="font-medium text-sm">Pacientes</span>
+            </a>
+
+            <!-- Item Inativo (PEP) -->
+            <a href="#" class="flex items-center justify-between px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <div class="flex items-center">
+                    <i class="ph ph-file-text text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                    <span class="font-medium text-sm">Prontuário (PEP)</span>
+                </div>
+                <!-- Badge de atenção -->
+                <span class="bg-red-100 text-red-600 py-0.5 px-2 rounded-full text-[10px] font-bold">2</span>
+            </a>
+
+            <!-- Item Inativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <i class="ph ph-currency-circle-dollar text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                <span class="font-medium text-sm">Faturamento</span>
+            </a>
+
+            <div class="pt-4 mt-4 border-t border-gray-100"></div>
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administração</p>
+
+            <!-- Item Inativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <i class="ph ph-chart-line-up text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                <span class="font-medium text-sm">Relatórios</span>
+            </a>
+
+            <!-- Item Inativo -->
+            <a href="#" class="flex items-center px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-cana-primary rounded-lg transition-colors group">
+                <i class="ph ph-gear text-xl mr-3 group-hover:text-cana-primary transition-colors"></i>
+                <span class="font-medium text-sm">Configurações</span>
+            </a>
+        </nav>
+
+        <!-- Perfil do Usuário na base da Sidebar -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center hover:bg-gray-50 p-2 rounded-lg cursor-pointer transition-colors">
+                <div class="w-9 h-9 rounded-full bg-cana-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    CM
+                </div>
+                <div class="ml-3 overflow-hidden">
+                    <p class="text-sm font-semibold text-cana-dark truncate">Dra. Clara Moraes</p>
+                    <p class="text-xs text-gray-500 truncate">Ginecologista</p>
+                </div>
+                <i class="ph ph-caret-up ml-auto text-gray-400 text-sm"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Área de Conteúdo Principal -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Topbar -->
+        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h1 class="text-xl font-bold text-cana-dark">Painel Resumo</h1>
+                <p class="text-sm text-gray-500">Acompanhamento diário da clínica.</p>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Busca rápida -->
+                <div class="relative hidden md:block">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" placeholder="Buscar paciente..." class="pl-10 pr-4 py-2 bg-cana-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cana-accent focus:border-transparent w-64 transition-all">
+                </div>
+                
+                <!-- Notificações -->
+                <button class="relative p-2 text-gray-400 hover:text-cana-primary transition-colors rounded-full hover:bg-gray-50">
+                    <i class="ph ph-bell text-2xl"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-cana-accent rounded-full border border-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Conteúdo Rolável -->
+        <div class="flex-1 overflow-auto p-8">
+            
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-cana-primary mr-4">
+                        <i class="ph ph-calendar-check text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Consultas Hoje</p>
+                        <h3 class="text-2xl font-bold text-cana-dark">12</h3>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-cana-secondary mr-4">
+                        <i class="ph ph-users text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Novas Pacientes (Mês)</p>
+                        <h3 class="text-2xl font-bold text-cana-dark">48</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-cana-accent mr-4">
+                        <i class="ph ph-files text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Prontuários Pendentes</p>
+                        <h3 class="text-2xl font-bold text-cana-dark">2</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área Vazia de Exemplo -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center h-64 flex flex-col items-center justify-center">
+                <div class="w-16 h-16 bg-cana-light rounded-full flex items-center justify-center mb-4">
+                    <i class="ph ph-clipboard-text text-3xl text-cana-primary"></i>
+                </div>
+                <h2 class="text-lg font-bold text-cana-dark mb-1">Próxima Consulta</h2>
+                <p class="text-gray-500 text-sm max-w-sm">Nenhuma paciente na fila de espera no momento. Aproveite para revisar os prontuários pendentes.</p>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

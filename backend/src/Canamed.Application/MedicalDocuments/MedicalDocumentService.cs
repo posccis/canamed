@@ -27,10 +27,8 @@ public sealed class MedicalDocumentService(
             throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para emitir documentos médicos.", "permission-denied");
         }
 
-        if (!Guid.TryParse(actor.UserId, out var doctorId))
-        {
-            doctorId = Guid.Empty;
-        }
+        var doctorId = actor.ProfessionalId
+            ?? (Guid.TryParse(actor.UserId, out var parsedGuid) ? parsedGuid : Guid.Empty);
 
         var now = timeProvider.GetUtcNow();
 

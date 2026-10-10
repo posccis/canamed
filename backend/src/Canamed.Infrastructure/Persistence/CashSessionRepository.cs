@@ -39,7 +39,20 @@ public sealed class CashSessionRepository(CanamedDbContext dbContext) : ICashSes
 
     public Task UpdateAsync(CashSession session, CancellationToken cancellationToken = default)
     {
-        dbContext.CashSessions.Update(session);
+        if (dbContext.Entry(session).State == EntityState.Detached)
+        {
+            dbContext.CashSessions.Update(session);
+        }
+
+        foreach (var movement in session.Movements)
+        {
+            var entry = dbContext.Entry(movement);
+            if (entry.State is EntityState.Detached or EntityState.Modified)
+            {
+                entry.State = EntityState.Added;
+            }
+        }
+
         return Task.CompletedTask;
     }
 }

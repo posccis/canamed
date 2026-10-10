@@ -6,10 +6,16 @@ public sealed record CreateAppointmentRequest(
     Guid PatientId,
     Guid AppointmentTypeId,
     DateTimeOffset StartsAt,
-    Guid? RoomId = null);
+    Guid? RoomId = null,
+    bool IsOverbooking = false,
+    string? OverbookingReason = null);
 
 /// <summary>Pedido de remarcação. <c>RoomId</c> nulo mantém a sala atual (SPEC-0006).</summary>
-public sealed record RescheduleAppointmentRequest(DateTimeOffset StartsAt, Guid? RoomId = null);
+public sealed record RescheduleAppointmentRequest(
+    DateTimeOffset StartsAt,
+    Guid? RoomId = null,
+    bool? IsOverbooking = null,
+    string? OverbookingReason = null);
 
 /// <summary>Pedido de cancelamento. O motivo é obrigatório (RN-006).</summary>
 public sealed record CancelAppointmentRequest(string Reason);
@@ -36,7 +42,9 @@ public sealed record AppointmentResponse(
     string Status,
     string? CancellationReason,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    bool IsOverbooking = false,
+    string? OverbookingReason = null);
 
 /// <summary>
 /// Bloqueio de agenda retornado pela API. O motivo não é exposto na consulta da agenda

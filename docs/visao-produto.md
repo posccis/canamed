@@ -4,43 +4,40 @@
 > [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md). Em caso de divergência, o `GEMINI.md` prevalece.
 > Este documento **não** substitui uma SPEC: detalhes de execução são definidos por especificação.
 
-- **Versão:** 1.1
-- **Data:** 2026-09-30
-- **Status:** Vigente
+- **Versão:** 2.0
+- **Data:** 2026-10-09
+- **Status:** Vigente (Especialização em Ginecologia)
 
 ---
 
 ## 1. Resumo
 
-O CANAMED é uma plataforma SaaS B2B de gestão clínica e relacionamento, voltada a clínicas de pequeno e
-médio porte. Seu objetivo é reduzir a carga administrativa e organizar o funcionamento da clínica como um
-todo, para que profissionais e gestores concentrem energia no cuidado com o paciente.
+O CANAMED é uma plataforma SaaS B2B especializada na gestão e no atendimento de **clínicas ginecológicas**. Seu objetivo é eliminar burocracias e gargalos operacionais para que profissionais de saúde da mulher e gestores dediquem atenção total ao acolhimento e cuidado clínico de suas pacientes.
+
+Nesta fase do produto, a prioridade máxima é o desenvolvimento do **Prontuário Eletrônico do Paciente (PEP) especializado em ginecologia**, sem abrir mão da arquitetura robusta e dos módulos de apoio já consolidados (agenda, recepção, financeiro básico e superfícies segregadas).
 
 ## 2. Problema
 
-A rotina das clínicas de pequeno e médio porte é marcada por processos manuais, fragmentados e demorados.
-As consequências típicas são retrabalho, tempo excessivo em tarefas administrativas, informação dispersa e
-dificuldade de enxergar a operação como um todo.
+A rotina das clínicas ginecológicas é marcada por consultas densas em histórico (menstrual, obstétrico, contraceptivo e exames preventivos periódicos), com prontuários frequentemente fragmentados, demorados ou engessados por formulários genéricos.
+As consequências são retrabalho, perda de visão longitudinal da paciente e fadiga administrativa do médico.
 
-O CANAMED não se propõe a ser apenas mais um sistema de registro: a proposta é organizar o negócio.
+O CANAMED transforma essa rotina em um fluxo acolhedor, rápido, intuitivo e clinicamente consistente.
 
 ## 3. Público-Alvo
 
 | Perfil | Necessidade principal |
 | :--- | :--- |
-| Clínicas médicas (pequeno e médio porte) | Operar com menos atrito e mais previsibilidade |
-| Gestores de clínicas | Visibilidade sobre a operação e apoio à decisão |
-| Recepcionistas | Fluxos simples de agenda, espera e atendimento |
-| Profissionais de saúde | Menos burocracia, mais tempo de atendimento |
-| Equipes administrativas | Redução de retrabalho e de erro manual |
+| Clínicas ginecológicas e obstétricas | Operar com menos atrito, alta segurança de dados e mais previsibilidade |
+| Médicos ginecologistas | PEP especializado, anamnese ginecológica ágil e visão longitudinal contínua |
+| Gestores de clínicas | Visibilidade sobre a operação, ocupação e conformidade regulatória |
+| Recepcionistas | Fluxos ágeis de agendamento, check-in e fila sem sobrecarga de cliques |
+| Pacientes | Superfície dedicada e segura para consultas, documentos e privacidade |
 
 Regiões prioritárias iniciais: Recife, Gravatá, Caruaru, Garanhuns, Petrolina e Agreste Pernambucano.
 
 ## 4. Proposta de Valor
 
-Reunir, em uma experiência única e integrada, características hoje dispersas entre vários sistemas,
-priorizando simplicidade, rapidez, organização, confiança e clareza. O sistema deve transmitir controle e
-previsibilidade, nunca complexidade.
+Unir as demandas administrativas da clínica e as peculiaridades clínicas do atendimento ginecológico em uma única experiência integrada, priorizando simplicidade, rapidez, organização, sigilo de dados sensíveis e clareza. O sistema deve transmitir controle e previsibilidade, nunca complexidade.
 
 ## 5. Pilares do Produto
 

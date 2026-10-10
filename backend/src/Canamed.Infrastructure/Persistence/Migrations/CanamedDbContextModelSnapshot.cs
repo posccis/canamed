@@ -60,7 +60,9 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("ends_at");
 
                     b.Property<bool>("IsOverbooking")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(false)
                         .HasColumnName("is_overbooking");
 
                     b.Property<string>("Origin")
@@ -70,6 +72,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasDefaultValue("desk")
                         .HasColumnName("origin");
+
+                    b.Property<string>("OverbookingReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("overbooking_reason");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid")
@@ -1657,6 +1664,285 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("medical_document_access_logs", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.GynecologicalConsultationData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AbdomenFindings")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("abdomen_findings");
+
+                    b.Property<bool>("AbdomenIsNormal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("abdomen_is_normal");
+
+                    b.Property<string>("BimanualPalpationFindings")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("bimanual_palpation_findings");
+
+                    b.Property<bool>("BimanualPalpationIsNormal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("bimanual_palpation_is_normal");
+
+                    b.Property<string>("BreastsFindings")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("breasts_findings");
+
+                    b.Property<bool>("BreastsIsNormal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("breasts_is_normal");
+
+                    b.Property<string>("ChiefComplaint")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("chief_complaint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DiagnosesJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("diagnoses_json");
+
+                    b.Property<DateOnly?>("Dum")
+                        .HasColumnType("date")
+                        .HasColumnName("dum");
+
+                    b.Property<string>("Dyspareunia")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("dyspareunia");
+
+                    b.Property<string>("ExternalGenitaliaFindings")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("external_genitalia_findings");
+
+                    b.Property<bool>("ExternalGenitaliaIsNormal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("external_genitalia_is_normal");
+
+                    b.Property<string>("GeneralOrientationNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("general_orientation_notes");
+
+                    b.Property<string>("Hma")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("hma");
+
+                    b.Property<bool>("IsDumUncertain")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_dum_uncertain");
+
+                    b.Property<bool>("IsMenopausal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_menopausal");
+
+                    b.Property<bool?>("IsSexuallyActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_sexually_active");
+
+                    b.Property<Guid>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<string>("PrescriptionNotes")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)")
+                        .HasColumnName("prescription_notes");
+
+                    b.Property<string>("ProcedureBatch")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("procedure_batch");
+
+                    b.Property<string>("ProcedureNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("procedure_notes");
+
+                    b.Property<string>("ProcedurePerformed")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("procedure_performed");
+
+                    b.Property<string>("SpeculumExamFindings")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("speculum_exam_findings");
+
+                    b.Property<bool>("SpeculumExamIsNormal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("speculum_exam_is_normal");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId")
+                        .IsUnique();
+
+                    b.ToTable("gynecological_consultation_data", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.GynecologicalProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Abortions")
+                        .HasColumnType("integer")
+                        .HasColumnName("abortions");
+
+                    b.Property<int>("Cesareans")
+                        .HasColumnType("integer")
+                        .HasColumnName("cesareans");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CurrentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("current_method");
+
+                    b.Property<int?>("CurrentMethodUsageMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("current_method_usage_months");
+
+                    b.Property<int?>("CycleDurationDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("cycle_duration_days");
+
+                    b.Property<int?>("CycleIntervalDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("cycle_interval_days");
+
+                    b.Property<string>("Dysmenorrhea")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("dysmenorrhea");
+
+                    b.Property<int>("EctopicPregnancies")
+                        .HasColumnType("integer")
+                        .HasColumnName("ectopic_pregnancies");
+
+                    b.Property<string>("FamilyCancerHistory")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("family_cancer_history");
+
+                    b.Property<string>("FlowIntensity")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("flow_intensity");
+
+                    b.Property<int>("Gravida")
+                        .HasColumnType("integer")
+                        .HasColumnName("gravida");
+
+                    b.Property<bool?>("HasPms")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_pms");
+
+                    b.Property<bool?>("HrtInUse")
+                        .HasColumnType("boolean")
+                        .HasColumnName("hrt_in_use");
+
+                    b.Property<bool?>("IsCycleRegular")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_cycle_regular");
+
+                    b.Property<int>("LivingChildren")
+                        .HasColumnType("integer")
+                        .HasColumnName("living_children");
+
+                    b.Property<int?>("MenarcheAge")
+                        .HasColumnType("integer")
+                        .HasColumnName("menarche_age");
+
+                    b.Property<int?>("MenopauseAge")
+                        .HasColumnType("integer")
+                        .HasColumnName("menopause_age");
+
+                    b.Property<string>("MenopauseStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("menopause_status");
+
+                    b.Property<string>("ObstetricNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("obstetric_notes");
+
+                    b.Property<int>("Para")
+                        .HasColumnType("integer")
+                        .HasColumnName("para");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("PelvicSurgeries")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("pelvic_surgeries");
+
+                    b.Property<string>("PmsSymptoms")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("pms_symptoms");
+
+                    b.Property<string>("PreviousMethods")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("previous_methods");
+
+                    b.Property<string>("ReproductivePlan")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reproductive_plan");
+
+                    b.Property<int?>("SexarcheAge")
+                        .HasColumnType("integer")
+                        .HasColumnName("sexarche_age");
+
+                    b.Property<string>("StiHistory")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("sti_history");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicId", "PatientId")
+                        .IsUnique();
+
+                    b.ToTable("gynecological_profiles", (string)null);
+                });
+
             modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1766,6 +2052,177 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasIndex("MedicalRecordId");
 
                     b.ToTable("medical_record_addenda", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.PatientExamAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("ExamDate")
+                        .HasColumnType("date")
+                        .HasColumnName("exam_date");
+
+                    b.Property<string>("ExamType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("exam_type");
+
+                    b.Property<string>("FileHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("file_hash");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size_bytes");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("LabFacility")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("lab_facility");
+
+                    b.Property<Guid?>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("storage_path");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UploadedByName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("uploaded_by_name");
+
+                    b.Property<string>("UploadedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("uploaded_by_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.HasIndex("ClinicId", "Id");
+
+                    b.HasIndex("ClinicId", "PatientId", "ExamDate");
+
+                    b.ToTable("patient_exam_attachments", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.PreventiveScreeningRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Classification")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("classification");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ExamType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("exam_type");
+
+                    b.Property<Guid?>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<DateOnly?>("NextDueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("next_due_date");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<DateOnly>("PerformedAt")
+                        .HasColumnType("date")
+                        .HasColumnName("performed_at");
+
+                    b.Property<string>("ResultSummary")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("result_summary");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.HasIndex("ClinicId", "PatientId", "PerformedAt");
+
+                    b.ToTable("preventive_screenings", (string)null);
                 });
 
             modelBuilder.Entity("Canamed.Domain.Notifications.AppointmentNotification", b =>
@@ -2778,6 +3235,15 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.GynecologicalConsultationData", b =>
+                {
+                    b.HasOne("Canamed.Domain.MedicalRecords.MedicalRecord", null)
+                        .WithOne("GynecologicalData")
+                        .HasForeignKey("Canamed.Domain.MedicalRecords.GynecologicalConsultationData", "MedicalRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecordAddendum", b =>
                 {
                     b.HasOne("Canamed.Domain.MedicalRecords.MedicalRecord", null)
@@ -2876,6 +3342,8 @@ namespace Canamed.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecord", b =>
                 {
                     b.Navigation("Addenda");
+
+                    b.Navigation("GynecologicalData");
                 });
 #pragma warning restore 612, 618
         }

@@ -71,17 +71,19 @@ export function Sidebar({
           {collapsed ? (
             <div className="sidebar__logo-icon-container">
               <img
-                src="/assets/brand/canamed_logo-removebg-preview.png"
-                alt="CANA MED"
+                src="/assets/brand/canamed-mulher-logocurta.png"
+                alt="CANA MED Mulher"
                 className="sidebar__logo-icon"
+                style={{ maxHeight: '34px', maxWidth: '34px', objectFit: 'contain' }}
               />
             </div>
           ) : (
             <div className="sidebar__logo-img-container">
               <img
-                src="/assets/brand/canadamed_logogrande_comtitulo-removebg-preview.png"
-                alt="CANA MED — Eficiência Para Quem Mais Precisa"
+                src="/assets/brand/canamed-mulher-logolonga.png"
+                alt="CANA MED Mulher — Eficiência Para Quem Mais Precisa"
                 className="sidebar__logo-img"
+                style={{ maxHeight: '40px', maxWidth: '200px', objectFit: 'contain' }}
               />
             </div>
           )}

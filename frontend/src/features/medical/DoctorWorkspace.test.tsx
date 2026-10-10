@@ -145,6 +145,18 @@ describe('DoctorWorkspace Component', () => {
       expect(screen.getByText(/Histórico do Paciente/i)).toBeInTheDocument();
       expect(screen.getByText('Salvar Rascunho')).toBeInTheDocument();
       expect(screen.getByText(/Finalizar Atendimento Clínico/i)).toBeInTheDocument();
+
+      // Seções ginecológicas especializadas (SPEC-0027)
+      expect(screen.getByText(/DUM & Anamnese/i)).toBeInTheDocument();
+      expect(screen.getByText(/Exame Físico Ginecológico/i)).toBeInTheDocument();
+      expect(screen.getByText(/Procedimentos \(DIU\/Biópsia\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Prescrições & Orientações/i)).toBeInTheDocument();
+      expect(screen.getByText(/Exame das Mamas/i)).toBeInTheDocument();
+      expect(screen.getByText(/Genitália Externa/i)).toBeInTheDocument();
+      expect(screen.getByText(/Exame Especular/i)).toBeInTheDocument();
+      expect(screen.getByText(/Toque Bimanual/i)).toBeInTheDocument();
     });
   });
 });
+
+

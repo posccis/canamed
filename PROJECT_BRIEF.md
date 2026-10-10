@@ -38,9 +38,9 @@ restrições de segurança do `GEMINI.md`.
 | :--- | :--- |
 | **Nome oficial** | CANA MED (ou Cana Med) |
 | **Tagline** | "Eficiência para quem mais precisa." |
-| **Propósito** | Ajudar clínicas a operar melhor para que possam cuidar melhor. |
-| **Posicionamento** | Plataforma SaaS B2B de gestão clínica e relacionamento para clínicas pequenas e médias. |
-| **Categoria** | Software administrativo e de gestão clínica. |
+| **Propósito** | Ajudar clínicas ginecológicas a operar melhor para que possam cuidar melhor. |
+| **Posicionamento** | Plataforma SaaS B2B especializada em clínicas ginecológicas e saúde da mulher. |
+| **Categoria** | Software de gestão e prontuário eletrônico ginecológico. |
 | **Mercado inicial** | Brasil — Recife, Gravatá, Caruaru, Garanhuns, Petrolina e Agreste Pernambucano. |
 
 A prioridade regional é uma estratégia inicial de atuação e não limita a evolução futura do produto.
@@ -49,19 +49,15 @@ A prioridade regional é uma estratégia inicial de atuação e não limita a ev
 
 ## 3. Visão
 
-O CANAMED é uma plataforma voltada para a gestão de clínicas, criada para reduzir burocracias,
-aumentar a eficiência operacional e melhorar a experiência de profissionais de saúde e pacientes.
+O CANAMED é uma plataforma especializada no atendimento e na operação de clínicas ginecológicas, criada para reduzir burocracias, aumentar a eficiência operacional e melhorar a experiência das pacientes e dos profissionais de saúde da mulher.
 
-O projeto parte da premissa de que clínicas não precisam apenas de um sistema para registrar
-informações, mas de uma ferramenta que organize o funcionamento do negócio como um todo, transformando
-processos manuais, demorados e fragmentados em fluxos simples, intuitivos e confiáveis.
+O foco prioritário da atual fase de desenvolvimento é o **Prontuário Eletrônico do Paciente (PEP) especializado em ginecologia**, estruturado para oferecer documentação clínica longitudinal aprofundada com a máxima simplicidade e ergonomia de uso.
 
 ---
 
 ## 4. Missão
 
-Construir uma plataforma que permita que clínicas dediquem menos tempo à operação administrativa e mais
-tempo ao atendimento de seus pacientes.
+Construir uma plataforma que permita que clínicas ginecológicas dediquem menos tempo à burocracia administrativa e mais tempo ao acolhimento e cuidado de suas pacientes.
 
 Cada funcionalidade deve responder à pergunta:
 
@@ -73,57 +69,59 @@ Se a resposta não for claramente positiva, a funcionalidade deve ser reavaliada
 
 ## 5. Objetivos Principais
 
-- simplificar a operação diária da clínica;
-- reduzir retrabalho;
-- diminuir o tempo gasto com tarefas administrativas;
-- oferecer experiência intuitiva a usuários com diferentes níveis de familiaridade tecnológica;
-- fornecer informações organizadas para apoiar decisões da gestão;
-- criar uma base sólida para o crescimento futuro do produto.
+- simplificar a rotina ambulatorial da clínica ginecológica;
+- prover prontuário eletrônico ginecológico seguro, ágil e em conformidade ética e legal;
+- reduzir retrabalho e redundância de digitação;
+- diminuir o tempo gasto com tarefas burocráticas;
+- oferecer experiência intuitiva para profissionais, recepcionistas e pacientes;
+- apoiar a tomada de decisão assistencial com histórico longitudinal claro;
+- criar uma base sólida para a evolução do ecossistema.
 
 ---
 
 ## 6. Público-Alvo
 
-- clínicas médicas;
-- gestores de clínicas;
-- recepcionistas;
-- profissionais de saúde;
-- equipes administrativas.
+- clínicas ginecológicas e obstétricas ambulatoriais;
+- médicos ginecologistas e profissionais de saúde da mulher;
+- gestores de clínicas ginecológicas;
+- recepcionistas e equipes operacionais;
+- pacientes atendidas na clínica.
 
-Foco comercial primário: clínicas de pequeno e médio porte.
+Foco comercial primário: clínicas ginecológicas de pequeno e médio porte.
 
 ---
 
 ## 7. Proposta de Valor
 
-Unir características normalmente dispersas em diversos sistemas em uma única experiência integrada,
-priorizando:
+Unir as necessidades administrativas da clínica e as particularidades do atendimento ginecológico em uma única experiência integrada, priorizando:
 
-- simplicidade;
-- rapidez;
-- organização;
-- confiança;
-- clareza nas informações.
+- simplicidade e agilidade durante a consulta;
+- rapidez na documentação clínica sem rigidez excessiva;
+- visão longitudinal e histórica completa da paciente;
+- proteção e sigilo reforçado de dados íntimos de saúde;
+- clareza nas informações e interfaces limpas.
 
 O sistema deve transmitir sensação de controle e previsibilidade, nunca de complexidade.
 
 ---
 
-## 8. Escopo Inicial do Produto
+## 8. Escopo do Produto e Foco no PEP Ginecológico
 
-Os pilares abaixo representam a **direção** do produto e **não** a ordem de implementação.
-Nenhum deles pode ser implementado antes de existir SPEC aprovada.
+O desenvolvimento prioriza o **Prontuário Eletrônico do Paciente (PEP) especializado em ginecologia**, abrangendo:
 
-| Pilar | Descrição | Situação |
-| :--- | :--- | :--- |
-| Gestão de agenda | Organização de horários, profissionais e salas. | **Implementada** — [`SPEC-0002`](specs/0002-spec-agenda-de-consultas.md) (salas e equipamentos permanecem fora de escopo) |
-| Fila de espera | Organização da chegada e do fluxo de espera dos pacientes. | **Implementada** — [`SPEC-0005`](specs/0005-spec-fila-de-espera-e-ciclo-de-atendimento.md) |
-| Pagamento antes da consulta | Fluxo de pagamento pré-consulta quando aplicável. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
-| Apoio à triagem | Suporte ao processo de triagem. | Sem SPEC — 7ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
-| Dashboards gerenciais | Informações organizadas para apoio à decisão da gestão. | Sem SPEC — 5ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
-| Gestão operacional da clínica | Fluxos administrativos e operacionais do dia a dia. | Sem SPEC — 3ª prioridade do [backlog](docs/backlog-proximas-funcionalidades.md) |
+- Identificação da paciente e histórico clínico longitudinal.
+- Anamnese ginecológica e queixa principal.
+- Histórico menstrual (menarca, ciclo, DUM, menopausa).
+- Histórico obstétrico (gestações, partos, cesáreas, abortos, filhos vivos - GPA).
+- Histórico contraceptivo e planejamento reprodutivo.
+- Exame físico e ginecológico (mamas, abdome, genitália, especular, toque bimanual).
+- Diagnósticos, hipóteses diagnósticas e evolução clínica.
+- Prescrições eletrônicas, solicitações de exames e atestados/documentos.
+- Resultados e rastreamento preventivo (citopatológico, mamografia, ultrassom).
+- Procedimentos ambulatoriais ginecológicos (DIU, implantes, biópsias).
+- Segurança, privacidade (LGPD), auditoria e integridade dos registros.
 
-A visão de longo prazo contempla um ecossistema de gestão para clínicas; a evolução deve ser gradual.
+Os fluxos devem ser organizados por contexto clínico e relevância da consulta, sem sobrecarregar uma tela única com campos obrigatórios indiscriminados.
 
 ---
 
@@ -133,10 +131,11 @@ Durante o desenvolvimento, é proibido:
 
 - criar identidade visual própria para o projeto;
 - alterar o conceito central do produto;
-- transformar o sistema em um ERP genérico sem foco em clínicas;
+- transformar o sistema em um ERP genérico sem foco em clínicas ginecológicas;
 - priorizar funcionalidades que aumentem complexidade sem ganho operacional claro;
-- implementar integrações fictícias (toda integração deve seguir documentação oficial);
-- reduzir segurança por conveniência.
+- implementar pré-natal completo de alto risco, reprodução assistida ou outras especialidades sem inclusão formal no escopo;
+- implementar integrações fictícias;
+- reduzir segurança ou privacidade por conveniência.
 
 ---
 
