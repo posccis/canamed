@@ -14,6 +14,8 @@ type TopbarProps = {
 const VIEW_TITLES: Record<StaffView, string> = {
   dashboard: 'Painel Operacional',
   agenda: 'Agenda de Consultas',
+  patients: 'Gestão de Pacientes',
+  professionals: 'Corpo Clínico & Profissionais',
   queue: 'Recepção e Fila de Espera',
   operation: 'Gestão Operacional',
   catalog: 'Catálogo Assistencial',

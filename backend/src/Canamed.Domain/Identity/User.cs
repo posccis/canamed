@@ -92,6 +92,12 @@ public sealed class User : Entity
     /// <summary>Registra uma tentativa inválida e aplica o bloqueio progressivo (RN-004).</summary>
     public void RegisterFailedLogin(DateTimeOffset now)
     {
+        if (LockedUntil is not null && now >= LockedUntil)
+        {
+            FailedLoginAttempts = 0;
+            LockedUntil = null;
+        }
+
         FailedLoginAttempts++;
 
         if (FailedLoginAttempts >= MaxFailedLoginAttempts)

@@ -4,7 +4,9 @@ import type { components } from '../../api/schema';
 export type AgendaDay = components['schemas']['AgendaDayResponse'];
 export type Appointment = components['schemas']['AppointmentResponse'];
 export type AgendaBlock = components['schemas']['BlockResponse'];
-export type Professional = components['schemas']['ProfessionalResponse'];
+export type Professional = components['schemas']['ProfessionalResponse'] & {
+  registrationNumber?: string | null;
+};
 export type Patient = components['schemas']['PatientResponse'];
 export type AppointmentType = components['schemas']['AppointmentTypeResponse'];
 
@@ -84,6 +86,11 @@ export function fetchPatients(signal?: AbortSignal): Promise<Patient[]> {
   return apiGet<Patient[]>('/patients', signal);
 }
 
+/** Lista o histórico de agendamentos de um paciente na clínica (SPEC-0030). */
+export function fetchPatientAppointments(patientId: string, signal?: AbortSignal): Promise<Appointment[]> {
+  return apiGet<Appointment[]>(`/patients/${patientId}/appointments`, signal);
+}
+
 /** Lista os tipos de atendimento da clínica. */
 export function fetchAppointmentTypes(signal?: AbortSignal): Promise<AppointmentType[]> {
   return apiGet<AppointmentType[]>('/appointment-types', signal);
@@ -91,7 +98,10 @@ export function fetchAppointmentTypes(signal?: AbortSignal): Promise<Appointment
 
 /** Cadastra um paciente (cadastro mínimo necessário para agendar). */
 export function createPatient(
-  request: components['schemas']['CreatePatientRequest'],
+  request: components['schemas']['CreatePatientRequest'] & {
+    document?: string | null;
+    healthPlanId?: string | null;
+  },
   signal?: AbortSignal,
 ): Promise<Patient> {
   return apiPost<Patient>('/patients', request, signal);
@@ -99,7 +109,9 @@ export function createPatient(
 
 /** Cadastra um profissional (cadastro mínimo necessário para agendar). */
 export function createProfessional(
-  request: components['schemas']['CreateProfessionalRequest'],
+  request: components['schemas']['CreateProfessionalRequest'] & {
+    registrationNumber?: string | null;
+  },
   signal?: AbortSignal,
 ): Promise<Professional> {
   return apiPost<Professional>('/professionals', request, signal);

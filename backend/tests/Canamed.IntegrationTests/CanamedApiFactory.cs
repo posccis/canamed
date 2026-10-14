@@ -85,6 +85,7 @@ public sealed class CanamedApiFactory : WebApplicationFactory<Program>
         // A suíte valida a regra de produção (MFA obrigatório para gestor), independentemente de o
         // desenvolvedor ter suspendido a exigência no .env local para testar.
         builder.UseSetting("Canamed:Security:RequireMfaForManagers", "true");
+        builder.UseSetting("Canamed:Security:EnableAccountLockout", "true");
 
         // A suíte faz muitas tentativas de login; o limite de produção é validado por critério próprio.
         builder.UseSetting("Canamed:RateLimiting:LoginPermitLimit", "1000");

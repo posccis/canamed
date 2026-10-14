@@ -16,6 +16,7 @@ public sealed class AuthService(
     ITotpService totpService,
     ISecretProtector secretProtector,
     IMfaPolicy mfaPolicy,
+    IAccountLockoutPolicy lockoutPolicy,
     IAuditRepository auditRepository,
     IAuditTrail auditTrail,
     IUnitOfWork unitOfWork,
@@ -50,7 +51,7 @@ public sealed class AuthService(
             throw InvalidCredentials();
         }
 
-        if (user.IsLocked(now))
+        if (lockoutPolicy.IsLockoutEnabled() && user.IsLocked(now))
         {
             await auditTrail.RecordAsync(
                 AuditEvent.Record(
@@ -73,8 +74,12 @@ public sealed class AuthService(
 
         if (!passwordHasher.Verify(request.Password, user.PasswordHash))
         {
-            user.RegisterFailedLogin(now);
-            await identityRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            if (lockoutPolicy.IsLockoutEnabled())
+            {
+                user.RegisterFailedLogin(now);
+                await identityRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             await RecordLoginFailureAsync(user, normalizedEmail, "credencial inválida", cancellationToken)
                 .ConfigureAwait(false);
 

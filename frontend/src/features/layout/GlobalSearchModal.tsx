@@ -81,6 +81,26 @@ export function GlobalSearchModal({
       }
     },
     {
+      id: 'nav-patients',
+      category: 'Navegação',
+      title: 'Gestão de Pacientes',
+      description: 'Prontuários cadastrais, histórico de consultas e dados de contato',
+      action: () => {
+        onNavigate('patients');
+        onClose();
+      }
+    },
+    {
+      id: 'nav-professionals',
+      category: 'Navegação',
+      title: 'Corpo Clínico & Profissionais',
+      description: 'Médicos ginecologistas, CRM/UF, RQE e vínculos assistenciais',
+      action: () => {
+        onNavigate('professionals');
+        onClose();
+      }
+    },
+    {
       id: 'nav-workspace',
       category: 'Navegação',
       title: 'Meu Consultório & PEP',

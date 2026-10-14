@@ -14,6 +14,8 @@
 export type StaffView =
   | 'dashboard'
   | 'agenda'
+  | 'patients'
+  | 'professionals'
   | 'queue'
   | 'operation'
   | 'catalog'
@@ -29,6 +31,8 @@ export type StaffView =
 export const STAFF_PATHS: Record<StaffView, string> = {
   dashboard: '/app/dashboard',
   agenda: '/app/agenda',
+  patients: '/app/pacientes',
+  professionals: '/app/profissionais',
   queue: '/app/recepcao',
   operation: '/app/operacao',
   catalog: '/app/catalogo',
@@ -44,6 +48,8 @@ export const STAFF_PATHS: Record<StaffView, string> = {
 
 const PATH_TO_STAFF_VIEW: ReadonlyArray<[string, StaffView]> = [
   ['/app/agenda', 'agenda'],
+  ['/app/pacientes', 'patients'],
+  ['/app/profissionais', 'professionals'],
   ['/app/recepcao', 'queue'],
   ['/app/operacao', 'operation'],
   ['/app/catalogo', 'catalog'],

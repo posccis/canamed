@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { Modal } from '../../shared/Modal';
-import { markAppointmentAttended, markAppointmentNoShow, removeBlock, type Appointment } from './agendaApi';
+import {
+  fetchAgendaDay,
+  markAppointmentAttended,
+  markAppointmentNoShow,
+  removeBlock,
+  type Appointment,
+} from './agendaApi';
+import { AgendaWeeklyGrid, type WeekDayInfo, type DayAgendaData } from './AgendaWeeklyGrid';
 import { AppointmentActions } from './AppointmentActions';
 import { AppointmentForm } from './AppointmentForm';
 import { BlockForm } from './BlockForm';
@@ -17,6 +24,32 @@ import { PaymentModal } from '../payments/PaymentModal';
 import { exportToCsv } from '../../utils/exportCsv';
 import { useToast } from '../layout/Toast';
 
+function getWeekDays(referenceDateIso: string): WeekDayInfo[] {
+  const ref = new Date(`${referenceDateIso}T12:00:00Z`);
+  const day = ref.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(ref);
+  monday.setDate(ref.getDate() + diffToMonday);
+
+  const days: WeekDayInfo[] = [];
+  const dayNames = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const todayStr = todayIso();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dNum = String(d.getDate()).padStart(2, '0');
+    const mNum = String(d.getMonth() + 1).padStart(2, '0');
+    days.push({
+      date: dateStr,
+      label: `${dNum}/${mNum}`,
+      dayOfWeek: dayNames[i],
+      isToday: dateStr === todayStr,
+    });
+  }
+  return days;
+}
+
 type Dialog =
   | { kind: 'none' }
   | { kind: 'create' }
@@ -27,6 +60,9 @@ type Dialog =
 export function AgendaPage() {
   const [date, setDate] = useState(todayIso());
   const [professionalId, setProfessionalId] = useState('');
+  const [viewMode, setViewMode] = useState<'diaria' | 'semanal'>('diaria');
+  const [weeklyData, setWeeklyData] = useState<Record<string, DayAgendaData>>({});
+  const [loadingWeekly, setLoadingWeekly] = useState(false);
   const [dialog, setDialog] = useState<Dialog>({ kind: 'none' });
   const [bloqueioAberto, setBloqueioAberto] = useState(false);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -39,6 +75,31 @@ export function AgendaPage() {
 
   const catalog = useCatalog();
   const agenda = useAgendaDay(date, professionalId || undefined);
+
+  useEffect(() => {
+    if (viewMode !== 'semanal') return;
+    const controller = new AbortController();
+    const days = getWeekDays(date);
+    setLoadingWeekly(true);
+
+    Promise.all(
+      days.map((d) =>
+        fetchAgendaDay(d.date, professionalId || undefined, controller.signal)
+          .then((res) => ({ date: d.date, appointments: res.appointments, blocks: res.blocks }))
+          .catch(() => ({ date: d.date, appointments: [], blocks: [] }))
+      )
+    )
+      .then((results) => {
+        const map: Record<string, DayAgendaData> = {};
+        for (const r of results) {
+          map[r.date] = { appointments: r.appointments, blocks: r.blocks };
+        }
+        setWeeklyData(map);
+      })
+      .finally(() => setLoadingWeekly(false));
+
+    return () => controller.abort();
+  }, [viewMode, date, professionalId, queueToken]);
 
   const professionals = catalog.state.status === 'ready' ? catalog.state.data.professionals : [];
   const patients = catalog.state.status === 'ready' ? catalog.state.data.patients : [];
@@ -158,9 +219,31 @@ export function AgendaPage() {
       ) : null}
 
       <section className="card">
-        <div className="toolbar">
+        <div className="toolbar" style={{ flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+          {/* Alternador de Modo: Diária | Semanal */}
+          <div className="segmented-control" role="tablist" aria-label="Modo de visualização da agenda">
+            <button
+              type="button"
+              className={`segmented-control__btn ${viewMode === 'diaria' ? 'segmented-control__btn--active' : ''}`}
+              onClick={() => setViewMode('diaria')}
+              role="tab"
+              aria-selected={viewMode === 'diaria'}
+            >
+              Diária
+            </button>
+            <button
+              type="button"
+              className={`segmented-control__btn ${viewMode === 'semanal' ? 'segmented-control__btn--active' : ''}`}
+              onClick={() => setViewMode('semanal')}
+              role="tab"
+              aria-selected={viewMode === 'semanal'}
+            >
+              Semanal
+            </button>
+          </div>
+
           <label className="field field--compact">
-            <span className="field__label">Data</span>
+            <span className="field__label">{viewMode === 'semanal' ? 'Semana de' : 'Data'}</span>
             <input
               className="field__input"
               type="date"
@@ -186,9 +269,41 @@ export function AgendaPage() {
           </label>
 
           <div className="toolbar__actions">
-            <button type="button" className="button button--ghost" onClick={() => setDate(todayIso())}>
-              Hoje
-            </button>
+            {viewMode === 'semanal' ? (
+              <>
+                <button
+                  type="button"
+                  className="button button--ghost"
+                  onClick={() => {
+                    const d = new Date(`${date}T12:00:00Z`);
+                    d.setDate(d.getDate() - 7);
+                    setDate(d.toISOString().split('T')[0]);
+                  }}
+                  title="Semana anterior"
+                >
+                  ‹ Semana anterior
+                </button>
+                <button type="button" className="button button--ghost" onClick={() => setDate(todayIso())}>
+                  Semana atual
+                </button>
+                <button
+                  type="button"
+                  className="button button--ghost"
+                  onClick={() => {
+                    const d = new Date(`${date}T12:00:00Z`);
+                    d.setDate(d.getDate() + 7);
+                    setDate(d.toISOString().split('T')[0]);
+                  }}
+                  title="Próxima semana"
+                >
+                  Próxima semana ›
+                </button>
+              </>
+            ) : (
+              <button type="button" className="button button--ghost" onClick={() => setDate(todayIso())}>
+                Hoje
+              </button>
+            )}
             <button type="button" className="button button--ghost" onClick={reloadAll}>
               Atualizar
             </button>
@@ -238,29 +353,62 @@ export function AgendaPage() {
           </div>
         </div>
 
-        <h2 className="card__title">Agenda de {formatDayLabel(date)}</h2>
+        <h2 className="card__title">
+          {viewMode === 'semanal'
+            ? `Grade Semanal (Semana de ${formatDayLabel(date)})`
+            : `Agenda de ${formatDayLabel(date)}`}
+        </h2>
 
-        {agenda.state.status === 'loading' ? (
-          <div className="skeleton" aria-live="polite" aria-busy="true">
-            <div className="skeleton__row" />
-            <div className="skeleton__row" />
-            <div className="skeleton__row" />
-          </div>
-        ) : null}
+        {viewMode === 'diaria' ? (
+          <>
+            {agenda.state.status === 'loading' ? (
+              <div className="skeleton" aria-live="polite" aria-busy="true">
+                <div className="skeleton__row" />
+                <div className="skeleton__row" />
+                <div className="skeleton__row" />
+              </div>
+            ) : null}
 
-        {agenda.state.status === 'error' ? (
-          <div className="alert alert--error" role="alert">
-            <p>{agenda.state.message}</p>
-            <button type="button" className="button button--secondary" onClick={agenda.reload}>
-              Tentar novamente
-            </button>
-          </div>
-        ) : null}
+            {agenda.state.status === 'error' ? (
+              <div className="alert alert--error" role="alert">
+                <p>{agenda.state.message}</p>
+                <button type="button" className="button button--secondary" onClick={agenda.reload}>
+                  Tentar novamente
+                </button>
+              </div>
+            ) : null}
 
-        {agenda.state.status === 'ready' ? (
-          <AgendaList
-            appointments={agenda.state.data.appointments}
-            blocks={agenda.state.data.blocks}
+            {agenda.state.status === 'ready' ? (
+              <AgendaList
+                appointments={agenda.state.data.appointments}
+                blocks={agenda.state.data.blocks}
+                onReschedule={(appointment) => setDialog({ kind: 'reschedule', appointment })}
+                onCancel={(appointment) => setDialog({ kind: 'cancel', appointment })}
+                onAttend={(appointment) => void handleLifecycle(appointment, 'atendido')}
+                onNoShow={(appointment) => void handleLifecycle(appointment, 'faltou')}
+                onUnblock={(block) => void handleUnblock(block)}
+                onCheckIn={(appointment) => void handleCheckIn(appointment)}
+                onPay={(appointment) =>
+                  setPaymentAppointment({
+                    id: appointment.id,
+                    patientName: appointment.patientName,
+                    appointmentTypeName: appointment.appointmentTypeName,
+                  })
+                }
+                queueByAppointment={queueByAppointment}
+                isToday={date === todayIso()}
+              />
+            ) : null}
+          </>
+        ) : (
+          <AgendaWeeklyGrid
+            days={getWeekDays(date)}
+            weeklyData={weeklyData}
+            loading={loadingWeekly}
+            onSelectDate={(newDate) => {
+              setDate(newDate);
+              setViewMode('diaria');
+            }}
             onReschedule={(appointment) => setDialog({ kind: 'reschedule', appointment })}
             onCancel={(appointment) => setDialog({ kind: 'cancel', appointment })}
             onAttend={(appointment) => void handleLifecycle(appointment, 'atendido')}
@@ -274,10 +422,12 @@ export function AgendaPage() {
                 appointmentTypeName: appointment.appointmentTypeName,
               })
             }
-            queueByAppointment={queueByAppointment}
-            isToday={date === todayIso()}
+            onCreateAppointment={(targetDate) => {
+              setDate(targetDate);
+              setDialog({ kind: 'create' });
+            }}
           />
-        ) : null}
+        )}
       </section>
 
       {dialog.kind === 'create' ? (
@@ -388,7 +538,7 @@ function AgendaList({
     <div className="agenda">
       <ul className="agenda__list">
         {ativos.map((appointment) => (
-          <li key={appointment.id} className="agenda__item">
+          <li key={appointment.id} className={`agenda__item agenda__item--status-${appointment.status}`}>
             <div className="agenda__time">{formatTimeRange(appointment.startsAt, appointment.endsAt)}</div>
             <div className="agenda__details">
               <p className="agenda__patient">{appointment.patientName}</p>

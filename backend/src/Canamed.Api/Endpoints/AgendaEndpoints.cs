@@ -76,6 +76,11 @@ public static class AgendaEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequirePermissions(Permissions.AgendaBlock, Permissions.AgendaWrite);
 
+        api.MapGet("/patients/{patientId:guid}/appointments", ListByPatientAsync)
+            .WithName("ListPatientAppointments")
+            .Produces<IReadOnlyList<AppointmentResponse>>(StatusCodes.Status200OK)
+            .RequirePermissions([.. ReadPermissions, Permissions.AgendaWrite]);
+
         return api;
     }
 
@@ -162,4 +167,10 @@ public static class AgendaEndpoints
 
         return Results.NoContent();
     }
+
+    private static async Task<IResult> ListByPatientAsync(
+        AgendaService agendaService,
+        Guid patientId,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await agendaService.ListByPatientAsync(patientId, cancellationToken).ConfigureAwait(false));
 }

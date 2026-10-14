@@ -175,6 +175,25 @@ public sealed class AgendaService(
         return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], cancellationToken).ConfigureAwait(false));
     }
 
+    /// <summary>Consulta o histórico de agendamentos de um paciente na clínica (SPEC-0030).</summary>
+    public async Task<IReadOnlyList<AppointmentResponse>> ListByPatientAsync(
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        var actor = actorAccessor.RequireActor();
+        await EnsurePatientExistsAsync(actor, patientId, cancellationToken).ConfigureAwait(false);
+
+        var appointments = await agendaRepository
+            .ListAppointmentsByPatientAsync(actor.ClinicId, patientId, cancellationToken)
+            .ConfigureAwait(false);
+
+        var names = await LoadNamesAsync(actor.ClinicId, appointments, cancellationToken).ConfigureAwait(false);
+
+        return appointments
+            .Select(appointment => Map(appointment, names))
+            .ToList();
+    }
+
     /// <summary>F-002 — remarca o agendamento para um novo horário livre (RN-007, RN-008).</summary>
     public async Task<AppointmentResponse> RescheduleAsync(
         Guid appointmentId,

@@ -21,6 +21,8 @@ import { FinancialPanel } from '../features/admin/FinancialPanel';
 import { InventoryPanel } from '../features/admin/InventoryPanel';
 import { DpoWorkspace } from '../features/admin/DpoWorkspace';
 import { ClinicPolicyPanel } from '../features/admin/ClinicPolicyPanel';
+import { PatientsPanel } from '../features/patient/PatientsPanel';
+import { ProfessionalsPanel } from '../features/catalog/ProfessionalsPanel';
 import { DOCTOR_PATHS, STAFF_PATHS, staffViewFromPath, type StaffView } from '../navigation/routes';
 
 /**
@@ -121,6 +123,8 @@ export function StaffApp() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPanel onNavigate={goTo} />} />
               <Route path="agenda" element={<AgendaPage />} />
+              <Route path="pacientes" element={<PatientsPanel />} />
+              <Route path="profissionais" element={<ProfessionalsPanel />} />
               <Route path="recepcao" element={<QueuePanel />} />
               <Route path="operacao" element={<OperationPanel />} />
               <Route path="catalogo" element={<CatalogPanel />} />

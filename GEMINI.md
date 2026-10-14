@@ -1484,3 +1484,11 @@ Sempre que houver dúvida sobre uma decisão, a prioridade deve seguir esta orde
 5. manter consistência em toda a experiência do produto.
 
 Este documento define os princípios permanentes do projeto. Detalhes técnicos, arquitetura, implementação e planejamento de desenvolvimento serão documentados separadamente.
+
+---
+
+# Governança de Desenvolvimento e Agentes de IA
+
+Para qualquer modificação de código, criação de novas features, resolução de bugs ou refatoração no CANAMED:
+- O agente assistente deve operar obrigatoriamente sob o **Ecossistema Multiagente** configurado em `.agents/` (definido em `.agents/rules/workflow.md` e `.agents/AGENTS.md`).
+- O fluxo obrigatório consiste na condução pelo **Orquestrador**, planejamento granular com TDD pelo **Planejador**, desenvolvimento orientado a testes pelo **Implementador** e auditoria estrita com evidências práticas de testes pelo **Validador**.

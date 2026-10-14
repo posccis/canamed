@@ -3,8 +3,24 @@ import type { components } from '../../api/schema';
 
 export type Specialty = components['schemas']['SpecialtyResponse'];
 export type ManagedAppointmentType = components['schemas']['AppointmentTypeResponse'];
-export type ManagedProfessional = components['schemas']['ProfessionalResponse'];
-export type ManagedPatient = components['schemas']['PatientResponse'];
+export type ManagedProfessional = components['schemas']['ProfessionalResponse'] & {
+  registrationNumber?: string | null;
+};
+
+export type UpdateProfessionalInput = components['schemas']['UpdateProfessionalRequest'] & {
+  registrationNumber?: string | null;
+};
+
+export type ManagedPatient = components['schemas']['PatientResponse'] & {
+  document?: string | null;
+  healthPlanId?: string | null;
+  healthPlanName?: string | null;
+};
+
+export type UpdatePatientInput = components['schemas']['UpdatePatientRequest'] & {
+  document?: string | null;
+  healthPlanId?: string | null;
+};
 
 /** Especialidades da clínica (ativas e inativas). */
 export function fetchSpecialties(signal?: AbortSignal): Promise<Specialty[]> {
@@ -61,7 +77,7 @@ export function activateAppointmentType(id: string, signal?: AbortSignal): Promi
 /** Altera um profissional (nome e especialidade). */
 export function updateProfessional(
   id: string,
-  request: components['schemas']['UpdateProfessionalRequest'],
+  request: UpdateProfessionalInput,
   signal?: AbortSignal,
 ): Promise<ManagedProfessional> {
   return apiPost<ManagedProfessional>(`/professionals/${id}`, request, signal);
@@ -80,7 +96,7 @@ export function activateProfessional(id: string, signal?: AbortSignal): Promise<
 /** Edita os dados cadastrais do paciente. */
 export function updatePatient(
   id: string,
-  request: components['schemas']['UpdatePatientRequest'],
+  request: UpdatePatientInput,
   signal?: AbortSignal,
 ): Promise<ManagedPatient> {
   return apiPost<ManagedPatient>(`/patients/${id}`, request, signal);

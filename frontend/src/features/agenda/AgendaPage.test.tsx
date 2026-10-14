@@ -132,4 +132,44 @@ describe('AgendaPage', () => {
 
     expect(container.querySelector('.skeleton')).not.toBeNull();
   });
+
+  it('alterna para visualização semanal ao clicar no segmented control (SPEC-0030 / UI-04)', async () => {
+    mockGet({
+      date: '2026-10-01',
+      professionalId: 'profissional-1',
+      appointments: [
+        {
+          id: 'agendamento-1',
+          professionalId: 'profissional-1',
+          patientId: 'paciente-1',
+          patientName: 'Paciente Um',
+          appointmentTypeId: 'tipo-1',
+          appointmentTypeName: 'Consulta',
+          startsAt: '2026-10-01T17:00:00Z',
+          endsAt: '2026-10-01T17:30:00Z',
+          durationMinutes: 30,
+          status: 'agendado',
+          cancellationReason: null,
+          createdAt: '2026-10-01T12:00:00Z',
+          updatedAt: '2026-10-01T12:00:00Z',
+        },
+      ],
+      blocks: [],
+    });
+
+    render(<AgendaPage />);
+
+    expect(await screen.findByText('Diária')).toBeInTheDocument();
+    const semanalBtn = screen.getByRole('tab', { name: 'Semanal' });
+    expect(semanalBtn).toBeInTheDocument();
+
+    await act(async () => {
+      semanalBtn.click();
+    });
+
+    // Deve exibir o region da grade semanal e os nomes dos dias
+    expect(await screen.findByRole('region', { name: 'Grade semanal de agendamentos' })).toBeInTheDocument();
+    expect(screen.getByText('Segunda')).toBeInTheDocument();
+    expect(screen.getByText('Sábado')).toBeInTheDocument();
+  });
 });
