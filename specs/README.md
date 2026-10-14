@@ -91,6 +91,10 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0027](0027-spec-prontuario-eletronico-ginecologico.md) | Prontuário Eletrônico do Paciente Especializado em Ginecologia (PEP Ginecológico) | Implementada | 2026-10-09 |
 | [0028](0028-spec-evolucao-modulo-medico-dashboard-anexos-sidebar.md) | Evolução do Módulo Médico: Dashboard Clínico, Anexo de Exames Anteriores, Início de Atendimento e Sidebar Moderna | Implementada | 2026-10-09 |
 | [0029](0029-spec-modernizacao-visual-frontend-navegacao.md) | Modernização Visual do Frontend, Controles de Formulário e Redesign da Navegação Médica | Implementada | 2026-10-09 |
+| [0030](0030-spec-mvp-visao-administrativa.md) | MVP da Visão Administrativa \| Cana Med Mulher | Aprovada | 2026-10-12 |
+| [0031](0031-spec-redesign-dashboard-administrativo-e-medico.md) | Redesign Visual e Padrão de Interface: Dashboard Administrativo e Área do Médico | Aprovada | 2026-10-14 |
+| [0032](0032-spec-consolidacao-area-administrativa-agenda-recepcao-configuracoes.md) | Consolidação da Área Administrativa: Agenda & Recepção, Configurações da Clínica e Padronização de Entradas Financeiras | Aprovada | 2026-10-14 |
+| [0033](0033-spec-portal-do-paciente-cana-med-mulher.md) | Portal do Paciente CANA MED Mulher: Acesso Segmentado, Agendamento Inteligente em 5 Etapas e Autoatendimento Acolhedor | Aprovada | 2026-10-14 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 > A [SPEC-0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) propõe, sobre o

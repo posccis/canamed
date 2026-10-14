@@ -68,13 +68,13 @@ describe('Roteamento por URL das superfícies (SPEC-0026 / ADR-0011)', () => {
     navigateTo('/p/cana-med');
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: 'Cana Med', level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Agendar consulta/i })).toBeInTheDocument();
+    expect(await screen.findByText(/CANA MED/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Agendar Agora/i })).toBeInTheDocument();
     expect(screen.queryByRole('complementary', { name: 'Navegação principal da aplicação' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Sair$/ })).not.toBeInTheDocument();
   });
 
-  it('não expõe telas do paciente no menu do sistema e oferece a Central de Links', async () => {
+  it('não expõe telas do paciente no menu do sistema e oferece o módulo operacional da recepção', async () => {
     mocks.apiGet.mockImplementation(async (path: string) => {
       if (path === '/auth/session') return session;
       if (path.startsWith('/dashboard/summary')) {
@@ -102,7 +102,7 @@ describe('Roteamento por URL das superfícies (SPEC-0026 / ADR-0011)', () => {
     navigateTo('/app/dashboard');
     render(<App />);
 
-    expect(await screen.findByRole('button', { name: /Central de Links/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Agenda & Recepção/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Portal Paciente/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Totem Check-in/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Privacidade \(LGPD\)/i })).not.toBeInTheDocument();

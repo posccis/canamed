@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import {
   Activity,
   CalendarPlus,
+  CalendarDays,
   UserPlus,
   CalendarOff,
   Users,
+  Stethoscope,
+  CheckCircle,
   TrendingUp,
   Download,
 } from 'lucide-react';
@@ -259,70 +262,79 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
   const activePulse = todaySummary || periodSummary;
 
   return (
-    <div className="page-container">
-      {/* Cabeçalho da Página */}
-      <div className="page__header" style={{ marginBottom: '1.25rem' }}>
-        <div>
-          <h1 className="page__title">Painel Operacional</h1>
-          <p className="page__tagline">
-            Visão consolidada do fluxo da clínica hoje em tempo real e análise gerencial de desempenho.
-          </p>
+    <div className="page-container" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
+      {/* 1. Barra de Ferramentas / Filtro do Topo (Protótipo Oficial) */}
+      <div className="dashboard-toolbar">
+        <div className="dashboard-toolbar__title-group">
+          <div className="dashboard-toolbar__icon">
+            <Activity size={22} />
+          </div>
+          <div>
+            <h1 className="dashboard-toolbar__heading">Painel Operacional</h1>
+            <p className="dashboard-toolbar__sub">
+              Resumo do Dia • Acompanhamento do fluxo ambulatorial e análise gerencial
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Barra de Atalhos de Ação Rápida de 1 clique (SPEC-0030 / UI-02) */}
-      <div
-        className="quick-actions-bar"
-        style={{
-          display: 'flex',
-          gap: '0.75rem',
-          flexWrap: 'wrap',
-          marginBottom: '1.75rem',
-          padding: '0.75rem 1rem',
-          backgroundColor: '#ffffff',
-          borderRadius: 'var(--radius-md, 8px)',
-          border: '1px solid var(--color-border)',
-        }}
-      >
-        <button
-          type="button"
-          className="button button--primary"
-          onClick={() => onNavigate('agenda')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <CalendarPlus size={16} />
-          <span>+ Novo Agendamento</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Seletor de Período (Hoje | Últimos 7 dias | Mês Atual) */}
+          <div className="segmented-control" role="group" aria-label="Seletor de período">
+            <button
+              type="button"
+              className={`segmented-control__btn ${period === 'hoje' ? 'segmented-control__btn--active' : ''}`}
+              onClick={() => setPeriod('hoje')}
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              className={`segmented-control__btn ${period === '7dias' ? 'segmented-control__btn--active' : ''}`}
+              onClick={() => setPeriod('7dias')}
+            >
+              Últimos 7 dias
+            </button>
+            <button
+              type="button"
+              className={`segmented-control__btn ${period === 'mes' ? 'segmented-control__btn--active' : ''}`}
+              onClick={() => setPeriod('mes')}
+            >
+              Mês Atual
+            </button>
+          </div>
 
-        <button
-          type="button"
-          className="button button--secondary"
-          onClick={() => onNavigate('patients')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <UserPlus size={16} />
-          <span>+ Cadastrar Paciente</span>
-        </button>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="date"
+              value={today}
+              readOnly
+              style={{
+                backgroundColor: 'var(--base-surface, #ffffff)',
+                border: '1px solid var(--base-border, #e2e6ec)',
+                color: 'var(--content-primary, #202631)',
+                borderRadius: '8px',
+                padding: '0.45rem 0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                outline: 'none',
+              }}
+              title="Data de referência"
+            />
+          </div>
 
-        <button
-          type="button"
-          className="button button--ghost"
-          onClick={() => onNavigate('agenda')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <CalendarOff size={16} />
-          <span>Bloquear Horário</span>
-        </button>
-
-        <button
-          type="button"
-          className="button button--ghost"
-          onClick={() => onNavigate('queue')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Users size={16} />
-          <span>Fila &amp; Check-in</span>
-        </button>
+          {periodSummary ? (
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={handleExportCsv}
+              title="Exportar indicadores do período em formato CSV (SPEC-UI-001 / B-01)"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
+            >
+              <Download size={15} />
+              <span>Exportar CSV</span>
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {error ? (
@@ -333,7 +345,7 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
 
       {/* BLOCO 1: Pulso de Hoje (Tempo Real) (SPEC-0030 / UI-02) */}
       {activePulse ? (
-        <section aria-labelledby="pulse-heading" style={{ marginBottom: '2.5rem' }}>
+        <section aria-labelledby="pulse-heading" style={{ marginBottom: '2rem' }}>
           <div
             style={{
               display: 'flex',
@@ -343,26 +355,35 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Activity size={20} style={{ color: 'var(--color-primary)' }} />
+              <Activity size={18} style={{ color: 'var(--brand-primary, #852a91)' }} />
               <h2
                 id="pulse-heading"
                 style={{
-                  fontSize: '1.2rem',
-                  fontWeight: 600,
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
                   margin: 0,
-                  color: 'var(--color-secondary)',
+                  color: 'var(--content-primary, #202631)',
                 }}
               >
                 Pulso de Hoje
               </h2>
               <span
                 className="badge badge--success"
-                style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+                style={{
+                  fontSize: '0.7rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  fontWeight: 700,
+                  backgroundColor: 'var(--status-success-bg, #e9f5ec)',
+                  color: 'var(--status-success, #237a52)',
+                  borderRadius: '6px',
+                  padding: '0.2rem 0.5rem',
+                }}
               >
                 Tempo Real
               </span>
             </div>
-            <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--content-muted, #858d99)' }}>
               Data: {today}
             </span>
           </div>
@@ -378,92 +399,301 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
             </div>
           ) : null}
 
-          {/* 4 KPIs Compactos do Pulso */}
-          <div className="stat-grid">
-            <div className="stat-card">
-              <span className="stat-card__label">Agendamentos Hoje</span>
-              <span className="stat-card__value">{activePulse.totalAppointments}</span>
-              <span className="stat-card__sub">
-                {activePulse.confirmedCount} confirmados • {activePulse.scheduledCount} agendados
-              </span>
+          {/* 4 KPIs Cards Estilo Protótipo Cana Med Mulher */}
+          <div className="dashboard-kpi-grid">
+            {/* KPI 1: Agendadas */}
+            <div className="dashboard-kpi-card">
+              <div className="dashboard-kpi-card__top">
+                <span className="dashboard-kpi-card__label">Agendadas (Hoje)</span>
+                <div className="dashboard-kpi-card__icon-badge">
+                  <CalendarDays size={18} />
+                </div>
+              </div>
+              <div className="dashboard-kpi-card__bottom">
+                <span className="dashboard-kpi-card__value">{activePulse.totalAppointments}</span>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: 'var(--status-success, #237a52)',
+                    backgroundColor: 'var(--status-success-bg, #e9f5ec)',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '6px',
+                  }}
+                >
+                  +{activePulse.confirmedCount} confirmados
+                </span>
+              </div>
             </div>
 
-            <div className="stat-card stat-card--secondary">
-              <span className="stat-card__label">Pacientes em Espera</span>
-              <span className="stat-card__value">{activePulse.queueWaitingCount}</span>
-              <span className="stat-card__sub">
-                {activePulse.queueInServiceCount} em atendimento agora
-              </span>
+            {/* KPI 2: Aguardando Recepção */}
+            <div className="dashboard-kpi-card">
+              <div className="dashboard-kpi-card__top">
+                <span className="dashboard-kpi-card__label">Aguardando Recepção</span>
+                <div className="dashboard-kpi-card__icon-badge dashboard-kpi-card__icon-badge--warning">
+                  <Users size={18} />
+                </div>
+              </div>
+              <div className="dashboard-kpi-card__bottom">
+                <span className="dashboard-kpi-card__value">{activePulse.queueWaitingCount}</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--content-muted, #858d99)' }}>
+                  {activePulse.averageWaitMinutes > 25 ? 'Espera elevada' : 'Fila em fluxo normal'}
+                </span>
+              </div>
             </div>
 
-            <div className="stat-card stat-card--accent">
-              <span className="stat-card__label">Em Atendimento</span>
-              <span className="stat-card__value">{activePulse.queueInServiceCount}</span>
-              <span className="stat-card__sub">
-                {activePulse.attendedCount} concluídos hoje
-              </span>
+            {/* KPI 3: Em Atendimento (com brilho da marca e radar pulsante) */}
+            <div className="dashboard-kpi-card dashboard-kpi-card--active">
+              <div className="dashboard-kpi-card__top">
+                <span className="dashboard-kpi-card__label">Em Atendimento</span>
+                <div className="dashboard-kpi-card__icon-badge dashboard-kpi-card__icon-badge--brand">
+                  <Stethoscope size={18} />
+                </div>
+              </div>
+              <div className="dashboard-kpi-card__bottom">
+                <span className="dashboard-kpi-card__value">{activePulse.queueInServiceCount}</span>
+                <span
+                  style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--brand-primary, #852a91)',
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span className="dashboard-radar-dot">
+                    <span className="dashboard-radar-dot__ping" />
+                    <span className="dashboard-radar-dot__solid" />
+                  </span>
+                  Consultórios ativos
+                </span>
+              </div>
             </div>
 
-            <div className="stat-card stat-card--neutral">
-              <span className="stat-card__label">Faltas &amp; Cancelamentos</span>
-              <span
-                className="stat-card__value"
-                style={{
-                  color:
-                    activePulse.noShowCount + activePulse.cancelledCount > 0 ? '#b91c1c' : undefined,
-                }}
-              >
-                {activePulse.noShowCount + activePulse.cancelledCount}
-              </span>
-              <span className="stat-card__sub">
-                {activePulse.noShowCount} faltas • {activePulse.cancelledCount} cancelados
-              </span>
+            {/* KPI 4: Concluídas / Taxa de Comparecimento */}
+            <div className="dashboard-kpi-card">
+              <div className="dashboard-kpi-card__top">
+                <span className="dashboard-kpi-card__label">Concluídas</span>
+                <div className="dashboard-kpi-card__icon-badge dashboard-kpi-card__icon-badge--success">
+                  <CheckCircle size={18} />
+                </div>
+              </div>
+              <div className="dashboard-kpi-card__bottom">
+                <span className="dashboard-kpi-card__value">{activePulse.attendedCount}</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--content-muted, #858d99)', fontWeight: 500 }}>
+                  {activePulse.totalAppointments > 0 ? Math.round((activePulse.attendedCount / activePulse.totalAppointments) * 100) : 0}% da agenda
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Próximos Atendimentos */}
-          <div className="card" style={{ marginTop: '1rem' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.75rem',
-              }}
-            >
-              <h3 className="card__title" style={{ margin: 0, fontSize: '1rem' }}>
-                Próximos Atendimentos
-              </h3>
-              <button
-                type="button"
-                className="button button--link"
-                onClick={() => onNavigate('agenda')}
-              >
-                Ver agenda completa →
-              </button>
+          {/* Grid Principal: 2 Colunas (Próximos Atendimentos à esquerda + Ações Rápidas & Resumo à direita) */}
+          <div className="dashboard-content-grid">
+            {/* Coluna 1: Próximos Atendimentos */}
+            <div className="dashboard-panel-card">
+              <div className="dashboard-panel-card__header">
+                <h3 className="dashboard-panel-card__title">Próximos Atendimentos</h3>
+                <button
+                  type="button"
+                  className="button button--link"
+                  onClick={() => onNavigate('agenda')}
+                  style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    color: 'var(--brand-primary, #852a91)',
+                    padding: 0,
+                  }}
+                >
+                  Ver agenda completa →
+                </button>
+              </div>
+
+              {activePulse.upcomingAppointments.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--content-muted, #858d99)' }}>
+                  Nenhum agendamento para esta data.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>Horário</th>
+                        <th>Paciente</th>
+                        <th>Profissional</th>
+                        <th>Status</th>
+                        <th style={{ textAlign: 'right' }}>Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activePulse.upcomingAppointments.map((appt) => (
+                        <tr key={appt.id}>
+                          <td style={{ fontWeight: 700, color: 'var(--content-primary, #202631)', whiteSpace: 'nowrap' }}>
+                            {formatTimeRange(appt.startsAt, appt.endsAt)}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontWeight: 600, color: 'var(--content-primary, #202631)' }}>
+                                {appt.patientName}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--content-muted, #858d99)', marginTop: '0.1rem' }}>
+                                {appt.appointmentTypeName}
+                              </span>
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--content-secondary, #626b79)', whiteSpace: 'nowrap' }}>
+                            <div>Prof. {appt.professionalName}</div>
+                            {appt.roomName ? (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--content-muted, #858d99)' }}>
+                                Sala: {appt.roomName}
+                              </div>
+                            ) : null}
+                          </td>
+                          <td style={{ whiteSpace: 'nowrap' }}>
+                            <StatusBadge status={appt.status} />
+                          </td>
+                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <button
+                              type="button"
+                              className="button button--ghost"
+                              onClick={() => onNavigate('agenda')}
+                              title="Gerenciar atendimento"
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
+                            >
+                              Gerenciar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            {activePulse.upcomingAppointments.length === 0 ? (
-              <p className="empty">Nenhum agendamento para esta data.</p>
-            ) : (
-              <ul className="agenda__list">
-                {activePulse.upcomingAppointments.map((appt) => (
-                  <li key={appt.id} className="agenda__item">
-                    <div className="agenda__time">
-                      {formatTimeRange(appt.startsAt, appt.endsAt)}
+            {/* Coluna 2: Ações Rápidas & Resumo Cadastral */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Card Ações Rápidas */}
+              <div className="dashboard-panel-card" style={{ padding: '1.25rem' }}>
+                <h3
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: 'var(--content-muted, #858d99)',
+                    margin: '0 0 1rem',
+                  }}
+                >
+                  Ações Rápidas
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <button
+                    type="button"
+                    className="btn-primary-prototype"
+                    onClick={() => onNavigate('agenda')}
+                  >
+                    <CalendarPlus size={17} />
+                    <span>+ Novo Agendamento</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary-prototype"
+                    onClick={() => onNavigate('patients')}
+                  >
+                    <UserPlus size={17} />
+                    <span>+ Cadastrar Paciente</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary-prototype"
+                    onClick={() => onNavigate('agenda')}
+                  >
+                    <CalendarOff size={17} />
+                    <span>Bloquear Horário</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary-prototype"
+                    onClick={() => onNavigate('queue')}
+                  >
+                    <Users size={17} />
+                    <span>Fila &amp; Check-in</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card Resumo Cadastral */}
+              <div className="dashboard-panel-card" style={{ padding: '1.25rem' }}>
+                <h3
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: 'var(--content-muted, #858d99)',
+                    margin: '0 0 1rem',
+                  }}
+                >
+                  Resumo Cadastral
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          backgroundColor: 'var(--base-muted, #f1f3f6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--content-secondary, #626b79)',
+                        }}
+                      >
+                        <Users size={16} />
+                      </div>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--content-primary, #202631)' }}>
+                        Agendamentos
+                      </span>
                     </div>
-                    <div className="agenda__details">
-                      <p className="agenda__patient">{appt.patientName}</p>
-                      <p className="agenda__meta">
-                        {appt.professionalName} • {appt.appointmentTypeName}
-                        {appt.roomName ? ` • Sala: ${appt.roomName}` : ''}
-                      </p>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--content-primary, #202631)' }}>
+                      {activePulse.totalAppointments}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          backgroundColor: 'var(--base-muted, #f1f3f6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--content-secondary, #626b79)',
+                        }}
+                      >
+                        <Stethoscope size={16} />
+                      </div>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--content-primary, #202631)' }}>
+                        Profissionais
+                      </span>
                     </div>
-                    <StatusBadge status={appt.status} />
-                  </li>
-                ))}
-              </ul>
-            )}
+                    <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--content-primary, #202631)' }}>
+                      {activePulse.professionals.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       ) : null}
@@ -481,58 +711,18 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <TrendingUp size={20} style={{ color: 'var(--color-primary)' }} />
+            <TrendingUp size={20} style={{ color: 'var(--brand-primary, #852a91)' }} />
             <h2
               id="period-heading"
               style={{
-                fontSize: '1.2rem',
-                fontWeight: 600,
+                fontSize: '1.15rem',
+                fontWeight: 700,
                 margin: 0,
-                color: 'var(--color-secondary)',
+                color: 'var(--content-primary, #202631)',
               }}
             >
               Desempenho no Período
             </h2>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {/* Seletor de Período (Hoje | Últimos 7 dias | Mês Atual) */}
-            <div className="segmented-control" role="group" aria-label="Seletor de período">
-              <button
-                type="button"
-                className={`segmented-control__btn ${period === 'hoje' ? 'segmented-control__btn--active' : ''}`}
-                onClick={() => setPeriod('hoje')}
-              >
-                Hoje
-              </button>
-              <button
-                type="button"
-                className={`segmented-control__btn ${period === '7dias' ? 'segmented-control__btn--active' : ''}`}
-                onClick={() => setPeriod('7dias')}
-              >
-                Últimos 7 dias
-              </button>
-              <button
-                type="button"
-                className={`segmented-control__btn ${period === 'mes' ? 'segmented-control__btn--active' : ''}`}
-                onClick={() => setPeriod('mes')}
-              >
-                Mês Atual
-              </button>
-            </div>
-
-            {periodSummary ? (
-              <button
-                type="button"
-                className="button button--ghost"
-                onClick={handleExportCsv}
-                title="Exportar indicadores do período em formato CSV (SPEC-UI-001 / B-01)"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                <Download size={15} />
-                <span>Exportar CSV</span>
-              </button>
-            ) : null}
           </div>
         </div>
 

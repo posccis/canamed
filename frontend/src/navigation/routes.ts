@@ -26,7 +26,8 @@ export type StaffView =
   | 'inventory'
   | 'dpo'
   | 'policies'
-  | 'links';
+  | 'links'
+  | 'settings';
 
 export const STAFF_PATHS: Record<StaffView, string> = {
   dashboard: '/app/dashboard',
@@ -44,6 +45,7 @@ export const STAFF_PATHS: Record<StaffView, string> = {
   dpo: '/app/dpo',
   policies: '/app/politicas',
   links: '/app/links',
+  settings: '/app/configuracoes',
 };
 
 const PATH_TO_STAFF_VIEW: ReadonlyArray<[string, StaffView]> = [
@@ -61,6 +63,7 @@ const PATH_TO_STAFF_VIEW: ReadonlyArray<[string, StaffView]> = [
   ['/app/dpo', 'dpo'],
   ['/app/politicas', 'policies'],
   ['/app/links', 'links'],
+  ['/app/configuracoes', 'settings'],
   ['/app/dashboard', 'dashboard'],
 ];
 
@@ -98,6 +101,7 @@ export function patientPaths(slug: string) {
       `${base}/agendar/especialidade/${encodeURIComponent(specialtySlug)}`,
     cadastro: `${base}/cadastro`,
     cadastroFor: (token: string) => `${base}/cadastro/${encodeURIComponent(token)}`,
+    perfil: `${base}/perfil`,
     consultas: `${base}/consultas`,
     appointmentFor: (token: string) => `${base}/c/${encodeURIComponent(token)}`,
     confirm: (token: string) => `${base}/c/${encodeURIComponent(token)}/confirmar`,

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { Session } from '../auth/authApi';
 import { DOCTOR_PATHS } from '../../navigation/routes';
+import { CanamedLogoLonga, CanamedLogoCurta } from '../../shared/CanamedLogo';
 
 interface DoctorSidebarProps {
   session?: Session;
@@ -80,6 +81,17 @@ export function DoctorSidebar({
         className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''} ${mobileOpen ? 'sidebar--mobile-open' : ''}`}
         aria-label="Navegação do consultório médico"
       >
+        {/* Botão Encolher/Expandir Flutuante (Protótipo Oficial) */}
+        <button
+          type="button"
+          className="sidebar__floating-toggle"
+          onClick={onToggleCollapse}
+          title={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, overflowY: 'auto' }}>
           {/* Cabeçalho com Logo Oficial */}
           <div className="sidebar__header">
@@ -91,19 +103,11 @@ export function DoctorSidebar({
             >
               {collapsed ? (
                 <div className="sidebar__logo-icon-container">
-                  <img
-                    src="/assets/brand/canamed-mulher-logocurta.png"
-                    alt="CANA MED Mulher"
-                    className="sidebar__logo-icon"
-                  />
+                  <CanamedLogoCurta height={36} className="sidebar__logo-icon" />
                 </div>
               ) : (
                 <div className="sidebar__logo-img-container">
-                  <img
-                    src="/assets/brand/canamed-mulher-logolonga.png"
-                    alt="CANA MED Mulher — Eficiência Para Quem Mais Precisa"
-                    className="sidebar__logo-img"
-                  />
+                  <CanamedLogoLonga height={36} className="sidebar__logo-img" />
                 </div>
               )}
             </NavLink>

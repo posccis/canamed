@@ -38,8 +38,9 @@ describe('App', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Portal de Acesso Integrado' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Acessar Administração' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Entrar no Consultório Médico' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sou da equipe da clínica/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sou médica\(o\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sou paciente/i })).toBeInTheDocument();
   });
 
   it('exige login antes de mostrar funcionalidades administrativas em /app/dashboard', async () => {

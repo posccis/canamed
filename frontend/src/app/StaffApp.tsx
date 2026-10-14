@@ -15,12 +15,9 @@ import { Topbar } from '../features/layout/Topbar';
 import { ToastProvider } from '../features/layout/Toast';
 import { GlobalSearchModal } from '../features/layout/GlobalSearchModal';
 import { LinksPanel } from '../features/layout/LinksPanel';
+import { AgendaRecepcaoPanel } from '../features/agenda/AgendaRecepcaoPanel';
+import { ClinicSettingsPanel } from '../features/clinics/ClinicSettingsPanel';
 import { CashRegisterPanel } from '../features/admin/CashRegisterPanel';
-import { TvDisplay } from '../features/admin/TvDisplay';
-import { FinancialPanel } from '../features/admin/FinancialPanel';
-import { InventoryPanel } from '../features/admin/InventoryPanel';
-import { DpoWorkspace } from '../features/admin/DpoWorkspace';
-import { ClinicPolicyPanel } from '../features/admin/ClinicPolicyPanel';
 import { PatientsPanel } from '../features/patient/PatientsPanel';
 import { ProfessionalsPanel } from '../features/catalog/ProfessionalsPanel';
 import { DOCTOR_PATHS, STAFF_PATHS, staffViewFromPath, type StaffView } from '../navigation/routes';
@@ -94,9 +91,14 @@ export function StaffApp() {
     return <MfaEnrollmentPanel onActivated={reload} onSignOut={() => void end()} />;
   }
 
+  async function handleSignOut() {
+    await end();
+    navigate('/');
+  }
+
   return (
     <ToastProvider>
-      <div className="app-shell">
+      <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
         <Sidebar
           session={state.session}
           view={view}
@@ -113,7 +115,7 @@ export function StaffApp() {
             session={state.session}
             view={view}
             onToggleMobile={() => setMobileOpen((value) => !value)}
-            onSignOut={() => void end()}
+            onSignOut={handleSignOut}
             onOpenSearch={() => setSearchOpen(true)}
             onReloadSession={reload}
           />
@@ -122,20 +124,23 @@ export function StaffApp() {
             <Routes>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPanel onNavigate={goTo} />} />
-              <Route path="agenda" element={<AgendaPage />} />
+              {/* Módulo Unificado Agenda & Recepção (SPEC-0032) */}
+              <Route path="agenda" element={<AgendaRecepcaoPanel initialView="agenda" />} />
+              <Route path="recepcao" element={<AgendaRecepcaoPanel initialView="queue" />} />
               <Route path="pacientes" element={<PatientsPanel />} />
               <Route path="profissionais" element={<ProfessionalsPanel />} />
-              <Route path="recepcao" element={<QueuePanel />} />
-              <Route path="operacao" element={<OperationPanel />} />
-              <Route path="catalogo" element={<CatalogPanel />} />
-              <Route path="usuarios" element={<UsersPanel />} />
+              {/* Caixa Diário */}
               <Route path="caixa" element={<CashRegisterPanel />} />
-              <Route path="tv" element={<TvDisplay />} />
-              <Route path="financeiro" element={<FinancialPanel />} />
-              <Route path="estoque" element={<InventoryPanel />} />
-              <Route path="dpo" element={<DpoWorkspace />} />
-              <Route path="politicas" element={<ClinicPolicyPanel />} />
-              <Route path="links" element={<LinksPanel />} />
+              <Route path="financeiro" element={<CashRegisterPanel />} />
+              {/* Central de Configurações da Clínica em Abas (SPEC-0032) */}
+              <Route path="configuracoes" element={<ClinicSettingsPanel />} />
+              {/* Redirecionamentos suaves de rotas secundárias para a Central de Configurações */}
+              <Route path="operacao" element={<ClinicSettingsPanel />} />
+              <Route path="catalogo" element={<Navigate to="/app/profissionais" replace />} />
+              <Route path="usuarios" element={<ClinicSettingsPanel />} />
+              <Route path="politicas" element={<ClinicSettingsPanel />} />
+              <Route path="links" element={<ClinicSettingsPanel />} />
+              <Route path="dpo" element={<ClinicSettingsPanel />} />
               <Route path="*" element={<Navigate to="dashboard" replace />} />
             </Routes>
           </main>

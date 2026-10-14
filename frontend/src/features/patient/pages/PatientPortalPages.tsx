@@ -16,18 +16,26 @@ function PortalPage({ tab }: { tab: PatientPortalTab }) {
   const clinicState = useClinicBySlug(slug);
 
   const routes: Record<PatientPortalTab, string> = {
+    home: paths.base,
     schedule: paths.agendar,
     appointments: paths.consultas,
-    documents: paths.documentos,
+    details: paths.consultas,
+    profile: paths.perfil,
   };
 
   return (
     <PatientPortal
       initialTab={tab}
-      onTabChange={(next) => navigate(routes[next])}
+      onTabChange={(next) => {
+        if (routes[next]) navigate(routes[next]);
+      }}
       clinic={clinicState.status === 'ready' ? clinicState.clinic : null}
     />
   );
+}
+
+export function PatientHomePage() {
+  return <PortalPage tab="home" />;
 }
 
 export function PatientBookingPage() {
@@ -39,5 +47,10 @@ export function PatientAppointmentsPage() {
 }
 
 export function PatientDocumentsPage() {
-  return <PortalPage tab="documents" />;
+  return <PortalPage tab="appointments" />;
 }
+
+export function PatientProfilePage() {
+  return <PortalPage tab="profile" />;
+}
+

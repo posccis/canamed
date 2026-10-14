@@ -1,0 +1,168 @@
+/* ==========================================================================
+   CANAMED MULHER — Estilos Responsivos do Portal do Paciente (Protótipo Oficial)
+   ========================================================================== */
+
+.patient-surface {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8fafc;
+}
+
+.patient-portal-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #ffffff;
+  box-sizing: border-box;
+  position: relative;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Background suave na tela ao redor do container central em telas maiores */
+body:has(.patient-portal-container) {
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .patient-portal-container {
+    max-width: 896px; /* sm:max-w-4xl */
+    border-left: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  }
+}
+
+.patient-portal-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.patient-portal-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.patient-portal-brand img,
+.patient-portal-brand svg {
+  display: block;
+}
+
+.patient-portal-main {
+  flex: 1;
+  padding-bottom: 90px;
+  overflow-y: auto;
+}
+
+.patient-portal-content {
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .patient-portal-content {
+    padding: 2rem;
+  }
+}
+
+/* Grid de Ações Rápidas Responsivo */
+.patient-quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .patient-quick-actions-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Barra Inferior Fixa do Portal */
+.patient-portal-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  padding: 0.5rem 0.5rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 40;
+  box-sizing: border-box;
+}
+
+.patient-portal-bottom-nav button {
+  flex: 1 1 0%;
+  min-width: 0;
+  padding: 0.25rem 0.15rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .patient-portal-bottom-nav {
+    max-width: 896px;
+    padding: 0.6rem 2rem;
+  }
+}
+
+/* Barra Inferior do Stepper de Agendamento */
+.patient-stepper-bottom-bar {
+  position: fixed;
+  bottom: 56px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #f1f5f9;
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.65rem;
+  z-index: 35;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .patient-stepper-bottom-bar {
+    max-width: 896px;
+    padding: 0.75rem 2rem;
+  }
+}
+
+/* Modal e Inputs Responsivos */
+.patient-modal-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 380px;
+}
+
+.patient-modal-card input {
+  box-sizing: border-box;
+  width: 100%;
+}
+

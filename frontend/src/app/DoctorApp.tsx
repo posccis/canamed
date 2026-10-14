@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 
 import { DoctorDashboardPage } from '../features/medical/DoctorDashboardPage';
@@ -25,6 +25,7 @@ export function DoctorApp() {
   const { state, reload, end } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   if (state.status === 'loading') {
     return (
@@ -62,16 +63,21 @@ export function DoctorApp() {
     return <MfaEnrollmentPanel onActivated={reload} onSignOut={() => void end()} />;
   }
 
+  async function handleSignOut() {
+    await end();
+    navigate('/');
+  }
+
   return (
     <ToastProvider>
-      <div className="doctor-shell">
+      <div className={`doctor-shell ${collapsed ? 'doctor-shell--collapsed' : ''}`}>
         <DoctorSidebar
           session={state.session}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
           mobileOpen={mobileOpen}
           onCloseMobile={() => setMobileOpen(false)}
-          onSignOut={() => void end()}
+          onSignOut={handleSignOut}
         />
 
         <div className="doctor-content-wrapper">
@@ -86,15 +92,74 @@ export function DoctorApp() {
               >
                 <Menu size={20} />
               </button>
-              <span style={{ fontWeight: 600, color: 'var(--color-primary-dark)', fontSize: '0.95rem' }}>
-                🌸 Cana Med Mulher • Espaço Clínico
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.75rem',
+                    color: 'var(--content-muted, #858D99)',
+                    fontWeight: 500,
+                    gap: '0.4rem',
+                    lineHeight: 1.2,
+                    marginBottom: '0.2rem',
+                  }}
+                >
+                  <span style={{ color: 'var(--brand-primary, #852A91)', fontWeight: 600 }}>Área Médica</span>
+                  <span style={{ fontSize: '0.7rem' }}>›</span>
+                  <span>Consultório Virtual</span>
+                </div>
+                <h1 style={{ margin: 0, fontWeight: 700, color: 'var(--content-primary, #202631)', fontSize: '1.18rem' }}>
+                  Cana Med Mulher • Espaço Clínico
+                </h1>
+              </div>
             </div>
 
-            <DoctorProfileMenu
-              session={state.session}
-              onSignOut={() => void end()}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {/* Notificações Clínicas (Sino do Protótipo) */}
+              <button
+                type="button"
+                title="Alertas Clínicos e Retornos"
+                aria-label="Alertas Clínicos"
+                style={{
+                  position: 'relative',
+                  padding: '0.5rem',
+                  borderRadius: '50%',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--content-secondary, #626B79)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '7px',
+                    right: '7px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#C33D49',
+                    border: '1.5px solid #FFFFFF',
+                  }}
+                />
+              </button>
+
+              {/* Divisor Vertical do Protótipo */}
+              <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--base-border, #E2E8F0)' }} />
+
+              <DoctorProfileMenu
+                session={state.session}
+                onSignOut={handleSignOut}
+              />
+            </div>
           </header>
 
           <main className="doctor-main">

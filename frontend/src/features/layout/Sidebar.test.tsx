@@ -45,23 +45,18 @@ describe('Sidebar Component (Design SaaS Branco — SPEC-UI-001)', () => {
     );
 
     // Seções
-    expect(screen.getByText('Principal')).toBeInTheDocument();
-    expect(screen.getByText('Administração')).toBeInTheDocument();
+    expect(screen.getByText('Operação da Clínica')).toBeInTheDocument();
 
-    // Itens da seção Principal
+    // Itens operacionais principais
     expect(screen.getByRole('button', { name: /^Dashboard$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Agenda$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Agenda & Recepção$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Pacientes$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Equipe Médica$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Caixa Diário$/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Consultório$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Recepção$/ })).toBeInTheDocument();
 
-    // Itens da seção Administração
-    expect(screen.getByRole('button', { name: /^Operação$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Catálogo$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Usuários$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Central de Links$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Painel TV$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^DPO \(LGPD\)$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Políticas$/ })).toBeInTheDocument();
+    // Item Configurações no rodapé
+    expect(screen.getByRole('button', { name: /^Configurações$/ })).toBeInTheDocument();
 
     // Perfil do usuário no rodapé
     expect(screen.getByText('Dra. Marina Rocha')).toBeInTheDocument();
@@ -83,7 +78,7 @@ describe('Sidebar Component (Design SaaS Branco — SPEC-UI-001)', () => {
       />
     );
 
-    const agendaBtn = screen.getByRole('button', { name: /^Agenda$/ });
+    const agendaBtn = screen.getByRole('button', { name: /^Agenda & Recepção$/ });
     expect(agendaBtn).toHaveClass('sidebar__item--active');
 
     const indicator = container.querySelector('.sidebar__item-indicator');
@@ -107,7 +102,7 @@ describe('Sidebar Component (Design SaaS Branco — SPEC-UI-001)', () => {
       />
     );
 
-    const agendaBtn = screen.getByRole('button', { name: /^Agenda$/ });
+    const agendaBtn = screen.getByRole('button', { name: /^Agenda & Recepção$/ });
     fireEvent.click(agendaBtn);
 
     expect(onChangeView).toHaveBeenCalledWith('agenda');
@@ -159,16 +154,12 @@ describe('Sidebar Component (Design SaaS Branco — SPEC-UI-001)', () => {
     );
 
     expect(screen.getByRole('button', { name: /^Dashboard$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Agenda$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Recepção$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Agenda & Recepção$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Pacientes$/ })).toBeInTheDocument();
 
-    // Restritos
+    // Restritos para recepcionista sem permissões avançadas
     expect(screen.queryByRole('button', { name: /^Consultório$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Operação$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Catálogo$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Usuários$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^DPO \(LGPD\)$/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Políticas$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Configurações$/ })).not.toBeInTheDocument();
   });
 
   it('alterna o estado recolhido/expandido ao clicar no botão de toggle', () => {
@@ -212,7 +203,6 @@ describe('Sidebar Component (Design SaaS Branco — SPEC-UI-001)', () => {
     expect(expandBtn).toBeInTheDocument();
     expect(screen.queryByText('Recolher')).not.toBeInTheDocument();
     // Labels dos títulos de seção ficam ocultos no modo recolhido
-    expect(screen.queryByText('Administração')).not.toBeInTheDocument();
-    expect(screen.queryByText('Principal')).not.toBeInTheDocument();
+    expect(screen.queryByText('Operação da Clínica')).not.toBeInTheDocument();
   });
 });
