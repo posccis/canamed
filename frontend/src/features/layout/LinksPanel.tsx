@@ -1,15 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import { ExternalLink, Copy, Check, Globe } from 'lucide-react';
 import { patientApi, type PortalMetaResponse } from '../patient/patientApi';
 import { DEFAULT_CLINIC_SLUG, patientPaths } from '../../navigation/routes';
-
-type LinkRow = {
-  id: string;
-  label: string;
-  url: string;
-  purpose: string;
-  perPatient?: boolean;
-};
 
 function slugify(value: string) {
   return value
@@ -21,155 +13,156 @@ function slugify(value: string) {
 }
 
 /**
- * Central de Links (SPEC-0026/RN-018 e seção 9.1).
- * Reúne os endereços compartilháveis da superfície do paciente em um só lugar.
+ * Painel Simplificado do Link de Agendamento da Clínica.
+ * Fornece à equipe da clínica um único link oficial para divulgar em WhatsApp, Instagram ou site.
  */
 export function LinksPanel() {
   const [meta, setMeta] = useState<PortalMetaResponse | null>(null);
-  const [selectedProfessionalId, setSelectedProfessionalId] = useState('');
-  const [selectedSpecialtyId, setSelectedSpecialtyId] = useState('');
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     patientApi
       .getPortalMeta()
       .then((response) => {
         setMeta(response);
-        setSelectedProfessionalId(response.professionals[0]?.id ?? '');
-        setSelectedSpecialtyId(response.specialties[0]?.id ?? '');
       })
       .catch(() => setMeta(null));
   }, []);
 
   const slug = meta?.clinicSlug?.trim() || slugify(meta?.clinicName ?? '') || DEFAULT_CLINIC_SLUG;
   const paths = patientPaths(slug);
+  const fullUrl = typeof window !== 'undefined' ? new URL(paths.base, window.location.origin).toString() : `https://canamed.com.br/p/${slug}`;
 
-  const rows = useMemo<LinkRow[]>(() => {
-    const professional = meta?.professionals.find((item) => item.id === selectedProfessionalId);
-    const specialty = meta?.specialties.find((item) => item.id === selectedSpecialtyId);
-
-    return [
-      { id: 'L-01', label: 'Hub do paciente', url: paths.base, purpose: 'Link de bio, Instagram e site' },
-      { id: 'L-02', label: 'Agendamento geral', url: paths.agendar, purpose: 'Marcar consulta' },
-      {
-        id: 'L-03',
-        label: 'Agendamento por profissional',
-        url: professional ? paths.agendarProfessional(slugify(professional.name)) : paths.agendar,
-        purpose: 'Cartão do médico, convênio e indicação',
-      },
-      {
-        id: 'L-04',
-        label: 'Agendamento por especialidade',
-        url: specialty ? paths.agendarSpecialty(slugify(specialty.name)) : paths.agendar,
-        purpose: 'Campanhas e captação',
-      },
-      { id: 'L-06', label: 'Meus atendimentos', url: paths.consultas, purpose: 'Autocuidado geral' },
-      { id: 'L-07', label: 'Detalhe da consulta', url: paths.appointmentFor('{token}'), purpose: 'Ver, confirmar, remarcar e cancelar', perPatient: true },
-      { id: 'L-08', label: 'Confirmação de presença', url: paths.confirm('{token}'), purpose: 'Confirmar em 1 clique', perPatient: true },
-      { id: 'L-09', label: 'Reagendamento', url: paths.reschedule('{token}'), purpose: 'Mudar horário', perPatient: true },
-      { id: 'L-10', label: 'Cancelamento', url: paths.cancel('{token}'), purpose: 'Cancelar com política', perPatient: true },
-      { id: 'L-11', label: 'Check-in', url: paths.checkInFor('{token}'), purpose: 'QR Code e mensagem de chegada', perPatient: true },
-      { id: 'L-12', label: 'Fila e etapa', url: paths.filaFor('{token}'), purpose: 'Acompanhar atendimento', perPatient: true },
-      { id: 'L-13', label: 'Documentos', url: paths.documentoFor('{token}'), purpose: 'Receita, atestado e exame', perPatient: true },
-      { id: 'L-14', label: 'Validação pública', url: paths.validar('{token}'), purpose: 'Farmácia e terceiros', perPatient: true },
-      { id: 'L-15', label: 'Privacidade (LGPD)', url: paths.privacidade, purpose: 'Direitos do titular' },
-    ];
-  }, [meta, paths, selectedProfessionalId, selectedSpecialtyId]);
-
-  async function copy(row: LinkRow) {
-    const absolute = new URL(row.url, window.location.origin).toString();
+  async function copyLink() {
     try {
-      await navigator.clipboard.writeText(absolute);
-      setCopied(row.id);
-      setTimeout(() => setCopied(null), 2000);
+      await navigator.clipboard.writeText(fullUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
     } catch {
-      setCopied(null);
+      setCopied(false);
     }
   }
 
   return (
-    <div className="page">
-      <header className="page__header">
-        <div>
-          <h1 className="page__title">Central de Links</h1>
-          <p className="page__tagline">
-            Copie o endereço correto para enviar ao paciente por WhatsApp, SMS ou cartão.
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div>
+        <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.15rem', color: 'var(--content-primary, #202631)' }}>
+          Link de Agendamento da Clínica
+        </h3>
+        <p style={{ margin: 0, color: 'var(--content-secondary, #626B79)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Compartilhe este endereço com suas pacientes via WhatsApp, Instagram ou no site da clínica.
+          Através dele, a paciente pode agendar consultas, verificar horários e acompanhar seus atendimentos.
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          padding: '1.25rem',
+          background: 'var(--base-bg, #F7F8FA)',
+          border: '1px solid var(--base-border, #E2E6EC)',
+          borderRadius: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-primary, #852A91)' }}>
+          <Globe size={18} />
+          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Página Pública da Paciente</span>
         </div>
-      </header>
 
-      <div className="links-filters">
-        <label className="field">
-          <span className="field__label">Profissional (link L-03)</span>
-          <select
-            className="field__input"
-            value={selectedProfessionalId}
-            onChange={(event) => setSelectedProfessionalId(event.target.value)}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+            background: '#ffffff',
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            border: '1px solid var(--base-border, #E2E6EC)',
+            flexWrap: 'wrap',
+          }}
+        >
+          <code
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '0.9rem',
+              color: 'var(--content-primary, #202631)',
+              wordBreak: 'break-all',
+            }}
           >
-            {meta?.professionals.map((professional) => (
-              <option key={professional.id} value={professional.id}>
-                {professional.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            {fullUrl}
+          </code>
 
-        <label className="field">
-          <span className="field__label">Especialidade (link L-04)</span>
-          <select
-            className="field__input"
-            value={selectedSpecialtyId}
-            onChange={(event) => setSelectedSpecialtyId(event.target.value)}
-          >
-            {meta?.specialties.map((specialty) => (
-              <option key={specialty.id} value={specialty.id}>
-                {specialty.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={copyLink}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: copied ? '#059669' : 'var(--brand-primary, #852A91)',
+                background: copied ? '#ECFDF5' : 'var(--brand-soft, #F7ECF8)',
+                border: copied ? '1px solid #A7F3D0' : '1px solid var(--brand-primary, #852A91)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {copied ? <Check size={15} /> : <Copy size={15} />}
+              <span>{copied ? 'Copiado!' : 'Copiar link'}</span>
+            </button>
+
+            <a
+              href={paths.base}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.85rem',
+                fontWeight: 500,
+                color: 'var(--content-primary, #202631)',
+                background: '#ffffff',
+                border: '1px solid var(--base-border, #E2E6EC)',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <ExternalLink size={15} />
+              <span>Visualizar página</span>
+            </a>
+          </div>
+        </div>
       </div>
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Link</th>
-              <th>Endereço</th>
-              <th>Quando usar</th>
-              <th aria-label="Ações" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>
-                  <strong>{row.id}</strong> — {row.label}
-                </td>
-                <td>
-                  <code className="links-url">{row.url}</code>
-                  {row.perPatient ? <span className="links-badge">por paciente</span> : null}
-                </td>
-                <td>{row.purpose}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="button button--secondary button--small"
-                    onClick={() => void copy(row)}
-                  >
-                    {copied === row.id ? 'Copiado!' : 'Copiar'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div
+        style={{
+          display: 'flex',
+          gap: '0.75rem',
+          padding: '1rem',
+          background: '#EFF6FF',
+          border: '1px solid #DBEAFE',
+          borderRadius: '8px',
+          fontSize: '0.82rem',
+          color: '#1E40AF',
+          lineHeight: 1.5,
+        }}
+      >
+        <span>💡</span>
+        <div>
+          <strong>Dica Operacional:</strong> Você pode fixar este link na mensagem de saudação automática do WhatsApp Business da clínica ou na bio do Instagram para autoatendimento 24 horas por dia.
+        </div>
       </div>
-
-      <p className="form__hint">
-        Os links marcados como <strong>por paciente</strong> são gerados no envio da mensagem e carregam um
-        token de uso único; nunca contêm CPF, diagnóstico ou qualquer dado de saúde.
-      </p>
     </div>
   );
 }
+

@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANA MED Mulher | Área do Paciente</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c', // Cor principal
+                            800: '#9f1239', // Hover e textos escuros
+                            900: '#881337',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Utilitário para o calendário */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Container principal da aplicação -->
+    <div id="app" class="flex-1 flex flex-col w-full max-w-md mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden sm:max-w-4xl sm:border-x sm:border-slate-200">
+        <!-- O conteúdo será injetado aqui via JS -->
+    </div>
+
+    <!-- Modais (Injetados via JS, mas o container fica aqui) -->
+    <div id="modal-container" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"></div>
+
+    <script>
+        // --- ESTADO DA APLICAÇÃO ---
+        const AppState = {
+            currentView: 'login', // login, home, schedule, appointments, details, profile
+            previousView: null,
+            user: {
+                name: 'Mariana Fontes',
+                email: 'mariana.fontes@email.com',
+                phone: '(11) 98765-4321',
+                dob: '1992-05-14',
+                cpf: '123.456.789-00'
+            },
+            appointments: [
+                {
+                    id: 'A1',
+                    doctor: 'Dra. Helena Costa',
+                    specialty: 'Ginecologia Clínica',
+                    date: '2026-10-20',
+                    time: '14:30',
+                    status: 'Agendado', // Agendado, Cancelado, Realizado
+                    location: 'Unidade Jardins - Av. Paulista, 1000'
+                },
+                {
+                    id: 'A2',
+                    doctor: 'Dra. Beatriz Lima',
+                    specialty: 'Exames de Rotina',
+                    date: '2026-05-10',
+                    time: '09:00',
+                    status: 'Realizado',
+                    location: 'Unidade Centro - Rua Direita, 50'
+                }
+            ],
+            selectedAppointmentId: null,
+            
+            // Estado temporário para o fluxo de agendamento
+            scheduleFlow: {
+                step: 1, // 1: Profissional, 2: Data, 3: Horário, 4: Confirmação
+                doctor: null,
+                specialty: null,
+                date: null,
+                time: null,
+                isRescheduling: false,
+                rescheduleId: null
+            }
+        };
+
+        // Dados de apoio para o protótipo
+        const mockDoctors = [
+            { id: 'D1', name: 'Dra. Helena Costa', specialty: 'Ginecologia Clínica' },
+            { id: 'D2', name: 'Dra. Beatriz Lima', specialty: 'Obstetrícia' },
+            { id: 'D3', name: 'Dr. Carlos Mendes', specialty: 'Ultrassonografia' }
+        ];
+
+        const mockTimes = ['09:00', '09:30', '10:00', '11:30', '14:00', '14:30', '15:00', '16:30'];
+
+        // --- NÚCLEO DE RENDERIZAÇÃO ---
+        const appContainer = document.getElementById('app');
+        const modalContainer = document.getElementById('modal-container');
+
+        function render() {
+            appContainer.innerHTML = '';
+            
+            // Navegação e Layout Base
+            if (AppState.currentView !== 'login') {
+                appContainer.innerHTML += renderHeader();
+            }
+
+            // Conteúdo principal
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'flex-1 overflow-y-auto pb-20 sm:pb-6 fade-in';
+            
+            switch (AppState.currentView) {
+                case 'login': contentDiv.innerHTML = renderLogin(); break;
+                case 'home': contentDiv.innerHTML = renderHome(); break;
+                case 'schedule': contentDiv.innerHTML = renderScheduleFlow(); break;
+                case 'appointments': contentDiv.innerHTML = renderAppointments(); break;
+                case 'details': contentDiv.innerHTML = renderAppointmentDetails(); break;
+                case 'profile': contentDiv.innerHTML = renderProfile(); break;
+                default: contentDiv.innerHTML = renderHome();
+            }
+            
+            appContainer.appendChild(contentDiv);
+
+            // Bottom Navigation (Mobile) / Sidebar adaptada
+            if (AppState.currentView !== 'login') {
+                appContainer.innerHTML += renderBottomNav();
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        // --- NAVEGAÇÃO E HELPERS ---
+        function navigate(view, params = {}) {
+            AppState.previousView = AppState.currentView;
+            AppState.currentView = view;
+            
+            if (view === 'details' && params.id) {
+                AppState.selectedAppointmentId = params.id;
+            }
+            if (view === 'schedule' && params.reset) {
+                AppState.scheduleFlow = { step: 1, doctor: null, specialty: null, date: null, time: null, isRescheduling: false, rescheduleId: null };
+            }
+            
+            render();
+        }
+
+        function formatDataBR(dateString) {
+            if (!dateString) return '';
+            const [y, m, d] = dateString.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function getNextAppointment() {
+            return AppState.appointments
+                .filter(a => a.status === 'Agendado')
+                .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))[0];
+        }
+
+        function renderHeader() {
+            const showBack = AppState.currentView !== 'home' && AppState.currentView !== 'login';
+            return `
+                <header class="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-40">
+                    <div class="flex items-center gap-3">
+                        ${showBack ? `
+                            <button data-action="back" class="p-2 -ml-2 text-slate-500 hover:text-brand-700 transition-colors rounded-full hover:bg-slate-50">
+                                <i class="ph ph-arrow-left text-xl"></i>
+                            </button>
+                        ` : ''}
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-brand-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                CM
+                            </div>
+                            <span class="font-semibold text-slate-800 tracking-tight">CANA MED <span class="text-brand-700 font-normal">Mulher</span></span>
+                        </div>
+                    </div>
+                    
+                    <button data-action="nav" data-target="profile" class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-brand-700 font-medium overflow-hidden">
+                        ${AppState.user.name.charAt(0)}
+                    </button>
+                </header>
+            `;
+        }
+
+        function renderBottomNav() {
+            const views = [
+                { id: 'home', icon: 'house', label: 'Início' },
+                { id: 'schedule', icon: 'calendar-plus', label: 'Agendar' },
+                { id: 'appointments', icon: 'calendar-check', label: 'Consultas' },
+                { id: 'profile', icon: 'user', label: 'Perfil' }
+            ];
+
+            return `
+                <nav class="fixed sm:absolute bottom-0 w-full max-w-md sm:max-w-4xl mx-auto bg-white border-t border-slate-100 px-6 py-3 flex justify-between items-center z-40 pb-safe">
+                    ${views.map(v => {
+                        // Tratar highlight do 'schedule' mesmo se estiver nos passos internos
+                        const isActive = AppState.currentView === v.id || (v.id === 'schedule' && AppState.currentView === 'schedule');
+                        return `
+                            <button data-action="nav" data-target="${v.id}" class="flex flex-col items-center gap-1 min-w-[64px] ${isActive ? 'text-brand-700' : 'text-slate-400 hover:text-slate-600'} transition-colors">
+                                <i class="ph ${isActive ? 'ph-' + v.icon + ' weight-fill' : 'ph-' + v.icon} text-2xl"></i>
+                                <span class="text-[10px] font-medium">${v.label}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </nav>
+            `;
+        }
+
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex flex-col justify-center px-6 py-12 bg-white">
+                    <div class="text-center mb-10">
+                        <div class="w-16 h-16 bg-brand-700 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 shadow-lg shadow-brand-700/30">
+                            CM
+                        </div>
+                        <h1 class="text-2xl font-bold text-slate-800">CANA MED <span class="text-brand-700 font-normal">Mulher</span></h1>
+                        <p class="text-sm text-slate-500 mt-2">Plataforma de Gestão e Saúde da Mulher</p>
+                    </div>
+
+                    <div class="space-y-4 w-full max-w-sm mx-auto">
+                        <button class="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-all text-left group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-white group-hover:text-brand-700">
+                                    <i class="ph ph-stethoscope text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-slate-800">Sou Profissional</h3>
+                                    <p class="text-xs text-slate-500">Acesso médico e clínico</p>
+                                </div>
+                            </div>
+                            <i class="ph ph-caret-right text-slate-400"></i>
+                        </button>
+
+                        <button class="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-all text-left group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-white group-hover:text-brand-700">
+                                    <i class="ph ph-buildings text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-slate-800">Administração</h3>
+                                    <p class="text-xs text-slate-500">Gestão da clínica</p>
+                                </div>
+                            </div>
+                            <i class="ph ph-caret-right text-slate-400"></i>
+                        </button>
+
+                        <div class="relative py-4 flex items-center">
+                            <div class="flex-grow border-t border-slate-200"></div>
+                            <span class="flex-shrink-0 mx-4 text-slate-400 text-sm">Acesso de Pacientes</span>
+                            <div class="flex-grow border-t border-slate-200"></div>
+                        </div>
+
+                        <!-- Botão principal do fluxo de paciente -->
+                        <button data-action="login-patient" class="w-full flex items-center justify-between p-4 rounded-xl border-2 border-brand-700 bg-brand-700 text-white shadow-md shadow-brand-700/20 hover:bg-brand-800 transition-all text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center">
+                                    <i class="ph ph-user text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">Sou Paciente</h3>
+                                    <p class="text-xs text-brand-100">Agendamentos e acompanhamento</p>
+                                </div>
+                            </div>
+                            <i class="ph ph-arrow-right text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHome() {
+            const nextAppt = getNextAppointment();
+            const firstName = AppState.user.name.split(' ')[0];
+
+            return `
+                <div class="p-6">
+                    <!-- Saudação -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-slate-800">Olá, ${firstName}!</h1>
+                        <p class="text-slate-500 text-sm mt-1">Bem-vinda à sua área de saúde digital.</p>
+                    </div>
+
+                    <!-- Próxima Consulta ou Empty State -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-slate-800">Seu próximo compromisso</h2>
+                            ${nextAppt ? `<button data-action="nav" data-target="appointments" class="text-brand-700 text-sm font-medium hover:underline">Ver todas</button>` : ''}
+                        </div>
+
+                        ${nextAppt ? `
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 relative overflow-hidden group cursor-pointer hover:border-brand-300 transition-colors" data-action="view-details" data-id="${nextAppt.id}">
+                                <div class="absolute top-0 left-0 w-1.5 h-full bg-brand-600"></div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-brand-50 p-2.5 rounded-xl text-brand-700">
+                                            <i class="ph ph-calendar-blank text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-slate-800">${formatDataBR(nextAppt.date)}</p>
+                                            <p class="text-brand-700 font-medium text-sm">às ${nextAppt.time}</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-100">Confirmada</span>
+                                </div>
+                                <hr class="border-slate-100 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-sm font-bold">
+                                        ${nextAppt.doctor.split(' ')[1].charAt(0)}${nextAppt.doctor.split(' ')[2]?.charAt(0) || ''}
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">${nextAppt.doctor}</p>
+                                        <p class="text-slate-500 text-sm">${nextAppt.specialty}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 text-center border-dashed">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="ph ph-calendar-x text-2xl"></i>
+                                </div>
+                                <p class="text-slate-600 font-medium mb-1">Nenhuma consulta próxima</p>
+                                <p class="text-slate-400 text-sm mb-4">Mantenha sua saúde em dia.</p>
+                                <button data-action="nav" data-target="schedule" data-reset="true" class="bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-brand-800 transition-colors inline-flex items-center gap-2 shadow-sm shadow-brand-700/20">
+                                    <i class="ph ph-plus"></i> Agendar Agora
+                                </button>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Ações Rápidas -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-800 mb-4">Ações rápidas</h2>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button data-action="nav" data-target="schedule" data-reset="true" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-brand-300 hover:bg-brand-50 transition-all group text-center">
+                                <div class="text-brand-700 bg-brand-50 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:shadow-sm">
+                                    <i class="ph ph-stethoscope text-xl"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Nova Consulta</span>
+                            </button>
+                            <button data-action="nav" data-target="appointments" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-brand-300 hover:bg-brand-50 transition-all group text-center">
+                                <div class="text-brand-700 bg-brand-50 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:shadow-sm">
+                                    <i class="ph ph-list-bullets text-xl"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Histórico</span>
+                            </button>
+                            <button data-action="nav" data-target="profile" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-brand-300 hover:bg-brand-50 transition-all group text-center">
+                                <div class="text-brand-700 bg-brand-50 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:shadow-sm">
+                                    <i class="ph ph-identification-card text-xl"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Meus Dados</span>
+                            </button>
+                            <button data-action="contact" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-brand-300 hover:bg-brand-50 transition-all group text-center">
+                                <div class="text-brand-700 bg-brand-50 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:shadow-sm">
+                                    <i class="ph ph-whatsapp-logo text-xl"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Falar com Clínica</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderScheduleFlow() {
+            const flow = AppState.scheduleFlow;
+            const steps = [
+                { num: 1, label: 'Especialidade' },
+                { num: 2, label: 'Data' },
+                { num: 3, label: 'Horário' },
+                { num: 4, label: 'Confirmação' }
+            ];
+
+            let stepContent = '';
+
+            // Lógica para gerar os dias do calendário fictício
+            const renderCalendar = () => {
+                const days = [];
+                // Preenchendo dias vazios para alinhar o primeiro dia (Ex: começa na terça)
+                for(let i=0; i<2; i++) days.push(`<div class="p-2 text-center text-transparent">0</div>`);
+                
+                for(let i=1; i<=31; i++) {
+                    const dateStr = `2026-10-${i.toString().padStart(2, '0')}`;
+                    const isSelected = flow.date === dateStr;
+                    // Finais de semana indisponíveis
+                    const isWeekend = (i+2) % 7 === 0 || (i+2) % 7 === 6; 
+                    
+                    if (isWeekend) {
+                        days.push(`<div class="p-2 text-center text-slate-300 text-sm"> ${i} </div>`);
+                    } else {
+                        days.push(`
+                            <button data-action="select-date" data-value="${dateStr}" 
+                                class="p-2 text-center text-sm font-medium rounded-full transition-all 
+                                ${isSelected ? 'bg-brand-700 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}">
+                                ${i}
+                            </button>
+                        `);
+                    }
+                }
+                return days.join('');
+            };
+
+            switch(flow.step) {
+                case 1: // Escolha do Profissional/Especialidade
+                    stepContent = `
+                        <h2 class="text-xl font-bold text-slate-800 mb-6">${flow.isRescheduling ? 'Reagendar: Novo Profissional?' : 'Com quem deseja passar?'}</h2>
+                        <div class="space-y-3">
+                            ${mockDoctors.map(doc => `
+                                <button data-action="select-doctor" data-id="${doc.id}" data-name="${doc.name}" data-spec="${doc.specialty}" 
+                                    class="w-full flex items-center justify-between p-4 bg-white border ${flow.doctor === doc.name ? 'border-brand-700 bg-brand-50' : 'border-slate-200'} rounded-2xl shadow-sm hover:border-brand-400 transition-all text-left">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-lg font-bold">
+                                            ${doc.name.split(' ')[1].charAt(0)}${doc.name.split(' ')[2]?.charAt(0) || ''}
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-slate-800">${doc.name}</p>
+                                            <p class="text-slate-500 text-sm">${doc.specialty}</p>
+                                        </div>
+                                    </div>
+                                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${flow.doctor === doc.name ? 'border-brand-700 bg-brand-700 text-white' : 'border-slate-300'}">
+                                        ${flow.doctor === doc.name ? '<i class="ph ph-check text-sm"></i>' : ''}
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                case 2: // Escolha da Data
+                    stepContent = `
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Escolha a data</h2>
+                        <p class="text-slate-500 text-sm mb-6">Para atendimento com ${flow.doctor}</p>
+                        
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <button class="p-1 text-slate-400 hover:text-slate-800"><i class="ph ph-caret-left text-lg"></i></button>
+                                <span class="font-semibold text-slate-800">Outubro 2026</span>
+                                <button class="p-1 text-slate-400 hover:text-slate-800"><i class="ph ph-caret-right text-lg"></i></button>
+                            </div>
+                            
+                            <div class="calendar-grid mb-2">
+                                ${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => `<div class="text-center text-xs font-semibold text-slate-400 pb-2">${d}</div>`).join('')}
+                            </div>
+                            <div class="calendar-grid">
+                                ${renderCalendar()}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 justify-center">
+                            <span class="w-3 h-3 rounded-full bg-slate-300 opacity-50 block"></span> Indisponível
+                            <span class="w-3 h-3 rounded-full bg-white border border-slate-300 block ml-3"></span> Disponível
+                        </div>
+                    `;
+                    break;
+                case 3: // Escolha do Horário
+                    stepContent = `
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Horários disponíveis</h2>
+                        <p class="text-slate-500 text-sm mb-6">Dia ${formatDataBR(flow.date)} com ${flow.doctor}</p>
+                        
+                        <div class="grid grid-cols-3 gap-3">
+                            ${mockTimes.map(time => {
+                                const isSelected = flow.time === time;
+                                return `
+                                    <button data-action="select-time" data-value="${time}" 
+                                        class="py-3 border rounded-xl font-medium text-sm transition-all text-center
+                                        ${isSelected ? 'bg-brand-700 border-brand-700 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:border-brand-400 hover:bg-brand-50'}">
+                                        ${time}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                    break;
+                case 4: // Confirmação
+                    stepContent = `
+                        <h2 class="text-xl font-bold text-slate-800 mb-6">Confirme os dados</h2>
+                        
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
+                            <div class="flex items-start gap-4 mb-5">
+                                <div class="bg-brand-50 p-3 rounded-xl text-brand-700">
+                                    <i class="ph ph-calendar-check text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">${formatDataBR(flow.date)} às ${flow.time}</h3>
+                                    <p class="text-slate-500 text-sm">${flow.specialty}</p>
+                                </div>
+                            </div>
+                            
+                            <hr class="border-slate-100 mb-4">
+                            
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-500 text-sm">Profissional</span>
+                                    <span class="font-medium text-slate-800 text-sm">${flow.doctor}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-500 text-sm">Paciente</span>
+                                    <span class="font-medium text-slate-800 text-sm">${AppState.user.name}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-500 text-sm">Local</span>
+                                    <span class="font-medium text-slate-800 text-sm text-right max-w-[200px]">Clínica Matriz<br><span class="text-xs text-slate-400 font-normal">Av. Paulista, 1000</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-blue-800">
+                            <i class="ph ph-info text-lg shrink-0"></i>
+                            <p>Chegue com 15 minutos de antecedência. Em caso de imprevisto, cancele com até 24h de antecedência.</p>
+                        </div>
+                    `;
+                    break;
+            }
+
+            return `
+                <div class="p-6 pb-24">
+                    <!-- Progresso -->
+                    <div class="flex justify-between mb-8 relative">
+                        <div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 left-0 h-0.5 bg-brand-700 -z-10 -translate-y-1/2 transition-all duration-300" style="width: ${((flow.step - 1) / 3) * 100}%"></div>
+                        
+                        ${steps.map((s, idx) => `
+                            <div class="flex flex-col items-center gap-2 bg-white px-2">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors border-2 
+                                    ${flow.step >= s.num ? 'bg-brand-700 border-brand-700 text-white' : 'bg-white border-slate-300 text-slate-400'}">
+                                    ${flow.step > s.num ? '<i class="ph ph-check"></i>' : s.num}
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-semibold ${flow.step >= s.num ? 'text-brand-700' : 'text-slate-400'} hidden sm:block">${s.label}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Conteúdo do Passo -->
+                    <div class="fade-in min-h-[300px]">
+                        ${stepContent}
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="fixed sm:absolute bottom-[72px] sm:bottom-0 left-0 w-full max-w-md sm:max-w-4xl mx-auto p-4 bg-white/90 backdrop-blur border-t border-slate-100 flex gap-3 z-30">
+                        ${flow.step > 1 ? `
+                            <button data-action="schedule-prev" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition-colors w-1/3">
+                                Voltar
+                            </button>
+                        ` : `
+                            <button data-action="schedule-cancel" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition-colors w-1/3">
+                                Cancelar
+                            </button>
+                        `}
+                        
+                        ${flow.step < 4 ? `
+                            <button data-action="schedule-next" class="px-6 py-3 rounded-xl bg-brand-700 text-white font-medium hover:bg-brand-800 transition-colors shadow-md shadow-brand-700/20 flex-1 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                ${ (flow.step === 1 && !flow.doctor) || (flow.step === 2 && !flow.date) || (flow.step === 3 && !flow.time) ? 'disabled' : '' }>
+                                Continuar
+                            </button>
+                        ` : `
+                            <button data-action="schedule-confirm" class="px-6 py-3 rounded-xl bg-brand-700 text-white font-medium hover:bg-brand-800 transition-colors shadow-md shadow-brand-700/20 flex-1 flex justify-center items-center gap-2">
+                                <i class="ph ph-check-circle text-lg"></i> Confirmar Agendamento
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAppointments() {
+            // Separação em abas lógicas
+            const upcoming = AppState.appointments.filter(a => a.status === 'Agendado').sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+            const past = AppState.appointments.filter(a => a.status !== 'Agendado').sort((a,b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+
+            const renderCard = (appt) => `
+                <div data-action="view-details" data-id="${appt.id}" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-3 cursor-pointer hover:border-brand-300 transition-colors relative overflow-hidden group">
+                    ${appt.status === 'Agendado' ? '<div class="absolute top-0 left-0 w-1 h-full bg-brand-600"></div>' : ''}
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-calendar-blank text-slate-400"></i>
+                            <span class="font-medium text-slate-800 text-sm">${formatDataBR(appt.date)} às ${appt.time}</span>
+                        </div>
+                        <span class="text-xs font-medium px-2 py-0.5 rounded-full border 
+                            ${appt.status === 'Agendado' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : ''}
+                            ${appt.status === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-100' : ''}
+                            ${appt.status === 'Realizado' ? 'bg-slate-100 text-slate-600 border-slate-200' : ''}">
+                            ${appt.status}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 text-sm font-bold">
+                             ${appt.doctor.split(' ')[1].charAt(0)}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-800 text-sm">${appt.doctor}</p>
+                            <p class="text-slate-500 text-xs">${appt.specialty}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return `
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-slate-800 mb-6">Minhas Consultas</h1>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 ml-1">Próximas</h2>
+                        ${upcoming.length > 0 
+                            ? upcoming.map(renderCard).join('') 
+                            : '<p class="text-slate-500 text-sm italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">Nenhuma consulta agendada.</p>'
+                        }
+                    </div>
+
+                    <div>
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 ml-1">Histórico</h2>
+                        ${past.length > 0 
+                            ? past.map(renderCard).join('') 
+                            : '<p class="text-slate-500 text-sm italic">Nenhum histórico encontrado.</p>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAppointmentDetails() {
+            const appt = AppState.appointments.find(a => a.id === AppState.selectedAppointmentId);
+            if (!appt) return `<div class="p-6 text-center text-slate-500">Consulta não encontrada.</div>`;
+
+            const isUpcoming = appt.status === 'Agendado';
+
+            return `
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <h1 class="text-2xl font-bold text-slate-800">Detalhes da Consulta</h1>
+                        <span class="text-sm font-medium px-3 py-1 rounded-full border 
+                            ${appt.status === 'Agendado' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : ''}
+                            ${appt.status === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-100' : ''}
+                            ${appt.status === 'Realizado' ? 'bg-slate-100 text-slate-600 border-slate-200' : ''}">
+                            ${appt.status}
+                        </span>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-14 h-14 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-xl font-bold">
+                                ${appt.doctor.split(' ')[1].charAt(0)}${appt.doctor.split(' ')[2]?.charAt(0) || ''}
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-lg">${appt.doctor}</h2>
+                                <p class="text-slate-500">${appt.specialty}</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 border-t border-slate-100 pt-4">
+                            <div class="flex items-start gap-3">
+                                <i class="ph ph-calendar text-slate-400 text-lg mt-0.5"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase font-semibold tracking-wider">Data e Horário</p>
+                                    <p class="font-medium text-slate-800">${formatDataBR(appt.date)} às ${appt.time}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="ph ph-map-pin text-slate-400 text-lg mt-0.5"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase font-semibold tracking-wider">Local</p>
+                                    <p class="font-medium text-slate-800">${appt.location}</p>
+                                    <a href="#" class="text-brand-700 text-sm font-medium hover:underline mt-1 inline-block">Ver no mapa</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${isUpcoming ? `
+                        <div class="space-y-3">
+                            <button data-action="init-reschedule" class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-brand-200 bg-brand-50 text-brand-700 font-semibold hover:bg-brand-100 transition-colors">
+                                <i class="ph ph-calendar-plus text-lg"></i> Reagendar Consulta
+                            </button>
+                            <button data-action="init-cancel" class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
+                                <i class="ph ph-x-circle text-lg"></i> Cancelar Consulta
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm text-slate-600 flex gap-3">
+                            <i class="ph ph-warning-circle text-slate-400 text-lg shrink-0"></i>
+                            <p>Cancelamentos ou reagendamentos devem ser feitos com no mínimo 24h de antecedência.</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderProfile() {
+            return `
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-slate-800 mb-6">Meus Dados</h1>
+                    
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                        <div class="bg-slate-50 p-6 flex flex-col items-center border-b border-slate-200 relative">
+                            <div class="w-20 h-20 rounded-full bg-brand-700 text-white flex items-center justify-center text-3xl font-bold shadow-md shadow-brand-700/20 mb-3">
+                                ${AppState.user.name.charAt(0)}
+                            </div>
+                            <h2 class="font-bold text-slate-800 text-lg">${AppState.user.name}</h2>
+                            <p class="text-slate-500 text-sm">Paciente desde 2024</p>
+                            
+                            <button class="absolute top-4 right-4 p-2 text-slate-400 hover:text-brand-700 bg-white rounded-full shadow-sm border border-slate-100">
+                                <i class="ph ph-pencil-simple text-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
+                                <input type="text" value="${AppState.user.name}" readonly class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">CPF</label>
+                                <input type="text" value="${AppState.user.cpf}" readonly class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Data de Nascimento</label>
+                                <input type="date" value="${AppState.user.dob}" readonly class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Telefone</label>
+                                <input type="text" value="${AppState.user.phone}" class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">E-mail</label>
+                                <input type="email" value="${AppState.user.email}" class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                            </div>
+                            
+                            <button data-action="save-profile" class="w-full mt-4 bg-slate-800 text-white font-medium py-3 rounded-xl hover:bg-slate-900 transition-colors">
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+
+                    <button data-action="logout" class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-red-200 text-red-600 bg-red-50 font-medium hover:bg-red-100 transition-colors">
+                        <i class="ph ph-sign-out text-lg"></i> Sair do Aplicativo
+                    </button>
+                </div>
+            `;
+        }
+
+        function showModal(content) {
+            modalContainer.innerHTML = content;
+            modalContainer.classList.remove('hidden');
+            modalContainer.classList.add('flex');
+        }
+
+        function hideModal() {
+            modalContainer.classList.add('hidden');
+            modalContainer.classList.remove('flex');
+            modalContainer.innerHTML = '';
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+
+            // Navegação básica
+            if (action === 'nav') {
+                const target = btn.dataset.target;
+                const params = btn.dataset.reset ? { reset: true } : {};
+                navigate(target, params);
+            }
+            if (action === 'back') {
+                navigate(AppState.previousView || 'home');
+            }
+            if (action === 'login-patient') {
+                navigate('home');
+            }
+            if (action === 'logout') {
+                navigate('login');
+            }
+            if (action === 'view-details') {
+                navigate('details', { id: btn.dataset.id });
+            }
+
+            // Fluxo de Agendamento
+            if (action === 'select-doctor') {
+                AppState.scheduleFlow.doctor = btn.dataset.name;
+                AppState.scheduleFlow.specialty = btn.dataset.spec;
+                render();
+            }
+            if (action === 'select-date') {
+                AppState.scheduleFlow.date = btn.dataset.value;
+                AppState.scheduleFlow.time = null; // reseta horário ao trocar data
+                render();
+            }
+            if (action === 'select-time') {
+                AppState.scheduleFlow.time = btn.dataset.value;
+                render();
+            }
+            if (action === 'schedule-next') {
+                if (AppState.scheduleFlow.step < 4) {
+                    AppState.scheduleFlow.step++;
+                    render();
+                }
+            }
+            if (action === 'schedule-prev') {
+                if (AppState.scheduleFlow.step > 1) {
+                    AppState.scheduleFlow.step--;
+                    render();
+                }
+            }
+            if (action === 'schedule-cancel') {
+                navigate(AppState.scheduleFlow.isRescheduling ? 'details' : 'home');
+            }
+            if (action === 'schedule-confirm') {
+                // Simula salvamento
+                const newId = 'A' + Date.now();
+                
+                if (AppState.scheduleFlow.isRescheduling) {
+                    // Remove antiga
+                    AppState.appointments = AppState.appointments.filter(a => a.id !== AppState.scheduleFlow.rescheduleId);
+                }
+
+                AppState.appointments.push({
+                    id: newId,
+                    doctor: AppState.scheduleFlow.doctor,
+                    specialty: AppState.scheduleFlow.specialty,
+                    date: AppState.scheduleFlow.date,
+                    time: AppState.scheduleFlow.time,
+                    status: 'Agendado',
+                    location: 'Clínica Matriz - Av. Paulista, 1000'
+                });
+
+                // Tela de Sucesso
+                showModal(`
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-xl animate-[fadeIn_0.2s_ease-out]">
+                        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="ph ph-check text-3xl font-bold"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Consulta Agendada!</h2>
+                        <p class="text-slate-500 text-sm mb-6">Seu horário com ${AppState.scheduleFlow.doctor} está confirmado para ${formatDataBR(AppState.scheduleFlow.date)} às ${AppState.scheduleFlow.time}.</p>
+                        <button data-action="close-success" data-targetid="${newId}" class="w-full bg-brand-700 text-white font-semibold py-3 rounded-xl hover:bg-brand-800 transition-colors">
+                            Ver detalhes da consulta
+                        </button>
+                    </div>
+                `);
+            }
+            if (action === 'close-success') {
+                hideModal();
+                navigate('details', { id: btn.dataset.targetid });
+            }
+
+            // Cancelamento
+            if (action === 'init-cancel') {
+                showModal(`
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl animate-[fadeIn_0.2s_ease-out]">
+                        <div class="flex items-center gap-3 mb-4 text-red-600">
+                            <i class="ph ph-warning-circle text-2xl"></i>
+                            <h2 class="text-xl font-bold text-slate-800">Cancelar consulta?</h2>
+                        </div>
+                        <p class="text-slate-600 text-sm mb-6">Tem certeza que deseja cancelar esta consulta? Esta ação não pode ser desfeita.</p>
+                        <div class="flex gap-3">
+                            <button data-action="close-modal" class="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50">Voltar</button>
+                            <button data-action="confirm-cancel" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 shadow-md shadow-red-600/20">Sim, cancelar</button>
+                        </div>
+                    </div>
+                `);
+            }
+            if (action === 'confirm-cancel') {
+                const apptIndex = AppState.appointments.findIndex(a => a.id === AppState.selectedAppointmentId);
+                if (apptIndex > -1) {
+                    AppState.appointments[apptIndex].status = 'Cancelado';
+                }
+                hideModal();
+                render(); // Atualiza a tela de detalhes com o novo status
+            }
+
+            // Reagendamento
+            if (action === 'init-reschedule') {
+                const appt = AppState.appointments.find(a => a.id === AppState.selectedAppointmentId);
+                AppState.scheduleFlow = {
+                    step: 1,
+                    doctor: appt.doctor,
+                    specialty: appt.specialty,
+                    date: null,
+                    time: null,
+                    isRescheduling: true,
+                    rescheduleId: appt.id
+                };
+                navigate('schedule');
+            }
+
+            // Outros Fechamentos de Modal
+            if (action === 'close-modal') {
+                hideModal();
+            }
+
+            // Perfil e Contato (Mock actions)
+            if (action === 'save-profile') {
+                const initialText = btn.innerText;
+                btn.innerText = 'Salvando...';
+                btn.classList.add('opacity-80');
+                setTimeout(() => {
+                    btn.innerText = 'Salvo com sucesso!';
+                    btn.classList.remove('bg-slate-800');
+                    btn.classList.add('bg-emerald-600');
+                    setTimeout(() => {
+                        btn.innerText = initialText;
+                        btn.classList.add('bg-slate-800');
+                        btn.classList.remove('bg-emerald-600', 'opacity-80');
+                    }, 2000);
+                }, 800);
+            }
+            if (action === 'contact') {
+                 showModal(`
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-xl animate-[fadeIn_0.2s_ease-out]">
+                        <div class="w-16 h-16 bg-brand-50 text-brand-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="ph ph-whatsapp-logo text-3xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Fale conosco</h2>
+                        <p class="text-slate-500 text-sm mb-6">Nosso atendimento via WhatsApp funciona de segunda a sexta, das 08h às 18h.</p>
+                        <a href="#" data-action="close-modal" class="block w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl hover:bg-[#20bd5a] transition-colors mb-3">
+                            Abrir WhatsApp
+                        </a>
+                        <button data-action="close-modal" class="text-slate-500 font-medium text-sm hover:underline">
+                            Fechar
+                        </button>
+                    </div>
+                `);
+            }
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+        });
+
+    </script>
+</body>
+</html>

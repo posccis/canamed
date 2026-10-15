@@ -14,12 +14,13 @@ import {
 import { PatientCheckInPage } from './features/patient/pages/PatientCheckInPage';
 import { PatientDocumentPage } from './features/patient/pages/PatientDocumentPage';
 import { PatientDocumentValidationPage } from './features/patient/pages/PatientDocumentValidationPage';
-import { PatientHub } from './features/patient/pages/PatientHub';
 import { PatientRegistrationPage } from './features/patient/pages/PatientRegistrationPage';
 import {
   PatientAppointmentsPage,
   PatientBookingPage,
   PatientDocumentsPage,
+  PatientHomePage,
+  PatientProfilePage,
 } from './features/patient/pages/PatientPortalPages';
 import { PatientQueuePage } from './features/patient/pages/PatientQueuePage';
 import { PrivacyPortal } from './features/patient/PrivacyPortal';
@@ -61,7 +62,7 @@ export function App() {
         {/* Superfície pública do paciente */}
         <Route path="/p" element={<Navigate to={`/p/${DEFAULT_CLINIC_SLUG}`} replace />} />
         <Route path="/p/:slug" element={<PatientLayout />}>
-          <Route index element={<PatientHub />} />
+          <Route index element={<PatientHomePage />} />
           <Route path="agendar" element={<PatientBookingPage />} />
           <Route path="agendar/profissional/:professionalSlug" element={<PatientBookingPage />} />
           <Route path="agendar/especialidade/:specialtySlug" element={<PatientBookingPage />} />
@@ -72,6 +73,7 @@ export function App() {
           <Route path="c/:token/cancelar" element={<PatientCancelPage />} />
           <Route path="documentos" element={<PatientDocumentsPage />} />
           <Route path="documentos/:token" element={<PatientDocumentPage />} />
+          <Route path="perfil" element={<PatientProfilePage />} />
           <Route path="privacidade" element={<PrivacyPortal />} />
           <Route path="privacidade/:protocol" element={<PrivacyPortal />} />
           <Route path="cadastro" element={<PatientRegistrationPage />} />

@@ -3,18 +3,15 @@ import {
   CalendarDays,
   Stethoscope,
   Users,
-  Building2,
-  BookOpen,
   UserCog,
-  Link2,
-  Tv,
-  ShieldCheck,
-  SlidersHorizontal,
+  Receipt,
+  Settings,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import type { Session } from '../auth/authApi';
 import type { StaffView } from '../../navigation/routes';
+import { CanamedLogoLonga, CanamedLogoCurta } from '../../shared/CanamedLogo';
 
 type SidebarProps = {
   session: Session;
@@ -51,10 +48,9 @@ function getInitials(name?: string): string {
 }
 
 /**
- * Sidebar administrativa e operacional moderna com visual SaaS limpo (SPEC-UI-001 & protótipo oficial).
+ * Sidebar administrativa e operacional moderna com visual SaaS limpo (SPEC-0032).
  * - Fundo branco (#ffffff) com borda suave lateral (#e2e8f0).
- * - Indicador visual ativo no Accent Color (#66CDAA) e destaque no Teal oficial (#008080).
- * - Organização em seções: "Principal" e "Administração".
+ * - Estrutura operacional enxuta: 5 itens centrais + Configurações no rodapé.
  * - Perfil do usuário e colapso responsivo (250px <-> 72px).
  */
 export function Sidebar({
@@ -67,24 +63,19 @@ export function Sidebar({
   mobileOpen,
   onCloseMobile,
 }: SidebarProps) {
-  const canManageUsers = session.permissions.includes('users:manage');
   const canConfigureAgenda = session.permissions.includes('agenda:configure');
   const canReadClinic = session.permissions.includes('clinic:read');
-  const canOperateQueue =
-    session.permissions.includes('agenda:write') || session.permissions.includes('agenda:read:own');
   const canAccessWorkspace =
     session.permissions.includes('workspace:access') ||
     session.permissions.includes('records:read') ||
     session.role === 'profissional' ||
     session.role === 'gestor';
 
-  const canAccessDpo =
-    session.permissions.includes('dpo:manage') ||
-    session.role === 'gestor' ||
-    session.role === 'dpo';
-
-  const canManagePolicies =
+  const canAccessSettings =
+    session.permissions.includes('clinic:manage') ||
+    session.permissions.includes('users:manage') ||
     session.permissions.includes('policy:manage') ||
+    session.permissions.includes('dpo:manage') ||
     session.role === 'gestor';
 
   function handleNav(target: StaffView) {
@@ -120,6 +111,17 @@ export function Sidebar({
         className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''} ${mobileOpen ? 'sidebar--mobile-open' : ''}`}
         aria-label="Navegação principal da aplicação"
       >
+        {/* Botão Encolher/Expandir Flutuante (Protótipo Oficial) */}
+        <button
+          type="button"
+          className="sidebar__floating-toggle"
+          onClick={onToggleCollapse}
+          title={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, overflowY: 'auto' }}>
           {/* Cabeçalho com Logo Oficial */}
           <div className="sidebar__header">
@@ -134,27 +136,19 @@ export function Sidebar({
             >
               {collapsed ? (
                 <div className="sidebar__logo-icon-container">
-                  <img
-                    src="/assets/brand/canamed-mulher-logocurta.png"
-                    alt="CANA MED Mulher"
-                    className="sidebar__logo-icon"
-                  />
+                  <CanamedLogoCurta height={36} className="sidebar__logo-icon" />
                 </div>
               ) : (
                 <div className="sidebar__logo-img-container">
-                  <img
-                    src="/assets/brand/canamed-mulher-logolonga.png"
-                    alt="CANA MED Mulher — Eficiência Para Quem Mais Precisa"
-                    className="sidebar__logo-img"
-                  />
+                  <CanamedLogoLonga height={36} className="sidebar__logo-img" />
                 </div>
               )}
             </a>
           </div>
 
-          {/* Navegação Principal */}
+          {/* Navegação Operacional Principal */}
           <nav className="sidebar__nav">
-            {!collapsed && <div className="sidebar__section-title">Principal</div>}
+            {!collapsed && <div className="sidebar__section-title">Operação da Clínica</div>}
 
             {/* Dashboard */}
             <button
@@ -163,6 +157,7 @@ export function Sidebar({
               onClick={() => handleNav('dashboard')}
               title={collapsed ? 'Dashboard' : 'Painel Geral e Indicadores'}
               aria-label={collapsed ? 'Dashboard' : undefined}
+              data-tooltip="Dashboard"
             >
               {view === 'dashboard' && <div className="sidebar__item-indicator" />}
               <span className="sidebar__item-icon">
@@ -171,19 +166,20 @@ export function Sidebar({
               {!collapsed && <span className="sidebar__item-label">Dashboard</span>}
             </button>
 
-            {/* Agenda */}
+            {/* Agenda & Recepção (Consolidado - SPEC-0032) */}
             <button
               type="button"
-              className={`sidebar__item ${view === 'agenda' ? 'sidebar__item--active' : ''}`}
+              className={`sidebar__item ${view === 'agenda' || view === 'queue' ? 'sidebar__item--active' : ''}`}
               onClick={() => handleNav('agenda')}
-              title={collapsed ? 'Agenda' : 'Agenda de Consultas'}
-              aria-label={collapsed ? 'Agenda' : undefined}
+              title={collapsed ? 'Agenda & Recepção' : 'Agenda de Consultas e Fila de Chegadas'}
+              aria-label={collapsed ? 'Agenda & Recepção' : undefined}
+              data-tooltip="Agenda & Recepção"
             >
-              {view === 'agenda' && <div className="sidebar__item-indicator" />}
+              {(view === 'agenda' || view === 'queue') && <div className="sidebar__item-indicator" />}
               <span className="sidebar__item-icon">
                 <CalendarDays size={19} strokeWidth={2} />
               </span>
-              {!collapsed && <span className="sidebar__item-label">Agenda</span>}
+              {!collapsed && <span className="sidebar__item-label">Agenda & Recepção</span>}
             </button>
 
             {/* Pacientes */}
@@ -193,6 +189,7 @@ export function Sidebar({
               onClick={() => handleNav('patients')}
               title={collapsed ? 'Pacientes' : 'Gestão de Pacientes da Clínica'}
               aria-label={collapsed ? 'Pacientes' : undefined}
+              data-tooltip="Pacientes"
             >
               {view === 'patients' && <div className="sidebar__item-indicator" />}
               <span className="sidebar__item-icon">
@@ -201,22 +198,39 @@ export function Sidebar({
               {!collapsed && <span className="sidebar__item-label">Pacientes</span>}
             </button>
 
-            {/* Profissionais */}
+            {/* Equipe Médica & Profissionais */}
             {canConfigureAgenda || canReadClinic || session.role === 'gestor' ? (
               <button
                 type="button"
                 className={`sidebar__item ${view === 'professionals' ? 'sidebar__item--active' : ''}`}
                 onClick={() => handleNav('professionals')}
-                title={collapsed ? 'Profissionais' : 'Corpo Clínico e Especialistas'}
-                aria-label={collapsed ? 'Profissionais' : undefined}
+                title={collapsed ? 'Equipe Médica' : 'Corpo Clínico e Especialistas'}
+                aria-label={collapsed ? 'Equipe Médica' : undefined}
+                data-tooltip="Equipe Médica"
               >
                 {view === 'professionals' && <div className="sidebar__item-indicator" />}
                 <span className="sidebar__item-icon">
                   <UserCog size={19} strokeWidth={2} />
                 </span>
-                {!collapsed && <span className="sidebar__item-label">Profissionais</span>}
+                {!collapsed && <span className="sidebar__item-label">Equipe Médica</span>}
               </button>
             ) : null}
+
+            {/* Caixa & Financeiro Básico */}
+            <button
+              type="button"
+              className={`sidebar__item ${view === 'cashier' || view === 'financial' ? 'sidebar__item--active' : ''}`}
+              onClick={() => handleNav('cashier')}
+              title={collapsed ? 'Caixa Diário' : 'Frente de Caixa e Recebimentos'}
+              aria-label={collapsed ? 'Caixa Diário' : undefined}
+              data-tooltip="Caixa Diário"
+            >
+              {(view === 'cashier' || view === 'financial') && <div className="sidebar__item-indicator" />}
+              <span className="sidebar__item-icon">
+                <Receipt size={19} strokeWidth={2} />
+              </span>
+              {!collapsed && <span className="sidebar__item-label">Caixa Diário</span>}
+            </button>
 
             {/* Meu Consultório — superfície dedicada do médico em /medico (SPEC-0026/RN-001) */}
             {canAccessWorkspace ? (
@@ -226,6 +240,7 @@ export function Sidebar({
                 onClick={handleOpenDoctorSurface}
                 title={collapsed ? 'Consultório' : 'Meu Consultório Virtual e Prontuário Eletrônico (PEP)'}
                 aria-label={collapsed ? 'Consultório' : undefined}
+                data-tooltip="Consultório"
               >
                 <span className="sidebar__item-icon">
                   <Stethoscope size={19} strokeWidth={2} />
@@ -233,149 +248,30 @@ export function Sidebar({
                 {!collapsed && <span className="sidebar__item-label">Consultório</span>}
               </button>
             ) : null}
-
-            {/* Recepção / Fila */}
-            {canOperateQueue ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'queue' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('queue')}
-                title={collapsed ? 'Recepção' : 'Recepção e Fila de Espera'}
-                aria-label={collapsed ? 'Recepção' : undefined}
-              >
-                {view === 'queue' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <Users size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Recepção</span>}
-              </button>
-            ) : null}
-
-            {/* Divisor & Seção Administração */}
-            <div className="sidebar__divider" />
-            {!collapsed && <div className="sidebar__section-title">Administração</div>}
-
-            {/* Operação */}
-            {canReadClinic ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'operation' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('operation')}
-                title={collapsed ? 'Operação' : 'Gestão Operacional (Salas, Convênios, Horários e Feriados)'}
-                aria-label={collapsed ? 'Operação' : undefined}
-              >
-                {view === 'operation' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <Building2 size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Operação</span>}
-              </button>
-            ) : null}
-
-            {/* Catálogo */}
-            {canConfigureAgenda ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'catalog' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('catalog')}
-                title={collapsed ? 'Catálogo' : 'Catálogo Assistencial e Classificação'}
-                aria-label={collapsed ? 'Catálogo' : undefined}
-              >
-                {view === 'catalog' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <BookOpen size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Catálogo</span>}
-              </button>
-            ) : null}
-
-            {/* Usuários */}
-            {canManageUsers ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'users' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('users')}
-                title={collapsed ? 'Usuários' : 'Gestão de Usuários e Permissões'}
-                aria-label={collapsed ? 'Usuários' : undefined}
-              >
-                {view === 'users' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <UserCog size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Usuários</span>}
-              </button>
-            ) : null}
-
-            {/* Central de Links — endereços compartilháveis da superfície do paciente (SPEC-0026/RN-018) */}
-            {canOperateQueue || canReadClinic ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'links' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('links')}
-                title={collapsed ? 'Central de Links' : 'Central de Links — copie e compartilhe os endereços do paciente'}
-                aria-label={collapsed ? 'Central de Links' : undefined}
-              >
-                {view === 'links' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <Link2 size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Central de Links</span>}
-              </button>
-            ) : null}
-
-            {/* Painel TV Recepção */}
-            <button
-              type="button"
-              className={`sidebar__item ${view === 'tv' ? 'sidebar__item--active' : ''}`}
-              onClick={() => handleNav('tv')}
-              title={collapsed ? 'Painel TV' : 'Painel de Chamada para TV do Saguão (SPEC-0020)'}
-              aria-label={collapsed ? 'Painel TV' : undefined}
-            >
-              {view === 'tv' && <div className="sidebar__item-indicator" />}
-              <span className="sidebar__item-icon">
-                <Tv size={19} strokeWidth={2} />
-              </span>
-              {!collapsed && <span className="sidebar__item-label">Painel TV</span>}
-            </button>
-
-            {/* DPO & LGPD */}
-            {canAccessDpo ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'dpo' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('dpo')}
-                title={collapsed ? 'DPO (LGPD)' : 'Painel do DPO e Governança LGPD (SPEC-0023)'}
-                aria-label={collapsed ? 'DPO (LGPD)' : undefined}
-              >
-                {view === 'dpo' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <ShieldCheck size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">DPO (LGPD)</span>}
-              </button>
-            ) : null}
-
-            {/* Políticas da Clínica */}
-            {canManagePolicies ? (
-              <button
-                type="button"
-                className={`sidebar__item ${view === 'policies' ? 'sidebar__item--active' : ''}`}
-                onClick={() => handleNav('policies')}
-                title={collapsed ? 'Políticas' : 'Políticas de Agendamento e Encaixes (SPEC-0025)'}
-                aria-label={collapsed ? 'Políticas' : undefined}
-              >
-                {view === 'policies' && <div className="sidebar__item-indicator" />}
-                <span className="sidebar__item-icon">
-                  <SlidersHorizontal size={19} strokeWidth={2} />
-                </span>
-                {!collapsed && <span className="sidebar__item-label">Políticas</span>}
-              </button>
-            ) : null}
           </nav>
         </div>
 
-        {/* Rodapé da Sidebar: Perfil do Usuário e Botão de Colapso */}
+        {/* Rodapé da Sidebar: Configurações, Perfil do Usuário e Botão de Colapso */}
         <div className="sidebar__footer">
+          {/* Item Configurações da Clínica no rodapé (SPEC-0032) */}
+          {canAccessSettings && (
+            <button
+              type="button"
+              className={`sidebar__item ${view === 'settings' ? 'sidebar__item--active' : ''}`}
+              onClick={() => handleNav('settings')}
+              title={collapsed ? 'Configurações' : 'Configurações da Clínica (Salas, Convênios, Regras, Equipe e LGPD)'}
+              aria-label={collapsed ? 'Configurações' : undefined}
+              data-tooltip="Configurações"
+              style={{ marginBottom: '0.5rem' }}
+            >
+              {view === 'settings' && <div className="sidebar__item-indicator" />}
+              <span className="sidebar__item-icon">
+                <Settings size={19} strokeWidth={2} />
+              </span>
+              {!collapsed && <span className="sidebar__item-label">Configurações</span>}
+            </button>
+          )}
+
           <div
             className="sidebar__user-profile"
             title={`${session.user.name} (${formatRole(session.role)})`}

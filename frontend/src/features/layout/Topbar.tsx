@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Bell, Search } from 'lucide-react';
 import { type Session, switchClinic } from '../auth/authApi';
 import type { StaffView } from '../../navigation/routes';
+import { UserProfileMenu } from '../../shared/UserProfileMenu';
 
 type TopbarProps = {
   session: Session;
@@ -11,27 +13,28 @@ type TopbarProps = {
   onReloadSession?: () => void;
 };
 
-const VIEW_TITLES: Record<StaffView, string> = {
-  dashboard: 'Painel Operacional',
-  agenda: 'Agenda de Consultas',
-  patients: 'Gestão de Pacientes',
-  professionals: 'Corpo Clínico & Profissionais',
-  queue: 'Recepção e Fila de Espera',
-  operation: 'Gestão Operacional',
-  catalog: 'Catálogo Assistencial',
-  users: 'Gestão de Usuários',
-  cashier: 'Frente de Caixa & Turno',
-  financial: 'Gestão Financeira & Repasses',
-  inventory: 'Estoque & Insumos Médicos',
-  dpo: 'Governança LGPD & Painel do DPO',
-  policies: 'Políticas de Agendamento & Encaixes',
-  tv: 'Painel de Chamada para TV',
-  links: 'Central de Links',
+const VIEW_TITLES: Record<StaffView, { breadcrumb: string; title: string }> = {
+  dashboard: { breadcrumb: 'Dashboard', title: 'Visão Geral da Clínica' },
+  agenda: { breadcrumb: 'Agenda & Recepção', title: 'Agenda de Consultas e Fila do Dia' },
+  patients: { breadcrumb: 'Pacientes', title: 'Gestão de Pacientes' },
+  professionals: { breadcrumb: 'Profissionais', title: 'Corpo Clínico & Especialistas' },
+  queue: { breadcrumb: 'Recepção', title: 'Recepção e Fila de Espera' },
+  operation: { breadcrumb: 'Operação', title: 'Salas & Convênios' },
+  catalog: { breadcrumb: 'Catálogo', title: 'Catálogo Assistencial' },
+  users: { breadcrumb: 'Usuários', title: 'Gestão de Usuários' },
+  cashier: { breadcrumb: 'Caixa Diário', title: 'Frente de Caixa & Conferência' },
+  financial: { breadcrumb: 'Financeiro', title: 'Fechamento de Caixa' },
+  inventory: { breadcrumb: 'Estoque', title: 'Insumos Clínicos' },
+  dpo: { breadcrumb: 'DPO', title: 'Privacidade & LGPD' },
+  policies: { breadcrumb: 'Políticas', title: 'Regras de Agendamento' },
+  tv: { breadcrumb: 'Painel TV', title: 'Painel de Chamada do Saguão' },
+  links: { breadcrumb: 'Links', title: 'Central de Links' },
+  settings: { breadcrumb: 'Configurações', title: 'Configurações da Clínica' },
 };
 
 export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch, onReloadSession }: TopbarProps) {
-  const initial = session.user.name.trim().charAt(0).toUpperCase() || 'U';
   const [switching, setSwitching] = useState(false);
+  const currentView = VIEW_TITLES[view] || { breadcrumb: 'Administração', title: 'Painel Geral' };
 
   async function handleClinicChange(newClinicId: string) {
     if (!newClinicId || newClinicId === session.clinicId || switching) return;
@@ -62,23 +65,46 @@ export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch,
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <h2 className="topbar__title">{VIEW_TITLES[view]}</h2>
 
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          {/* Breadcrumb idêntico ao protótipo */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: '0.75rem',
+              color: 'var(--content-muted, #858D99)',
+              fontWeight: 500,
+              gap: '0.4rem',
+              lineHeight: 1.2,
+              marginBottom: '0.2rem',
+            }}
+          >
+            <span style={{ color: 'var(--brand-primary, #852A91)', fontWeight: 600 }}>Administração</span>
+            <span style={{ fontSize: '0.7rem' }}>›</span>
+            <span>{currentView.breadcrumb}</span>
+          </div>
+          <h1 className="topbar__title" style={{ margin: 0, fontSize: '1.18rem', fontWeight: 700, color: 'var(--content-primary, #202631)' }}>
+            {currentView.title}
+          </h1>
+        </div>
+
+        {/* Seletor de Clínica estilizado */}
         {session.clinics && session.clinics.length > 1 ? (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={{ fontSize: '0.9rem' }}>🏥</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.75rem' }}>
             <select
               aria-label="Selecionar Unidade ou Clínica"
               className="topbar__clinic-tag"
               style={{
                 cursor: 'pointer',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-primary)',
+                background: 'var(--base-surface, #FFFFFF)',
+                border: '1px solid var(--base-border, #E2E6EC)',
+                color: 'var(--brand-primary, #852A91)',
                 fontWeight: 600,
-                padding: '0.25rem 0.5rem',
-                borderRadius: '6px',
+                padding: '0.3rem 0.65rem',
+                borderRadius: '8px',
                 outline: 'none',
+                fontSize: '0.8rem',
               }}
               value={session.clinicId}
               disabled={switching}
@@ -90,11 +116,23 @@ export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch,
                 </option>
               ))}
             </select>
-            {switching && <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Trocando...</span>}
+            {switching && <span style={{ fontSize: '0.75rem', color: 'var(--content-muted)' }}>Trocando...</span>}
           </div>
         ) : (
-          <span className="topbar__clinic-tag">
-            {session.clinicName}
+          <span
+            className="topbar__clinic-tag"
+            style={{
+              marginLeft: '0.75rem',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: 'var(--brand-primary, #852A91)',
+              background: 'var(--brand-soft, #F7ECF8)',
+              border: '1px solid rgba(183, 122, 216, 0.3)',
+              borderRadius: '999px',
+              padding: '0.2rem 0.65rem',
+            }}
+          >
+            🏥 {session.clinicName}
           </span>
         )}
       </div>
@@ -110,21 +148,24 @@ export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch,
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '0.35rem 0.65rem',
+              padding: '0.4rem 0.75rem',
               fontSize: '0.82rem',
-              color: 'var(--color-text-muted)',
-              borderRadius: 'var(--radius-sm)'
+              color: 'var(--content-secondary, #626B79)',
+              borderRadius: '8px',
+              border: '1px solid var(--base-border, #E2E6EC)',
+              backgroundColor: 'var(--base-surface, #FFFFFF)',
             }}
           >
-            <span>🔍 Buscar</span>
+            <Search size={15} />
+            <span>Buscar</span>
             <kbd
               style={{
                 fontSize: '0.7rem',
                 padding: '0.1rem 0.35rem',
-                border: '1px solid var(--color-border)',
+                border: '1px solid var(--base-border, #E2E6EC)',
                 borderRadius: '4px',
-                backgroundColor: 'var(--color-surface)',
-                fontFamily: 'inherit'
+                backgroundColor: 'var(--base-muted, #F1F3F6)',
+                fontFamily: 'inherit',
               }}
             >
               Ctrl+K
@@ -132,22 +173,56 @@ export function Topbar({ session, view, onToggleMobile, onSignOut, onOpenSearch,
           </button>
         ) : null}
 
-        <div className="topbar__user" title={`Usuário: ${session.user.name} (${session.user.email})`}>
-          <div className="topbar__avatar">{initial}</div>
-          <div className="topbar__user-info">
-            <span className="topbar__user-name">{session.user.name}</span>
-            <span className="topbar__user-role">{session.role}</span>
-          </div>
-        </div>
-
+        {/* Notificações (Sino do Protótipo) */}
         <button
           type="button"
-          className="button button--ghost"
-          style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}
-          onClick={onSignOut}
+          title="Notificações"
+          aria-label="Notificações da clínica"
+          style={{
+            position: 'relative',
+            padding: '0.5rem',
+            borderRadius: '50%',
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--content-secondary, #626B79)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--base-muted, #F1F3F6)';
+            e.currentTarget.style.color = 'var(--brand-primary, #852A91)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--content-secondary, #626B79)';
+          }}
         >
-          Sair
+          <Bell size={20} />
+          <span
+            style={{
+              position: 'absolute',
+              top: '7px',
+              right: '7px',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#C33D49',
+              border: '1.5px solid #FFFFFF',
+            }}
+          />
         </button>
+
+        {/* Divisor Vertical do Protótipo */}
+        <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--base-border, #E2E6EC)' }} />
+
+        {/* Menu de Perfil com Dropdown Oficial */}
+        <UserProfileMenu
+          session={session}
+          onSignOut={onSignOut}
+          portalSubtitle="Recepção / Gestão"
+        />
       </div>
     </header>
   );
