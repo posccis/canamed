@@ -29,6 +29,9 @@ function PortalPage({ tab }: { tab: PatientPortalTab }) {
       onTabChange={(next) => {
         if (routes[next]) navigate(routes[next]);
       }}
+      onLogoutRequested={() => {
+        navigate(paths.base, { replace: true });
+      }}
       clinic={clinicState.status === 'ready' ? clinicState.clinic : null}
     />
   );

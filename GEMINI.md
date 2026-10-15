@@ -984,6 +984,22 @@ Uma entrega só é considerada concluída quando:
 
 ---
 
+# Governança de Marca, Conteúdo e Design Visual (Canva / Canvas MCP)
+
+A produção de peças visuais, materiais institucionais, carrosséis, capas de destaques e conteúdos para redes sociais da Cana Med e Cana Med Mulher deve cumprir obrigatoriamente o seguinte fluxo coordenado:
+
+1. **Estratégia e Redação Não Técnica (`cana-med-design-content-creator`):**
+   - Consulta obrigatoriamente as informações não técnicas da plataforma (`GEMINI.md`, `docs/visao-produto.md`, `docs/identidade-visual.md`, dores reais dos médicos, recepcionistas, gestores e pacientes).
+   - Define a persona-alvo, objetivo do post, gancho (hook) inicial, roteiro slide a slide, copy final 100% redigida em português brasileiro acolhedor e legenda com CTA.
+   - Seleciona estritamente os materiais oficiais da marca em `assets/brand/` e a paleta oficial (#008080 Teal, #005F6A Petróleo, #66CDAA Menta, #333333 Grafite, #F7FAFC Off-White). Proíbe cores não autorizadas (rosa, roxo, lilás, magenta).
+2. **Execução Visual no Canva via Canvas MCP (`cana-med-social-designer`):**
+   - Recebe o pacote de conteúdo estruturado e opera as ferramentas do Canvas MCP para criar ou editar o design no Canva nos formatos padronizados (Feed 4:5 1080×1350 px, Story 9:16 1080×1920 px).
+   - Aplica os logotipos oficiais sem distorção, preservando a área de respiro equivalente à letra "C".
+   - Aplica ícones minimalistas de traço limpo (2px outline), proibindo clichês médicos batidos (cruz vermelha, coração com estetoscópio).
+   - Revisa contraste, margens, ausência de quebras inadequadas e legibilidade em telas de celulares antes de entregar o link do design editável.
+
+---
+
 Permissões, Escopo e Restrições do Agente
 Princípio Fundamental
 

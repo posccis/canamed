@@ -150,7 +150,287 @@ export function DocumentModal({
   }
 
   function handlePrint() {
-    window.print();
+    if (!issuedDoc) {
+      window.print();
+      return;
+    }
+
+    const printWin = window.open('', '_blank', 'width=900,height=1000');
+    if (!printWin) {
+      window.print();
+      return;
+    }
+
+    let parsedPayload: any = {};
+    try {
+      parsedPayload = JSON.parse(issuedDoc.contentPayload);
+    } catch {
+      // payload em formato simples
+    }
+
+    const title =
+      issuedDoc.documentType === 'receita_simples'
+        ? 'RECEITA MÉDICA'
+        : issuedDoc.documentType === 'receita_controle_especial'
+        ? 'RECEITA DE CONTROLE ESPECIAL'
+        : issuedDoc.documentType === 'atestado_medico'
+        ? 'ATESTADO MÉDICO'
+        : 'SOLICITAÇÃO DE EXAMES';
+
+    let contentHtml = '';
+    if (parsedPayload.items && Array.isArray(parsedPayload.items)) {
+      contentHtml = `
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          ${parsedPayload.items
+            .map(
+              (m: any, idx: number) => `
+              <div class="avoid-page-break">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                  <h3 style="font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0;">
+                    <span style="color: #00695c; margin-right: 0.25rem;">${idx + 1}.</span>
+                    ${m.medication || ''} 
+                    <span style="font-size: 0.875rem; font-weight: 400; color: #4b5563;">
+                      ${m.concentration ? `- ${m.concentration}` : ''} ${m.form ? `(${m.form})` : ''}
+                    </span>
+                  </h3>
+                  ${
+                    m.quantity
+                      ? `<span style="font-size: 0.85rem; font-weight: 700; background: #f3f4f6; color: #374151; padding: 0.2rem 0.6rem; border-radius: 4px;">${m.quantity}</span>`
+                      : ''
+                  }
+                </div>
+                <div style="padding-left: 1.25rem; border-left: 2px solid #b2dfdb; margin-left: 0.5rem;">
+                  <p style="font-size: 0.875rem; color: #1f2937; margin: 0 0 0.25rem;">
+                    <strong style="color: #4b5563;">Uso:</strong> ${m.route || 'Oral'}
+                  </p>
+                  <p style="font-size: 0.875rem; color: #1f2937; margin: 0;">
+                    <strong style="color: #4b5563;">Posologia / Orientações:</strong> ${m.instructions || ''}
+                  </p>
+                </div>
+              </div>
+            `
+            )
+            .join('')}
+        </div>
+      `;
+
+      if (parsedPayload.generalInstructions) {
+        contentHtml += `
+          <div class="avoid-page-break" style="margin-top: 2rem; background: #e0f2f1; padding: 1rem; border-radius: 6px; border-left: 4px solid #00695c;">
+            <h4 style="font-size: 0.875rem; font-weight: 700; color: #004d40; text-transform: uppercase; margin: 0 0 0.5rem;">
+              Orientações Complementares
+            </h4>
+            <p style="font-size: 0.875rem; color: #374151; margin: 0; line-height: 1.5;">
+              ${parsedPayload.generalInstructions}
+            </p>
+          </div>
+        `;
+      }
+    } else if (parsedPayload.justificationText) {
+      contentHtml = `
+        <div class="avoid-page-break" style="font-size: 1.05rem; line-height: 1.7; color: #1f2937; padding: 1rem 0;">
+          <p style="margin: 0 0 1.25rem;">${parsedPayload.justificationText}</p>
+          ${
+            parsedPayload.leaveDays
+              ? `<p style="margin: 0;"><strong>Período de afastamento recomendado:</strong> ${parsedPayload.leaveDays} dia(s), com início em ${
+                  parsedPayload.startDate
+                    ? new Date(parsedPayload.startDate + 'T00:00:00').toLocaleDateString('pt-BR')
+                    : 'data da emissão'
+                }.</p>`
+              : ''
+          }
+        </div>
+      `;
+    } else if (parsedPayload.exams) {
+      const examLines = String(parsedPayload.exams).split('\n').filter((l: string) => l.trim().length > 0);
+      contentHtml = `
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          ${examLines
+            .map(
+              (line: string, index: number) => `
+              <div class="avoid-page-break" style="padding: 0.6rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: flex-start;">
+                <span style="color: #00695c; font-weight: 700; margin-right: 0.75rem;">${index + 1}.</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #1f2937;">${line.trim()}</span>
+              </div>
+            `
+            )
+            .join('')}
+        </div>
+      `;
+
+      if (parsedPayload.indication) {
+        contentHtml += `
+          <div class="avoid-page-break" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #d1d5db;">
+            <h4 style="font-size: 0.875rem; font-weight: 700; color: #1f2937; margin: 0 0 0.4rem;">Indicação Clínica / Suspeita Diagnóstica:</h4>
+            <p style="font-size: 0.875rem; color: #4b5563; margin: 0;">${parsedPayload.indication}</p>
+          </div>
+        `;
+      }
+    } else {
+      contentHtml = `<p style="font-size: 1rem; line-height: 1.6;">${issuedDoc.contentPayload}</p>`;
+    }
+
+    const dateFormatted = issuedDoc.signedAt
+      ? new Date(issuedDoc.signedAt).toLocaleDateString('pt-BR')
+      : new Date().toLocaleDateString('pt-BR');
+    const timeFormatted = issuedDoc.signedAt
+      ? new Date(issuedDoc.signedAt).toLocaleTimeString('pt-BR')
+      : '';
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8" />
+        <title>${title} — ${patientName} | Cana Med</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+          :root {
+            --page-width: 210mm;
+            --page-height: 297mm;
+          }
+          * { box-sizing: border-box; }
+          body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+          }
+          .a4-page {
+            width: var(--page-width);
+            min-height: var(--page-height);
+            padding: 20mm;
+            margin: 1.5rem auto;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+          }
+          .avoid-page-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .doc-footer {
+            margin-top: auto;
+            padding-top: 2rem;
+          }
+          @media print {
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            body {
+              background: white;
+              margin: 0;
+              padding: 0;
+            }
+            .a4-page {
+              margin: 0;
+              padding: 15mm 20mm;
+              box-shadow: none;
+              border: none;
+              width: 100%;
+              min-height: 100vh;
+              page-break-after: always;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="a4-page">
+          <!-- CABEÇALHO INSTITUCIONAL -->
+          <header style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #00695c; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 52px; height: 52px; border-radius: 8px; background: #00695c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 1.75rem;">
+                C
+              </div>
+              <div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0;">Cana Med — Clínica Ginecológica</h2>
+                <p style="font-size: 0.75rem; color: #4b5563; margin: 0.2rem 0 0;">Av. Engenheiro Domingos Ferreira, 1000 - Boa Viagem, Recife - PE</p>
+                <p style="font-size: 0.75rem; color: #4b5563; margin: 0.1rem 0 0;">(81) 3000-0000 • contato@canamed.com.br</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-weight: 700; color: #1f2937; font-size: 0.95rem; margin: 0;">Corpo Clínico Assistencial</p>
+              <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Ginecologia e Saúde da Mulher</p>
+              <p style="font-size: 0.8rem; font-weight: 600; color: #00695c; margin: 0.15rem 0;">CRM Especializado</p>
+              <p style="font-size: 0.75rem; color: #9ca3af; margin: 0.25rem 0 0;">ID: ${issuedDoc.publicToken.slice(0, 8).toUpperCase()}</p>
+            </div>
+          </header>
+
+          <!-- CARD PACIENTE -->
+          <div style="background: #f9fafb; border-radius: 6px; padding: 1rem; margin-bottom: 1.75rem; border: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Paciente</p>
+              <p style="font-weight: 700; color: #1f2937; font-size: 1.1rem; margin: 0;">${patientName}</p>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Data de Emissão</p>
+              <p style="font-weight: 500; color: #1f2937; font-size: 0.95rem; margin: 0;">${dateFormatted} ${timeFormatted}</p>
+            </div>
+          </div>
+
+          <!-- TÍTULO DO DOCUMENTO -->
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 1.4rem; font-weight: 700; letter-spacing: 0.1em; color: #1f2937; border-bottom: 2px solid #e5e7eb; display: inline-block; padding: 0 1.5rem 0.35rem; margin: 0;">
+              ${title}
+            </h1>
+          </div>
+
+          <!-- CORPO PRINCIPAL -->
+          <div style="flex: 1;">
+            ${contentHtml}
+
+            ${
+              issuedDoc.patientConsentedCid && issuedDoc.cid10Code
+                ? `<div class="avoid-page-break" style="margin-top: 1.75rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid #e2e8f0;">
+                    <strong>CID-10:</strong> ${issuedDoc.cid10Code} (Consentimento informado da paciente nos termos do Art. 73 do Código de Ética Médica)
+                  </div>`
+                : ''
+            }
+          </div>
+
+          <!-- RODAPÉ E ASSINATURA DIGITAL -->
+          <footer class="doc-footer avoid-page-break">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+              <div style="width: 260px; border-bottom: 1px solid #1f2937; margin-bottom: 0.5rem;"></div>
+              <p style="font-weight: 700; color: #1f2937; margin: 0; font-size: 0.95rem;">Assinatura Digital do Médico Responsável</p>
+              <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Conselho Regional de Medicina • ICP-Brasil</p>
+            </div>
+
+            <div style="margin-top: 1.5rem; background: #f0fdfa; border: 1px solid #99f6e4; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.75rem; color: #134e4a;">
+              <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <span><strong>Código Verificador Público:</strong> <code style="font-family: monospace; font-size: 0.85rem;">${issuedDoc.publicToken}</code></span>
+                <span><strong>Validade Jurídica:</strong> MP nº 2.200-2/2001 e Lei nº 13.787/2018</span>
+              </div>
+              <p style="margin: 0; word-break: break-all; color: #047857;">
+                <strong>Hash SHA-256:</strong> ${issuedDoc.signatureHash || 'VALIDADO-DIGITALMENTE-CANAMED'}
+              </p>
+              <p style="margin: 0.35rem 0 0; color: #065f46;">
+                Para verificar a autenticidade deste documento clínico, acesse o portal de validação pública CANAMED informando o código acima.
+              </p>
+            </div>
+          </footer>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
   }
 
   const pdfDownloadUrl = issuedDoc

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { patientPaths } from '../../../navigation/routes';
 import { patientApi, type RegistrationDraftResponse } from '../patientApi';
+import { formatCpf, formatPhone } from '../../../utils/masks';
 
 interface FormState {
   name: string;
@@ -96,7 +97,15 @@ export function PatientRegistrationPage() {
   }, [loadDraft]);
 
   const handleChange = (field: keyof FormState, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    let formatted = value;
+    if (typeof value === 'string') {
+      if (field === 'document') {
+        formatted = formatCpf(value);
+      } else if (field === 'phone' || field === 'emergencyContactPhone') {
+        formatted = formatPhone(value);
+      }
+    }
+    setForm((prev) => ({ ...prev, [field]: formatted }));
   };
 
   const handleSaveDraft = async () => {

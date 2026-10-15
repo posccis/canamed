@@ -89,6 +89,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [rescheduleAppointmentId, setRescheduleAppointmentId] = useState<string | null>(null);
   const [customPatientName, setCustomPatientName] = useState<string>(() => session?.patientName || '');
+  const [selectedAppointmentTypeId, setSelectedAppointmentTypeId] = useState<string>('');
+  const [accessibilityNeeds, setAccessibilityNeeds] = useState<string[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
 
   // Modais de Diálogo
@@ -286,14 +288,29 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
     setBookingLoading(true);
     try {
-      const defaultApptType = meta.appointmentTypes?.[0]?.id || 'default-type';
+      const chosenTypeId = selectedAppointmentTypeId || meta.appointmentTypes?.[0]?.id || 'default-type';
+      const notesParts: string[] = [];
+      if (isRescheduling && rescheduleAppointmentId) {
+        notesParts.push(`Reagendamento da consulta #${rescheduleAppointmentId}`);
+      }
+      if (accessibilityNeeds.length > 0 && !accessibilityNeeds.includes('nenhuma') && !accessibilityNeeds.includes('nao_informar')) {
+        const labels: Record<string, string> = {
+          idosa: 'Pessoa idosa (60+)',
+          pcd: 'Pessoa com deficiência (PcD)',
+          autista: 'Pessoa autista (TEA)',
+        };
+        const prefs = accessibilityNeeds.map((k) => labels[k] || k).join(', ');
+        notesParts.push(`[Preferência/Acessibilidade: ${prefs}]`);
+      }
+      const finalNotes = notesParts.length > 0 ? notesParts.join(' • ') : undefined;
+
       const created = await patientApi.bookAppointment(session.token, {
         clinicId: meta.clinicId,
         professionalId: selectedDoctor.id,
         specialtyId: selectedDoctor.specialtyId,
-        appointmentTypeId: defaultApptType,
+        appointmentTypeId: chosenTypeId,
         startsAt: selectedSlot.startsAt,
-        notes: isRescheduling ? `Reagendamento da consulta #${rescheduleAppointmentId}` : undefined,
+        notes: finalNotes,
       });
 
       // Se estava reagendando, cancela o antigo
@@ -308,22 +325,9 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
       setCreatedAppointment(created);
       fetchAppointments();
       setShowSuccessModal(true);
-    } catch {
-      // Mock de sucesso elegante se o backend estiver desconectado em ambiente dev local
-      const mockCreated: OnlineAppointment = {
-        id: 'A-' + Date.now(),
-        clinicId: meta.clinicId,
-        professionalId: selectedDoctor.id,
-        professionalName: selectedDoctor.name,
-        specialtyName: selectedDoctor.specialtyName || 'Ginecologia Geral',
-        startsAt: selectedSlot.startsAt,
-        endsAt: selectedSlot.endsAt,
-        status: 'agendado',
-        paymentStatus: 'pendente',
-      };
-      setAppointments((prev) => [mockCreated, ...prev]);
-      setCreatedAppointment(mockCreated);
-      setShowSuccessModal(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao confirmar agendamento. Tente novamente.';
+      addToast(msg, 'error');
     } finally {
       setBookingLoading(false);
     }
@@ -379,8 +383,12 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
   const handleLogout = () => {
     localStorage.removeItem(storageKey);
     localStorage.removeItem('canamed_patient_session');
+    localStorage.removeItem('canamed_patient_session_cana-med');
+    sessionStorage.clear();
     setSession(null);
     setAppointments([]);
+    setDocuments([]);
+    setExamAttachments([]);
     onLogoutRequested?.();
     navigateTo('home');
     addToast('Sessão encerrada com segurança.', 'info');
@@ -1372,12 +1380,107 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         }}
                       />
                     </div>
+                    {/* Seleção do Tipo de Atendimento / Entrada */}
+                    {meta?.appointmentTypes && meta.appointmentTypes.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        <label htmlFor="portal-appt-type" style={{ color: '#64748B', fontWeight: 500 }}>
+                          Tipo de Atendimento / Entrada:
+                        </label>
+                        <select
+                          id="portal-appt-type"
+                          value={selectedAppointmentTypeId || meta.appointmentTypes[0]?.id}
+                          onChange={(e) => setSelectedAppointmentTypeId(e.target.value)}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '0.6rem 0.75rem',
+                            borderRadius: '8px',
+                            border: '1px solid #CBD5E1',
+                            fontSize: '0.88rem',
+                            fontWeight: 600,
+                            color: '#1E293B',
+                            background: '#FFFFFF',
+                          }}
+                        >
+                          {meta.appointmentTypes.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.name} ({t.durationMinutes} min)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: '#64748B' }}>Local</span>
                       <span style={{ fontWeight: 600, color: '#1E293B', textAlign: 'right' }}>
                         {meta?.clinicName || 'Clínica CANA MED'}
                       </span>
                     </div>
+                  </div>
+                </div>
+
+                {/* Seção Opcional de Preferências de Atendimento e Acessibilidade (QF-06) */}
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <h3 style={{ margin: '0 0 0.35rem', fontSize: '0.98rem', fontWeight: 700, color: '#1E293B' }}>
+                    Necessidades de Acessibilidade e Atendimento (Opcional)
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748B', margin: '0 0 0.85rem', lineHeight: 1.4 }}>
+                    Caso deseje, informe se possui alguma necessidade para que nossa equipe acolha seu atendimento com o devido cuidado.
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.6rem' }}>
+                    {[
+                      { id: 'idosa', label: 'Pessoa idosa (60+)' },
+                      { id: 'pcd', label: 'Pessoa com deficiência (PcD)' },
+                      { id: 'autista', label: 'Pessoa autista (TEA)' },
+                      { id: 'nenhuma', label: 'Nenhuma das opções' },
+                      { id: 'nao_informar', label: 'Prefiro não informar' },
+                    ].map((opt) => {
+                      const isChecked = accessibilityNeeds.includes(opt.id);
+                      return (
+                        <label
+                          key={opt.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.84rem',
+                            color: '#334155',
+                            cursor: 'pointer',
+                            padding: '0.35rem 0.5rem',
+                            borderRadius: '6px',
+                            background: isChecked ? '#F5F3FF' : 'transparent',
+                            border: isChecked ? '1px solid #C4B5FD' : '1px solid transparent',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (opt.id === 'nenhuma' || opt.id === 'nao_informar') {
+                                setAccessibilityNeeds(e.target.checked ? [opt.id] : []);
+                              } else {
+                                setAccessibilityNeeds((prev) => {
+                                  const filtered = prev.filter((k) => k !== 'nenhuma' && k !== 'nao_informar');
+                                  return e.target.checked ? [...filtered, opt.id] : filtered.filter((k) => k !== opt.id);
+                                });
+                              }
+                            }}
+                          />
+                          <span>{opt.label}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 

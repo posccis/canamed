@@ -5,6 +5,7 @@ import { CanamedLogoCurta, CanamedLogoLonga } from '../../shared/CanamedLogo';
 import { login, loginWithMfa } from '../auth/authApi';
 import { patientApi } from '../patient/patientApi';
 import { describeError } from '../agenda/agendaErrors';
+import { formatCpf, formatPhone, unmaskDigits } from '../../utils/masks';
 
 type ProfileId = 'paciente' | 'medico' | 'admin';
 
@@ -195,7 +196,10 @@ export function HomePage() {
   // Paciente: Envio de código OTP por SMS/WhatsApp (Celular + CPF, sem senha)
   const handlePatientRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientPhone.trim() || !patientCpf.trim()) {
+    const cleanPhone = unmaskDigits(patientPhone);
+    const cleanCpf = unmaskDigits(patientCpf);
+
+    if (!cleanPhone || !cleanCpf) {
       setStatus('error');
       setErrorMessage('Informe seu número de celular e CPF para receber o código.');
       return;
@@ -205,7 +209,7 @@ export function HomePage() {
     setErrorMessage('');
 
     try {
-      const res = await patientApi.requestOtp(patientPhone.trim(), patientCpf.trim());
+      const res = await patientApi.requestOtp(cleanPhone, cleanCpf);
       if (res.success) {
         setPatientOtpSent(true);
         setStatus('idle');
@@ -229,11 +233,14 @@ export function HomePage() {
       return;
     }
 
+    const cleanPhone = unmaskDigits(patientPhone);
+    const cleanCpf = unmaskDigits(patientCpf);
+
     setStatus('loading');
     setErrorMessage('');
 
     try {
-      const res = await patientApi.verifyOtp(patientPhone.trim(), patientCpf.trim(), patientOtpCode.trim());
+      const res = await patientApi.verifyOtp(cleanPhone, cleanCpf, patientOtpCode.trim());
       if (res.success && res.sessionToken) {
         const patientSession = {
           token: res.sessionToken,
@@ -1005,7 +1012,7 @@ export function HomePage() {
                         <input
                           type="tel"
                           value={patientPhone}
-                          onChange={(e) => setPatientPhone(e.target.value)}
+                          onChange={(e) => setPatientPhone(formatPhone(e.target.value))}
                           placeholder="(81) 99999-9999"
                           disabled={status === 'loading'}
                           className="login-input-field"
@@ -1039,8 +1046,8 @@ export function HomePage() {
                         <input
                           type="text"
                           value={patientCpf}
-                          onChange={(e) => setPatientCpf(e.target.value)}
-                          placeholder="123.456.789-00"
+                          onChange={(e) => setPatientCpf(formatCpf(e.target.value))}
+                          placeholder="000.000.000-00"
                           disabled={status === 'loading'}
                           className="login-input-field"
                           style={{

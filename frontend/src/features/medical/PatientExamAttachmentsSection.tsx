@@ -395,8 +395,17 @@ export function PatientExamAttachmentsSection({
 
       {/* Modal de Envio de Exame */}
       {showUploadModal && (
-        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-upload-title">
-          <div className="modal modal--large" style={{ maxWidth: '640px' }}>
+        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-upload-title">
+          <button
+            type="button"
+            className="modal__backdrop"
+            aria-label="Fechar"
+            onClick={() => {
+              setShowUploadModal(false);
+              resetForm();
+            }}
+          />
+          <div className="modal__content modal__content--large" style={{ maxWidth: '640px' }}>
             <header className="modal__header">
               <div>
                 <h2 id="modal-upload-title" style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-primary-dark)' }}>

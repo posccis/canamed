@@ -63,9 +63,43 @@ export function DoctorApp() {
     return <MfaEnrollmentPanel onActivated={reload} onSignOut={() => void end()} />;
   }
 
+  const isDoctorAuthorized =
+    state.session.permissions.includes('workspace:access') ||
+    state.session.role === 'profissional';
+
+  if (!isDoctorAuthorized) {
+    return (
+      <div className="page" style={{ maxWidth: '600px', margin: '4rem auto', textAlign: 'center' }}>
+        <div className="alert alert--error" role="alert" style={{ padding: '2rem', borderRadius: '12px' }}>
+          <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem' }}>Acesso Restrito ao Corpo Clínico</h2>
+          <p style={{ margin: '0 0 1.5rem', color: '#64748b' }}>
+            Seu perfil atual ({state.session.role}) não possui autorização para acessar o Consultório Médico ou prontuários de pacientes.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={() => navigate('/app/dashboard')}
+            >
+              Voltar para Recepção & Operação
+            </button>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => void handleSignOut()}
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   async function handleSignOut() {
     await end();
     navigate('/');
+
   }
 
   return (
