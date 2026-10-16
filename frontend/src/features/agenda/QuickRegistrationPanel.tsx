@@ -4,6 +4,7 @@ import { createAppointmentType, createPatient, createProfessional } from './agen
 import { describeError } from './agendaErrors';
 import { fetchSpecialties, type Specialty } from '../catalog/catalogApi';
 import { categoryOptions, coverageOptions } from '../catalog/catalogLabels';
+import { formatPhone } from '../../utils/masks';
 
 type QuickRegistrationPanelProps = {
   onRegistered: (message: string) => void;
@@ -105,7 +106,8 @@ export function QuickRegistrationPanel({ onRegistered }: QuickRegistrationPanelP
           <input
             className="field__input"
             value={patientPhone}
-            onChange={(event) => setPatientPhone(event.target.value)}
+            onChange={(event) => setPatientPhone(formatPhone(event.target.value))}
+            placeholder="(00) 00000-0000"
             required
             maxLength={40}
           />

@@ -23,6 +23,7 @@ import {
   type Specialty,
 } from './catalogApi';
 import { categoryLabels, categoryOptions, coverageLabels, coverageOptions, describeClassification } from './catalogLabels';
+import { formatPhone } from '../../utils/masks';
 import { fetchPatients, fetchProfessionals, fetchAppointmentTypes } from '../agenda/agendaApi';
 
 type TypeFormState = {
@@ -586,7 +587,8 @@ export function CatalogPanel() {
               <input
                 className="field__input"
                 value={patientDraft.phone}
-                onChange={(event) => setPatientDraft({ ...patientDraft, phone: event.target.value })}
+                onChange={(event) => setPatientDraft({ ...patientDraft, phone: formatPhone(event.target.value) })}
+                placeholder="(00) 00000-0000"
                 required
                 maxLength={40}
               />

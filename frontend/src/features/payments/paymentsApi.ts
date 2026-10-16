@@ -51,18 +51,18 @@ export interface DailyPaymentSummaryResponse {
 }
 
 export async function recordPayment(request: RecordPaymentRequest, signal?: AbortSignal): Promise<PaymentTransactionResponse> {
-  return apiPost<PaymentTransactionResponse>('/api/v1/payments', request, signal);
+  return apiPost<PaymentTransactionResponse>('/payments', request, signal);
 }
 
 export async function refundPayment(paymentId: string, request: RefundPaymentRequest, signal?: AbortSignal): Promise<PaymentTransactionResponse> {
-  return apiPost<PaymentTransactionResponse>(`/api/v1/payments/${paymentId}/refund`, request, signal);
+  return apiPost<PaymentTransactionResponse>(`/payments/${paymentId}/refund`, request, signal);
 }
 
 export async function listPaymentsByAppointment(appointmentId: string, signal?: AbortSignal): Promise<PaymentTransactionResponse[]> {
-  return apiGet<PaymentTransactionResponse[]>(`/api/v1/payments/appointment/${appointmentId}`, signal);
+  return apiGet<PaymentTransactionResponse[]>(`/payments/appointment/${appointmentId}`, signal);
 }
 
 export async function getDailyPaymentSummary(date?: string, signal?: AbortSignal): Promise<DailyPaymentSummaryResponse> {
   const query = date ? `?date=${encodeURIComponent(date)}` : '';
-  return apiGet<DailyPaymentSummaryResponse>(`/api/v1/payments/summary${query}`, signal);
+  return apiGet<DailyPaymentSummaryResponse>(`/payments/summary${query}`, signal);
 }

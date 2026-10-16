@@ -318,6 +318,72 @@ export function DoctorAgendaPage() {
             })}
           </div>
         )}
+
+        {agenda?.blocks && agenda.blocks.length > 0 && (
+          <div style={{ marginTop: '2rem', borderTop: '1px solid var(--color-neutral-border)', paddingTop: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--color-primary-dark)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>⛔</span> Horários Bloqueados ({agenda.blocks.length})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {agenda.blocks.map((block) => {
+                const start = new Date(block.startsAt);
+                const end = new Date(block.endsAt);
+                const timeString = `${start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+                return (
+                  <div
+                    key={block.id}
+                    style={{
+                      border: '1px dashed #d1d5db',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '0.75rem 1rem',
+                      background: '#f9fafb',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.95rem',
+                          background: '#e5e7eb',
+                          color: '#374151',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: 'var(--radius-sm)',
+                        }}
+                      >
+                        {timeString}
+                      </span>
+                      <div>
+                        <strong style={{ color: '#4b5563', fontSize: '0.95rem', display: 'block' }}>
+                          Horário Indisponível para Agendamento
+                        </strong>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                          Bloqueio na agenda do profissional
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '999px',
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        border: '1px solid #fecaca',
+                      }}
+                    >
+                      Bloqueado
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

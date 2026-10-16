@@ -1,0 +1,52 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 524 >>
+stream
+BT
+/F1 16 Tf
+50 780 Td
+(CANAMED - CLINICA GINECOLOGICA) Tj
+0 -24 Td
+/F1 14 Tf
+(RECEITUARIO MEDICO) Tj
+0 -30 Td
+/F1 11 Tf
+(Documento Clinico Autenticado Digitalmente) Tj
+0 -20 Td
+(Data e Hora de Emissao: 15/10/2026 10:00:00) Tj
+0 -20 Td
+(Codigo Verificador Publico: CANAMED123) Tj
+0 -20 Td
+(Hash de Autenticidade ICP-Brasil: e3b0c44298fc1c149afbf4c8996fb924...) Tj
+0 -20 Td
+(Diagnostico CID-10: N92.0 - Consentido pela Paciente) Tj
+0 -40 Td
+(Conteudo autenticado em conformidade com o Art. 73 do CEM e Lei 13.787/2018.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000816 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+886
+%%EOF

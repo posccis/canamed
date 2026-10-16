@@ -180,7 +180,22 @@ public sealed class OnlineBookingService(
         }
 
         var type = await catalogRepository.FindAppointmentTypeAsync(request.ClinicId, request.AppointmentTypeId, cancellationToken);
-        var duration = type?.DurationMinutes ?? 30;
+        var effectiveTypeId = request.AppointmentTypeId;
+        if (type is null)
+        {
+            var types = await catalogRepository.ListAppointmentTypesAsync(request.ClinicId, cancellationToken);
+            var firstType = types.FirstOrDefault(t => t.IsActive) ?? types.FirstOrDefault();
+            if (firstType is not null)
+            {
+                type = firstType;
+                effectiveTypeId = firstType.Id;
+            }
+            else
+            {
+                throw new InvalidOperationException("Nenhum tipo de atendimento disponível para a clínica.");
+            }
+        }
+        var duration = type.DurationMinutes;
 
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
@@ -188,7 +203,7 @@ public sealed class OnlineBookingService(
                 request.ClinicId,
                 request.ProfessionalId,
                 session.PatientId,
-                request.AppointmentTypeId,
+                effectiveTypeId,
                 request.StartsAt,
                 duration,
                 now,
