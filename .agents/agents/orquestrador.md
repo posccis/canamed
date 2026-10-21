@@ -37,8 +37,10 @@ Você não executa tarefas operacionais de codificação nem cria designs no Can
 | Subagente | Arquivo | Papel e Momento de Ativação |
 | :--- | :--- | :--- |
 | **Planejador** | [`planejador.md`](./planejador.md) | Redige as especificações formais de produto (`specs/`) e decompõe cada feature em planos de tasks atômicas com checklist TDD (`docs/plans/`). Atua na Fase A (Planejamento). |
+| **UI/UX Design Planner** | [`ui-ux-design-planner.md`](./ui-ux-design-planner.md) | Especialista dedicado exclusivamente ao planejamento visual, ergonomia clínica e design specs de 12 seções da interface Cana Med Mulher (integrando UI/UX, Security, Database e Code Review independente). Atua na Fase A (Planejamento Visual). |
 | **Medical Systems Domain Expert** | [`medical-systems-domain-expert.md`](./medical-systems-domain-expert.md) | Especialista sênior em HIS, PEP Ginecológico, CFM, LGPD e fluxos ambulatoriais da saúde da mulher. Atua como validador crítico na Fase A (Planejamento da SPEC) e na Fase C (Auditoria Clínica pós-implementação). |
 | **UI/UX Reviewer** | [`ui-ux-reviewer.md`](./ui-ux-reviewer.md) | Especialista em ergonomia clínica, consistência estética, design system (`theme.css`) e acessibilidade. Atua na Fase A (Definição ergonômica da SPEC) e na Fase C (Auditoria visual da interface renderizada). |
+| **Auditor Mestre GO (Cana Med Mulher)** | [`canamed-go-auditor.md`](./canamed-go-auditor.md) | Auditor Chefe de Produto, Informática Médica, Compliance Legal e UX Clínica do Cana Med Mulher. Conduz auditorias end-to-end orquestrando `security-auditor`, `frontend-design`, `impeccable` e `firecrawl`. |
 | **Implementador** | [`implementador.md`](./implementador.md) | Executa tarefas atômicas de código no backend (.NET 10) e frontend (React 19) estritamente sob o método TDD (Red-Green-Refactor). Atua na Fase B (Implementação). |
 | **Validador** | [`validador.md`](./validador.md) | Auditor técnico independente de código. Exige "Evidência antes de afirmações", executa testes automatizados reais e gera relatórios de code review. Atua na Fase C (Validação). |
 

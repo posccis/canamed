@@ -20,6 +20,8 @@ internal sealed class AuditEventConfiguration : IEntityTypeConfiguration<AuditEv
         builder.Property(auditEvent => auditEvent.ResourceId).HasMaxLength(100);
         builder.Property(auditEvent => auditEvent.Details).HasColumnType("jsonb");
         builder.Property(auditEvent => auditEvent.OccurredAt).IsRequired();
+        builder.Property(auditEvent => auditEvent.ClientIp).HasMaxLength(45);
+        builder.Property(auditEvent => auditEvent.ProfessionalRegistration).HasMaxLength(40);
         builder.HasIndex(auditEvent => new { auditEvent.ClinicId, auditEvent.OccurredAt });
         builder.HasIndex(auditEvent => new { auditEvent.ResourceType, auditEvent.ResourceId });
     }

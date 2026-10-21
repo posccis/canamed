@@ -28,12 +28,12 @@ public sealed class MedicalRecordConfiguration : IEntityTypeConfiguration<Medica
         builder.HasMany(r => r.Addenda)
             .WithOne()
             .HasForeignKey(a => a.MedicalRecordId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(r => r.GynecologicalData)
             .WithOne()
             .HasForeignKey<GynecologicalConsultationData>(d => d.MedicalRecordId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Navigation(r => r.Addenda)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
