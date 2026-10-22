@@ -1976,6 +1976,97 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.ToTable("gynecological_profiles", (string)null);
                 });
 
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.LarcPlacementRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("batch_number");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<DateOnly?>("ControlUltrasoundDate")
+                        .HasColumnType("date")
+                        .HasColumnName("control_ultrasound_date");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("device_name");
+
+                    b.Property<string>("DeviceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("device_type");
+
+                    b.Property<DateOnly>("ExpirationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("expiration_date");
+
+                    b.Property<decimal?>("HysterometryCm")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)")
+                        .HasColumnName("hysterometry_cm");
+
+                    b.Property<DateOnly>("InsertionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("insertion_date");
+
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_removed");
+
+                    b.Property<Guid?>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("ProcedureNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("procedure_notes");
+
+                    b.Property<DateOnly?>("RemovalDate")
+                        .HasColumnType("date")
+                        .HasColumnName("removal_date");
+
+                    b.Property<string>("RemovalReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("removal_reason");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpirationDate");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.HasIndex("ClinicId", "PatientId", "InsertionDate");
+
+                    b.ToTable("larc_placements", (string)null);
+                });
+
             modelBuilder.Entity("Canamed.Domain.MedicalRecords.MedicalRecord", b =>
                 {
                     b.Property<Guid>("Id")

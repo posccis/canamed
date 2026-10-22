@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Download, Plus, Baby, Calendar, Scale, Activity } from 'lucide-react';
 import { useToast } from '../layout/Toast';
+import { AtalahWeightGainChart } from './AtalahWeightGainChart';
+import { UterineHeightChart } from './UterineHeightChart';
+import type { PrenatalVisitDto } from './medicalRecordsApi';
 
 export interface PrenatalVisitItem {
   id: string;
@@ -211,6 +214,38 @@ export const PrenatalCardSection: React.FC<PrenatalCardSectionProps> = ({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Curvas Obstétricas Automatizadas (Atalah e Altura Uterina) */}
+      {visits.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
+          <AtalahWeightGainChart
+            visits={visits.map((v) => ({
+              ...v,
+              clinicId: '',
+              patientId,
+              medicalRecordId: null,
+              maternalBmi: v.bmi,
+              systolicBp: null,
+              diastolicBp: null,
+              conductNotes: v.clinicalNotes,
+              createdAt: '',
+            }))}
+          />
+          <UterineHeightChart
+            visits={visits.map((v) => ({
+              ...v,
+              clinicId: '',
+              patientId,
+              medicalRecordId: null,
+              maternalBmi: v.bmi,
+              systolicBp: null,
+              diastolicBp: null,
+              conductNotes: v.clinicalNotes,
+              createdAt: '',
+            }))}
+          />
         </div>
       )}
 

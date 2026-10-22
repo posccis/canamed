@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { CervicalClockMap } from './CervicalClockMap';
+
 export interface GynecologicalExamState {
   breastsIsNormal: boolean;
   breastsFindings: string;
@@ -154,6 +157,31 @@ function ExamSegment({
 }
 
 export function GynecologicalExamSection({ exam, onChange, readOnly }: Props) {
+  const [showCervicalMap, setShowCervicalMap] = useState(false);
+  const [cervicalHours, setCervicalHours] = useState<number[]>([]);
+  const [ztType, setZtType] = useState('1');
+
+  const handleCervicalHoursChange = (hours: number[]) => {
+    setCervicalHours(hours);
+    const hoursSummary = hours.length > 0 ? ` [Mapa Cervical: lesão/achado em ${hours.map((h) => `${h}h`).join(', ')} - ZT tipo ${ztType}]` : '';
+    // Concatena ou atualiza no texto de findings do exame especular
+    const baseText = exam.speculumExamFindings.replace(/\s*\[Mapa Cervical:.*?\]/g, '');
+    onChange({
+      ...exam,
+      speculumExamFindings: `${baseText}${hoursSummary}`.trim(),
+    });
+  };
+
+  const handleZtChange = (newZt: string) => {
+    setZtType(newZt);
+    const hoursSummary = cervicalHours.length > 0 ? ` [Mapa Cervical: lesão/achado em ${cervicalHours.map((h) => `${h}h`).join(', ')} - ZT tipo ${newZt}]` : '';
+    const baseText = exam.speculumExamFindings.replace(/\s*\[Mapa Cervical:.*?\]/g, '');
+    onChange({
+      ...exam,
+      speculumExamFindings: `${baseText}${hoursSummary}`.trim(),
+    });
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       <ExamSegment
@@ -195,6 +223,29 @@ export function GynecologicalExamSection({ exam, onChange, readOnly }: Props) {
         onFindingsChange={(text) => onChange({ ...exam, speculumExamFindings: text })}
         readOnly={readOnly}
       />
+
+      {/* Botão e visualizador colposcópico interativo do Mapa Cervical 12h */}
+      <div style={{ marginLeft: '1rem', marginTop: '-0.25rem' }}>
+        <button
+          type="button"
+          className="button button--ghost button--small"
+          style={{ fontSize: '0.8rem', color: '#852A91' }}
+          onClick={() => setShowCervicalMap(!showCervicalMap)}
+        >
+          {showCervicalMap ? '▲ Ocultar Mapa Cervical 12h' : '🎯 Abrir Mapa Cervical 12h (Odontograma Colposcópico)'}
+        </button>
+        {showCervicalMap && (
+          <div style={{ marginTop: '0.5rem', maxWidth: '420px' }}>
+            <CervicalClockMap
+              selectedHours={cervicalHours}
+              ztType={ztType}
+              readOnly={readOnly}
+              onChange={handleCervicalHoursChange}
+              onZtChange={handleZtChange}
+            />
+          </div>
+        )}
+      </div>
 
       <ExamSegment
         title="5. Toque Bimanual (Útero e Anexos)"
