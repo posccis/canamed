@@ -212,6 +212,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
 
+                    b.Property<string>("BloodType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("blood_type");
+
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uuid")
                         .HasColumnName("clinic_id");
@@ -249,6 +254,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
                         .HasColumnName("phone");
+
+                    b.Property<string>("RhFactor")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rh_factor");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
