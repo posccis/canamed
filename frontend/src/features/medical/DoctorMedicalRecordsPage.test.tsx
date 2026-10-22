@@ -236,8 +236,8 @@ describe('DoctorMedicalRecordsPage Component', () => {
     fireEvent.click(scrTabBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Rastreamento Preventivo & Linha do Tempo/i)).toBeInTheDocument();
-      expect(screen.getByText(/Citopatológico \(Papanicolau\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Rastreamento Preventivo Oncológico & Linha do Tempo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Citopatológico \(Papanicolau \/ Bethesda\)/i)).toBeInTheDocument();
       expect(screen.getByText(/Negativo para neoplasia/i)).toBeInTheDocument();
     });
   });

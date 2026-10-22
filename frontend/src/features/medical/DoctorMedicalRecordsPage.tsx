@@ -475,6 +475,7 @@ export function DoctorMedicalRecordsPage() {
             /* Rastreamento Preventivo (Papanicolau, HPV, Mamografia, USG) */
             <PreventiveScreeningList
               patientId={patientId}
+              patientBirthDate={selectedPatient?.birthDate}
               screenings={screenings}
               onScreeningAdded={(newScr) => setScreenings((prev) => [newScr, ...prev])}
             />

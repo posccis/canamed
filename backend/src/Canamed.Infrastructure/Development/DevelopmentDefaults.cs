@@ -41,4 +41,24 @@ public static class DevelopmentDefaults
 
     /// <summary>Tipo "Avaliação ortopédica" (60 minutos).</summary>
     public static Guid DemoOrthopedicAssessmentTypeId { get; } = Guid.Parse("bbbbbbbb-2222-4222-8222-222222222222");
+
+    /// <summary>Profissional médico ginecologista de demonstração (Dr. Lucas Mendes).</summary>
+    public static Guid DemoDoctorLucasId { get; } = Guid.Parse("22222222-2222-4222-8222-222222222223");
+
+    /// <summary>Salas de atendimento.</summary>
+    public static Guid DemoRoom1Id { get; } = Guid.Parse("cccccccc-1111-4111-8111-111111111111");
+    public static Guid DemoRoom2Id { get; } = Guid.Parse("cccccccc-2222-4111-8111-111111111111");
+    public static Guid DemoRoomUltrasoundId { get; } = Guid.Parse("cccccccc-3333-4111-8111-111111111111");
+
+    /// <summary>Convênios de demonstração.</summary>
+    public static Guid DemoHealthPlanBradescoId { get; } = Guid.Parse("dddddddd-1111-4111-8111-111111111111");
+    public static Guid DemoHealthPlanUnimedId { get; } = Guid.Parse("dddddddd-2222-4111-8111-111111111111");
+    public static Guid DemoHealthPlanSulAmericaId { get; } = Guid.Parse("dddddddd-3333-4111-8111-111111111111");
+
+    /// <summary>Pacientes de demonstração adicionais.</summary>
+    public static Guid DemoPatientMarianaId { get; } = Guid.Parse("33333333-3333-4333-8333-333333333334");
+    public static Guid DemoPatientCamilaId { get; } = Guid.Parse("33333333-3333-4333-8333-333333333335");
+    public static Guid DemoPatientBeatrizId { get; } = Guid.Parse("33333333-3333-4333-8333-333333333336");
+    public static Guid DemoPatientJulianaId { get; } = Guid.Parse("33333333-3333-4333-8333-333333333337");
+    public static Guid DemoPatientFernandaId { get; } = Guid.Parse("33333333-3333-4333-8333-333333333338");
 }

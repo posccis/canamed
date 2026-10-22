@@ -15,6 +15,10 @@ public sealed class PreventiveScreeningRecord : Entity
     public DateOnly PerformedAt { get; private set; }
     public string ResultSummary { get; private set; } = null!;
     public string? Classification { get; private set; }
+    public string? BethesdaClassification { get; private set; }
+    public string? HpvDnaResult { get; private set; }
+    public string? BiRadsCategory { get; private set; }
+    public string? ClinicalConductNotes { get; private set; }
     public DateOnly? NextDueDate { get; private set; }
 
     public static PreventiveScreeningRecord Create(
@@ -26,7 +30,11 @@ public sealed class PreventiveScreeningRecord : Entity
         string resultSummary,
         string? classification,
         DateOnly? nextDueDate,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        string? bethesdaClassification = null,
+        string? hpvDnaResult = null,
+        string? biRadsCategory = null,
+        string? clinicalConductNotes = null)
     {
         if (clinicId == Guid.Empty)
         {
@@ -57,7 +65,11 @@ public sealed class PreventiveScreeningRecord : Entity
             PerformedAt = performedAt,
             ResultSummary = resultSummary.Trim(),
             Classification = classification?.Trim(),
-            NextDueDate = nextDueDate
+            NextDueDate = nextDueDate,
+            BethesdaClassification = bethesdaClassification?.Trim(),
+            HpvDnaResult = hpvDnaResult?.Trim(),
+            BiRadsCategory = biRadsCategory?.Trim(),
+            ClinicalConductNotes = clinicalConductNotes?.Trim()
         };
 
         screening.MarkCreated(now);

@@ -2293,6 +2293,16 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("BethesdaClassification")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("bethesda_classification");
+
+                    b.Property<string>("BiRadsCategory")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("bi_rads_category");
+
                     b.Property<string>("Classification")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -2301,6 +2311,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uuid")
                         .HasColumnName("clinic_id");
+
+                    b.Property<string>("ClinicalConductNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("clinical_conduct_notes");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -2311,6 +2326,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("exam_type");
+
+                    b.Property<string>("HpvDnaResult")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("hpv_dna_result");
 
                     b.Property<Guid?>("MedicalRecordId")
                         .HasColumnType("uuid")

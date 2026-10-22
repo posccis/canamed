@@ -125,6 +125,47 @@ public sealed class Appointment : Entity
         return appointment;
     }
 
+    /// <summary>Cria agendamento histórico para demonstração/semeadura sem violar EnsureNotInThePast.</summary>
+    public static Appointment CreatePastForSeed(
+        Guid clinicId,
+        Guid professionalId,
+        Guid patientId,
+        Guid appointmentTypeId,
+        DateTimeOffset startsAt,
+        int durationMinutes,
+        DateTimeOffset now,
+        Guid? roomId = null,
+        bool isOverbooking = false,
+        string? overbookingReason = null,
+        string origin = "desk",
+        Guid? id = null)
+    {
+        var range = TimeRange.FromStartAndMinutes(startsAt.ToUniversalTime(), durationMinutes);
+        var appointment = new Appointment
+        {
+            ClinicId = clinicId,
+            ProfessionalId = professionalId,
+            PatientId = patientId,
+            AppointmentTypeId = appointmentTypeId,
+            RoomId = roomId,
+            StartsAt = range.StartsAt,
+            EndsAt = range.EndsAt,
+            DurationMinutes = durationMinutes,
+            Status = AppointmentStatus.Scheduled,
+            IsOverbooking = isOverbooking,
+            OverbookingReason = isOverbooking ? overbookingReason?.Trim() : null,
+            Origin = origin,
+        };
+
+        if (id.HasValue)
+        {
+            appointment.Id = id.Value;
+        }
+
+        appointment.MarkCreated(now);
+        return appointment;
+    }
+
     /// <summary>Remarca o agendamento para um novo início, mantendo o histórico no log de auditoria (RN-007).</summary>
     public void Reschedule(
         DateTimeOffset newStartsAt,
