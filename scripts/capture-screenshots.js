@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { chromium } from '../frontend/node_modules/playwright/index.mjs';
 import fs from 'fs';
 import path from 'path';
 
@@ -77,7 +77,7 @@ async function run() {
       }
       await page.waitForTimeout(1500); // estabilização visual
       const filePath = path.join(OUTPUT_DIR, `${s.name}.png`);
-      await page.screenshot({ path: filePath, fullPage: false });
+      await page.screenshot({ path: filePath, fullPage: false, animations: 'disabled', timeout: 10000 });
       console.log(`Salvo: ${filePath}`);
     } catch (err) {
       console.error(`Erro ao capturar ${s.name}: ${err.message}`);
@@ -154,7 +154,7 @@ async function run() {
       await page.goto(ss.url, { waitUntil: 'networkidle', timeout: 15000 });
       await page.waitForTimeout(1500);
       const filePath = path.join(OUTPUT_DIR, `${ss.name}.png`);
-      await page.screenshot({ path: filePath, fullPage: false });
+      await page.screenshot({ path: filePath, fullPage: false, animations: 'disabled', timeout: 10000 });
       console.log(`Salvo: ${filePath}`);
     }
 
@@ -197,7 +197,7 @@ async function run() {
       await page.goto(ds.url, { waitUntil: 'networkidle', timeout: 15000 });
       await page.waitForTimeout(1500);
       const filePath = path.join(OUTPUT_DIR, `${ds.name}.png`);
-      await page.screenshot({ path: filePath, fullPage: false });
+      await page.screenshot({ path: filePath, fullPage: false, animations: 'disabled', timeout: 10000 });
       console.log(`Salvo: ${filePath}`);
     }
 

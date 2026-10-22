@@ -18,6 +18,7 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
 | **Auditor Mestre GO** | [`agents/canamed-go-auditor.md`](./agents/canamed-go-auditor.md) | **`pro`** | Auditor Chefe de Produto, Informática Médica, Compliance Legal e UX Clínica do Cana Med Mulher. Conduz auditorias end-to-end e benchmarking orquestrando 4 skills especialistas. | `security-auditor`<br>`frontend-design`<br>`impeccable`<br>`firecrawl`<br>`verification-before-completion`<br>`requesting-code-review` |
 | **Implementador** | [`agents/implementador.md`](./agents/implementador.md) | **`flash`** | Executa as tarefas de código estritamente sob o método TDD (Red-Green-Refactor) com investigação sistemática de causa-raiz. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
 | **Validador** | [`agents/validador.md`](./agents/validador.md) | **`flash`** | Auditor técnico de qualidade e conformidade com as specs. Aplica a regra "Evidência antes de afirmações", executando testes reais e emitindo relatórios de revisão. | `verification-before-completion`<br>`requesting-code-review`<br>`systematic-debugging`<br>`using-superpowers` |
+| **Cana Med QA Engineer** | [`agents/cana-med-qa-engineer.md`](./agents/cana-med-qa-engineer.md) | **`pro`** | Executa testes funcionais e end-to-end reais na Cana Med Mulher, simulando usuário real via Playwright, validando APIs, persistência, documentando bugs e checando regressões. | `playwright`<br>`playwright-cli`<br>`verification-before-completion`<br>`systematic-debugging`<br>`requesting-code-review` |
 
 ---
 
@@ -118,5 +119,6 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
   - `@ui-ux-reviewer`: para auditoria e padronização visual do frontend.
   - `@implementador` (ou `@implementer`): para codificação e testes TDD.
   - `@validador` (ou `@validator`): para revisão de código e evidência de testes.
+  - `@cana-med-qa-engineer` (ou `@qa-engineer`): para execução de testes funcionais e E2E reais no navegador, validação de fluxos e regressão.
   - `@cana-med-design-content-creator`: para criar conteúdos, narrativas, copys e seleção de ativos para designs.
   - `@cana-med-social-designer`: para criar e editar designs diretamente no Canva via MCP.

@@ -5,9 +5,13 @@ interface Props {
 }
 
 export function AtalahWeightGainChart({ visits }: Props) {
-  // Ordena visitas por idade gestacional em semanas
+  // Ordena visitas por idade gestacional em semanas, aceitando tanto bmi quanto maternalBmi
   const validPoints = visits
-    .filter((v) => v.gestationalAgeWeeks && v.gestationalAgeWeeks >= 10 && v.maternalBmi)
+    .map((v) => ({
+      ...v,
+      effectiveBmi: v.bmi ?? (v as any).maternalBmi,
+    }))
+    .filter((v) => v.gestationalAgeWeeks && v.gestationalAgeWeeks >= 10 && v.effectiveBmi)
     .sort((a, b) => a.gestationalAgeWeeks! - b.gestationalAgeWeeks!);
 
   // Dimensões do SVG
@@ -128,7 +132,7 @@ export function AtalahWeightGainChart({ visits }: Props) {
             fill="none"
             stroke="#852A91"
             strokeWidth="2.5"
-            points={validPoints.map((p) => `${scaleX(p.gestationalAgeWeeks!)},${scaleY(p.maternalBmi!)}`).join(' ')}
+            points={validPoints.map((p) => `${scaleX(p.gestationalAgeWeeks!)},${scaleY(p.effectiveBmi!)}`).join(' ')}
           />
         )}
 
@@ -136,13 +140,13 @@ export function AtalahWeightGainChart({ visits }: Props) {
           <g key={`point-${idx}`}>
             <circle
               cx={scaleX(p.gestationalAgeWeeks!)}
-              cy={scaleY(p.maternalBmi!)}
+              cy={scaleY(p.effectiveBmi!)}
               r={4.5}
               fill="#852A91"
               stroke="#FFFFFF"
               strokeWidth="1.5"
             >
-              <title>{`${p.gestationalAgeWeeks}s: IMC ${p.maternalBmi} (${p.weightKg}kg)`}</title>
+              <title>{`${p.gestationalAgeWeeks}s: IMC ${p.effectiveBmi} (${p.weightKg}kg)`}</title>
             </circle>
           </g>
         ))}
