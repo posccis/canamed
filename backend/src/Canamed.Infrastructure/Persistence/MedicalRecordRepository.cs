@@ -132,4 +132,20 @@ public sealed class MedicalRecordRepository(CanamedDbContext dbContext) : IMedic
 
         return query.CountAsync(cancellationToken);
     }
+
+    public async Task AddPrenatalVisitAsync(PrenatalVisitRecord record, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        await dbContext.PrenatalVisitRecords.AddAsync(record, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<PrenatalVisitRecord>> ListPrenatalVisitsByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.PrenatalVisitRecords
+            .AsNoTracking()
+            .Where(v => v.PatientId == patientId && v.ClinicId == clinicId)
+            .OrderBy(v => v.VisitDate)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
 }

@@ -35,4 +35,8 @@ public interface IMedicalRecordRepository
     Task UpdateExamAttachmentAsync(PatientExamAttachment attachment, CancellationToken cancellationToken = default);
 
     Task<int> CountPendingDraftsAsync(Guid clinicId, Guid? doctorId, CancellationToken cancellationToken = default);
+
+    Task AddPrenatalVisitAsync(PrenatalVisitRecord record, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PrenatalVisitRecord>> ListPrenatalVisitsByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default);
 }

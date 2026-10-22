@@ -2200,6 +2200,10 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("blood_pressure");
 
+                    b.Property<double?>("Bmi")
+                        .HasColumnType("double precision")
+                        .HasColumnName("bmi");
+
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uuid")
                         .HasColumnName("clinic_id");

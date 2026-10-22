@@ -19,6 +19,7 @@ public sealed class PrenatalVisitRecord : Entity
     public int GestationalAgeWeeks { get; private set; }
     public int GestationalAgeDays { get; private set; }
     public double WeightKg { get; private set; }
+    public double? Bmi { get; private set; }
     public string BloodPressure { get; private set; } = string.Empty;
     public double? UterineHeightCm { get; private set; }
     public int? FetalHeartRateBpm { get; private set; }
@@ -42,7 +43,8 @@ public sealed class PrenatalVisitRecord : Entity
         string? edemaClassification,
         string? fetalPresentation,
         string? clinicalNotes,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        double? bmi = null)
     {
         if (clinicId == Guid.Empty) throw new ArgumentException("A clínica é obrigatória.", nameof(clinicId));
         if (patientId == Guid.Empty) throw new ArgumentException("A paciente é obrigatória.", nameof(patientId));
@@ -61,6 +63,7 @@ public sealed class PrenatalVisitRecord : Entity
             GestationalAgeWeeks = gestationalAgeWeeks,
             GestationalAgeDays = gestationalAgeDays,
             WeightKg = weightKg,
+            Bmi = bmi,
             BloodPressure = bloodPressure.Trim(),
             UterineHeightCm = uterineHeightCm,
             FetalHeartRateBpm = fetalHeartRateBpm,

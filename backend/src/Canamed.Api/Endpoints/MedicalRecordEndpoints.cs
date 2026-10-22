@@ -83,6 +83,16 @@ public static class MedicalRecordEndpoints
             .Produces<GynecologicalConsultationDataDto>(StatusCodes.Status200OK)
             .RequirePermissions(Permissions.RecordsCreate);
 
+        records.MapPost("/{id:guid}/prenatal-visits", AddPrenatalVisitAsync)
+            .WithName("AddPrenatalVisit")
+            .Produces<PrenatalVisitDto>(StatusCodes.Status201Created)
+            .RequirePermissions(Permissions.RecordsCreate);
+
+        api.MapGet("/patients/{patientId:guid}/prenatal-visits", ListPrenatalVisitsAsync)
+            .WithName("ListPatientPrenatalVisits")
+            .Produces<IReadOnlyList<PrenatalVisitDto>>(StatusCodes.Status200OK)
+            .RequirePermissions(Permissions.RecordsRead);
+
         return api;
     }
 
@@ -196,6 +206,25 @@ public static class MedicalRecordEndpoints
         CancellationToken cancellationToken)
     {
         var result = await service.UpdateGynecologicalConsultationDataAsync(id, request, cancellationToken).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> AddPrenatalVisitAsync(
+        MedicalRecordService service,
+        Guid id,
+        [FromBody] CreatePrenatalVisitRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.AddPrenatalVisitAsync(id, request, cancellationToken).ConfigureAwait(false);
+        return Results.Created($"/api/v1/medical-records/{id}/prenatal-visits", result);
+    }
+
+    private static async Task<IResult> ListPrenatalVisitsAsync(
+        MedicalRecordService service,
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.ListPrenatalVisitsByPatientAsync(patientId, cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
     }
 }
