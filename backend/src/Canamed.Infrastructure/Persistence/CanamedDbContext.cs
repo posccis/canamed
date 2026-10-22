@@ -60,6 +60,7 @@ public sealed class CanamedDbContext : DbContext
 
     public DbSet<Canamed.Domain.MedicalRecords.GynecologicalConsultationData> GynecologicalConsultationData => Set<Canamed.Domain.MedicalRecords.GynecologicalConsultationData>();
     public DbSet<Canamed.Domain.MedicalRecords.PrenatalVisitRecord> PrenatalVisitRecords => Set<Canamed.Domain.MedicalRecords.PrenatalVisitRecord>();
+    public DbSet<Canamed.Domain.MedicalRecords.LarcPlacementRecord> LarcPlacementRecords => Set<Canamed.Domain.MedicalRecords.LarcPlacementRecord>();
 
     public DbSet<Canamed.Domain.MedicalRecords.PatientExamAttachment> PatientExamAttachments => Set<Canamed.Domain.MedicalRecords.PatientExamAttachment>();
 
