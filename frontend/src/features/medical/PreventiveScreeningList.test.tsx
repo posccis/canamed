@@ -50,10 +50,10 @@ describe('PreventiveScreeningList Component', () => {
       />,
     );
 
-    expect(screen.getByText(/Rastreamento Preventivo & Linha do Tempo \(2\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Citopatológico \(Papanicolau\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mamografia Bilateral/i)).toBeInTheDocument();
-    expect(screen.getByText('BI-RADS 2')).toBeInTheDocument();
+    expect(screen.getByText(/Rastreamento Preventivo Oncológico & Linha do Tempo \(2\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Citopatológico \(Papanicolau \/ Bethesda\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mamografia Bilateral \(BI-RADS\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/BI-RADS 2/i)).toBeInTheDocument();
     expect(screen.getByText(/Negativo para células neoplásicas/i)).toBeInTheDocument();
   });
 
@@ -97,10 +97,10 @@ describe('PreventiveScreeningList Component', () => {
     fireEvent.click(addBtn);
 
     // Modal aberto
-    expect(screen.getByText('Novo Exame Preventivo')).toBeInTheDocument();
+    expect(screen.getByText('Novo Exame Preventivo Oncológico')).toBeInTheDocument();
 
     // Preenche campos
-    const summaryInput = screen.getByPlaceholderText(/Descreva a conclusão do exame preventivo/i);
+    const summaryInput = screen.getByPlaceholderText(/Descreva detalhadamente a conclusão do exame preventivo/i);
     fireEvent.change(summaryInput, {
       target: { value: 'DNA-HPV Não detectado (negativo para subtipos de alto risco)' },
     });

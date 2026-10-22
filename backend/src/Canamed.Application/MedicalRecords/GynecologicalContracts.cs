@@ -71,7 +71,11 @@ public sealed record PreventiveScreeningDto(
     string ResultSummary,
     string? Classification,
     DateOnly? NextDueDate,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? BethesdaClassification = null,
+    string? HpvDnaResult = null,
+    string? BiRadsCategory = null,
+    string? ClinicalConductNotes = null);
 
 public sealed record CreatePreventiveScreeningRequest(
     Guid? MedicalRecordId,
@@ -79,7 +83,11 @@ public sealed record CreatePreventiveScreeningRequest(
     DateOnly PerformedAt,
     string ResultSummary,
     string? Classification,
-    DateOnly? NextDueDate);
+    DateOnly? NextDueDate,
+    string? BethesdaClassification = null,
+    string? HpvDnaResult = null,
+    string? BiRadsCategory = null,
+    string? ClinicalConductNotes = null);
 
 public sealed record GynecologicalConsultationDataDto(
     Guid Id,

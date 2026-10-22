@@ -18,6 +18,10 @@ public sealed class PreventiveScreeningRecordConfiguration : IEntityTypeConfigur
         builder.Property(s => s.PerformedAt).IsRequired();
         builder.Property(s => s.ResultSummary).HasMaxLength(1000).IsRequired();
         builder.Property(s => s.Classification).HasMaxLength(100);
+        builder.Property(s => s.BethesdaClassification).HasMaxLength(50);
+        builder.Property(s => s.HpvDnaResult).HasMaxLength(50);
+        builder.Property(s => s.BiRadsCategory).HasMaxLength(20);
+        builder.Property(s => s.ClinicalConductNotes).HasMaxLength(2000);
 
         builder.HasIndex(s => new { s.ClinicId, s.PatientId, s.PerformedAt });
         builder.HasIndex(s => s.MedicalRecordId);

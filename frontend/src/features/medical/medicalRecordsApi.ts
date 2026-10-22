@@ -83,6 +83,10 @@ export interface PreventiveScreeningDto {
   classification?: string | null;
   nextDueDate?: string | null;
   createdAt: string;
+  bethesdaClassification?: string | null;
+  hpvDnaResult?: string | null;
+  biRadsCategory?: string | null;
+  clinicalConductNotes?: string | null;
 }
 
 export interface CreatePreventiveScreeningRequest {
@@ -92,6 +96,10 @@ export interface CreatePreventiveScreeningRequest {
   resultSummary: string;
   classification?: string | null;
   nextDueDate?: string | null;
+  bethesdaClassification?: string | null;
+  hpvDnaResult?: string | null;
+  biRadsCategory?: string | null;
+  clinicalConductNotes?: string | null;
 }
 
 export interface GynecologicalConsultationDataDto {

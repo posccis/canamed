@@ -27,11 +27,19 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException(
                 $"Configuração ausente: ConnectionStrings:{StartupRequirements.DatabaseConnectionStringName}.");
 
-        services.AddDbContext<CanamedDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<CanamedDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString);
+            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        });
         // Fábrica com o mesmo tempo de vida das opções registradas por AddDbContext (escopo de requisição);
         // é usada pela trilha de auditoria para escrever fora da transação corrente.
         services.AddDbContextFactory<CanamedDbContext>(
-            options => options.UseNpgsql(connectionString),
+            options =>
+            {
+                options.UseNpgsql(connectionString);
+                options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            },
             ServiceLifetime.Scoped);
 
         // Chaves de proteção de dados em diretório do projeto, ignorado pelo Git (RN-012).

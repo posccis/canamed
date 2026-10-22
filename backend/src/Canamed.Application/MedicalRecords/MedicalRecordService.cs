@@ -542,7 +542,11 @@ public sealed class MedicalRecordService(
                 request.ResultSummary,
                 request.Classification,
                 request.NextDueDate,
-                now);
+                now,
+                request.BethesdaClassification,
+                request.HpvDnaResult,
+                request.BiRadsCategory,
+                request.ClinicalConductNotes);
 
             await medicalRecordRepository.AddScreeningAsync(screening, token);
 
@@ -748,7 +752,11 @@ public sealed class MedicalRecordService(
             s.ResultSummary,
             s.Classification,
             s.NextDueDate,
-            s.CreatedAt);
+            s.CreatedAt,
+            s.BethesdaClassification,
+            s.HpvDnaResult,
+            s.BiRadsCategory,
+            s.ClinicalConductNotes);
 
     private static GynecologicalConsultationDataDto? MapGynecologicalData(GynecologicalConsultationData? data) =>
         data is null ? null : new(
