@@ -296,3 +296,50 @@ export function getExamAttachmentDownloadUrl(patientId: string, attachmentId: st
 export async function deactivatePatientExamAttachment(patientId: string, attachmentId: string): Promise<void> {
   return apiDelete<void>(`/patients/${patientId}/exam-attachments/${attachmentId}`);
 }
+
+// Prenatal Visits & Gestational Tracking (SPEC-0035 / Épico 2)
+export interface PrenatalVisitDto {
+  id: string;
+  clinicId: string;
+  patientId: string;
+  medicalRecordId: string;
+  visitDate: string;
+  gestationalAgeWeeks: number;
+  gestationalAgeDays: number;
+  weightKg: number;
+  bmi?: number | null;
+  bloodPressure: string;
+  uterineHeightCm?: number | null;
+  fetalHeartRateBpm?: number | null;
+  fetalMovementPresent?: boolean | null;
+  edemaClassification?: string | null;
+  fetalPresentation?: string | null;
+  clinicalNotes?: string | null;
+  createdAt: string;
+}
+
+export interface CreatePrenatalVisitRequest {
+  visitDate: string;
+  gestationalAgeWeeks: number;
+  gestationalAgeDays: number;
+  weightKg: number;
+  bmi?: number | null;
+  bloodPressure: string;
+  uterineHeightCm?: number | null;
+  fetalHeartRateBpm?: number | null;
+  fetalMovementPresent?: boolean | null;
+  edemaClassification?: string | null;
+  fetalPresentation?: string | null;
+  clinicalNotes?: string | null;
+}
+
+export async function listPatientPrenatalVisits(patientId: string): Promise<PrenatalVisitDto[]> {
+  return apiGet<PrenatalVisitDto[]>(`/patients/${patientId}/prenatal-visits`);
+}
+
+export async function addPrenatalVisit(
+  medicalRecordId: string,
+  request: CreatePrenatalVisitRequest,
+): Promise<PrenatalVisitDto> {
+  return apiPost<PrenatalVisitDto>(`/medical-records/${medicalRecordId}/prenatal-visits`, request);
+}

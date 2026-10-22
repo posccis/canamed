@@ -5,9 +5,11 @@ import {
   addMedicalRecordAddendum,
   getGynecologicalProfile,
   getPatientScreenings,
+  listPatientPrenatalVisits,
   type MedicalRecordResponse,
   type GynecologicalProfileDto,
   type PreventiveScreeningDto,
+  type PrenatalVisitDto,
 } from './medicalRecordsApi';
 import {
   getPatientMedicalDocuments,
@@ -18,6 +20,7 @@ import { GynecologicalProfileCard } from './GynecologicalProfileCard';
 import { PreventiveScreeningList } from './PreventiveScreeningList';
 import { GynecologicalExamSection } from './GynecologicalExamSection';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
+import { PrenatalCardSection } from './PrenatalCardSection';
 import { DocumentModal } from './DocumentModal';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -36,6 +39,7 @@ export function DoctorMedicalRecordsPage() {
   const [documents, setDocuments] = useState<MedicalDocumentResponse[]>([]);
   const [gynProfile, setGynProfile] = useState<GynecologicalProfileDto | null>(null);
   const [screenings, setScreenings] = useState<PreventiveScreeningDto[]>([]);
+  const [prenatalVisits, setPrenatalVisits] = useState<PrenatalVisitDto[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
 
   // Estado para novo adendo
@@ -47,8 +51,8 @@ export function DoctorMedicalRecordsPage() {
   // Modal de documento
   const [docModalOpen, setDocModalOpen] = useState(false);
 
-  // Aba ativa na ficha do paciente: 'records' | 'gynProfile' | 'screenings' | 'documents'
-  const [activeTab, setActiveTab] = useState<'records' | 'gynProfile' | 'screenings' | 'documents' | 'attachments'>('records');
+  // Aba ativa na ficha do paciente: 'records' | 'gynProfile' | 'screenings' | 'prenatal' | 'documents' | 'attachments'
+  const [activeTab, setActiveTab] = useState<'records' | 'gynProfile' | 'screenings' | 'prenatal' | 'documents' | 'attachments'>('records');
 
   // Carrega catálogo de pacientes
   useEffect(() => {
@@ -108,8 +112,9 @@ export function DoctorMedicalRecordsPage() {
       getPatientMedicalDocuments(patientId),
       getGynecologicalProfile(patientId).catch(() => null),
       getPatientScreenings(patientId).catch(() => []),
+      listPatientPrenatalVisits(patientId).catch(() => []),
     ])
-      .then(([recData, docData, profData, scrData]) => {
+      .then(([recData, docData, profData, scrData, preData]) => {
         if (active) {
           setRecords(recData);
           setDocuments(docData);
@@ -118,6 +123,9 @@ export function DoctorMedicalRecordsPage() {
           }
           if (Array.isArray(scrData)) {
             setScreenings(scrData as PreventiveScreeningDto[]);
+          }
+          if (Array.isArray(preData)) {
+            setPrenatalVisits(preData as PrenatalVisitDto[]);
           }
         }
       })
@@ -434,6 +442,13 @@ export function DoctorMedicalRecordsPage() {
             </button>
             <button
               type="button"
+              className={`button ${activeTab === 'prenatal' ? 'button--primary' : 'button--ghost'} button--small`}
+              onClick={() => setActiveTab('prenatal')}
+            >
+              🤰 Pré-Natal & Cartão da Gestante ({prenatalVisits.length})
+            </button>
+            <button
+              type="button"
               className={`button ${activeTab === 'documents' ? 'button--primary' : 'button--ghost'} button--small`}
               onClick={() => setActiveTab('documents')}
             >
@@ -462,6 +477,13 @@ export function DoctorMedicalRecordsPage() {
               patientId={patientId}
               screenings={screenings}
               onScreeningAdded={(newScr) => setScreenings((prev) => [newScr, ...prev])}
+            />
+          ) : activeTab === 'prenatal' ? (
+            /* Cartão da Gestante & Consultas de Pré-Natal (SPEC-0035 / RN-007) */
+            <PrenatalCardSection
+              patientId={patientId}
+              patientName={selectedPatient?.name || 'Paciente'}
+              visits={prenatalVisits}
             />
           ) : activeTab === 'records' ? (
             /* Histórico de Atendimentos SOAP e Exames Ginecológicos */

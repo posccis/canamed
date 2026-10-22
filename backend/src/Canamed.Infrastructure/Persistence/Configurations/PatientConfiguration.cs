@@ -17,6 +17,8 @@ internal sealed class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(patient => patient.Email).HasMaxLength(320);
         builder.Property(patient => patient.BirthDate).HasColumnType("date");
         builder.Property(patient => patient.Document).HasMaxLength(32);
+        builder.Property(patient => patient.BloodType).HasMaxLength(10);
+        builder.Property(patient => patient.RhFactor).HasMaxLength(20);
         builder.HasIndex(patient => new { patient.ClinicId, patient.Name });
 
         builder.HasOne<Canamed.Domain.Clinics.HealthPlan>()

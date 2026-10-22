@@ -560,6 +560,123 @@ public sealed class MedicalRecordService(
         }, cancellationToken);
     }
 
+    public async Task<PrenatalVisitDto> AddPrenatalVisitAsync(
+        Guid medicalRecordId,
+        CreatePrenatalVisitRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.RecordsCreate))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para registrar consultas de pré-natal.", "permission-denied");
+        }
+
+        var record = await medicalRecordRepository.GetByIdAsync(medicalRecordId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        if (record is null)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Prontuário não encontrado", "O prontuário informado não existe.", "medical-record-not-found");
+        }
+
+        var visit = PrenatalVisitRecord.Create(
+            actor.ClinicId,
+            record.PatientId,
+            record.Id,
+            request.VisitDate,
+            request.GestationalAgeWeeks,
+            request.GestationalAgeDays,
+            request.WeightKg,
+            request.BloodPressure,
+            request.UterineHeightCm,
+            request.FetalHeartRateBpm,
+            request.FetalMovementPresent,
+            request.EdemaClassification,
+            request.FetalPresentation,
+            request.ClinicalNotes,
+            timeProvider.GetUtcNow(),
+            request.Bmi);
+
+        return await unitOfWork.ExecuteInTransactionAsync(async token =>
+        {
+            await medicalRecordRepository.AddPrenatalVisitAsync(visit, token).ConfigureAwait(false);
+
+            auditRepository.Add(AuditEvent.Record(
+                actor.ClinicId,
+                actor.UserId,
+                actor.Name,
+                AuditActions.GynecologicalConsultationUpdated,
+                AuditResources.MedicalRecords,
+                record.Id.ToString(),
+                timeProvider.GetUtcNow(),
+                $"{{\"action\":\"prenatal_visit_added\",\"visitId\":\"{visit.Id}\"}}"));
+
+            return MapPrenatalVisitToDto(visit);
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<PrenatalVisitDto>> ListPrenatalVisitsByPatientAsync(
+        Guid patientId,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.RecordsRead))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para visualizar histórico pré-natal.", "permission-denied");
+        }
+
+        var visits = await medicalRecordRepository.ListPrenatalVisitsByPatientAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        return visits.Select(MapPrenatalVisitToDto).ToList();
+    }
+
+    public async Task<byte[]> GeneratePrenatalCardPdfAsync(
+        Guid patientId,
+        ICatalogRepository catalogRepository,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(catalogRepository);
+
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.RecordsRead))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para emitir o Cartão da Gestante.", "permission-denied");
+        }
+
+        var patient = await catalogRepository.FindPatientAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        if (patient is null)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Paciente não encontrada", "A paciente informada não foi localizada.", "patient-not-found");
+        }
+
+        var gynProfile = await medicalRecordRepository.GetGynecologicalProfileAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        var visits = await medicalRecordRepository.ListPrenatalVisitsByPatientAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+
+        return Canamed.Application.MedicalRecords.Services.PrenatalCardPdfGenerator.Generate(
+            patient,
+            gynProfile,
+            visits);
+    }
+
+    private static PrenatalVisitDto MapPrenatalVisitToDto(PrenatalVisitRecord v) =>
+        new(
+            v.Id,
+            v.ClinicId,
+            v.PatientId,
+            v.MedicalRecordId,
+            v.VisitDate,
+            v.GestationalAgeWeeks,
+            v.GestationalAgeDays,
+            v.WeightKg,
+            v.Bmi,
+            v.BloodPressure,
+            v.UterineHeightCm,
+            v.FetalHeartRateBpm,
+            v.FetalMovementPresent,
+            v.EdemaClassification,
+            v.FetalPresentation,
+            v.ClinicalNotes,
+            v.CreatedAt);
+
     private static MedicalRecordResponse MapToResponse(MedicalRecord record) =>
         new(
             record.Id,

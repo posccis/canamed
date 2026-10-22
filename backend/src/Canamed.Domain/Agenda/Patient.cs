@@ -30,6 +30,12 @@ public sealed class Patient : Entity
     /// <summary>Convênio do paciente, opcional (SPEC-0006).</summary>
     public Guid? HealthPlanId { get; private set; }
 
+    /// <summary>Tipo sanguíneo (A, B, AB, O), opcional (SPEC-0035 / RN-008).</summary>
+    public string? BloodType { get; private set; }
+
+    /// <summary>Fator Rh ('Positivo' ou 'Negativo'), opcional (SPEC-0035 / RN-008).</summary>
+    public string? RhFactor { get; private set; }
+
     /// <summary>Paciente inativo não recebe novos agendamentos (RN-006).</summary>
     public bool IsActive { get; private set; } = true;
 
@@ -43,7 +49,9 @@ public sealed class Patient : Entity
         string? email = null,
         DateOnly? birthDate = null,
         string? document = null,
-        Guid? healthPlanId = null)
+        Guid? healthPlanId = null,
+        string? bloodType = null,
+        string? rhFactor = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(phone);
@@ -57,6 +65,8 @@ public sealed class Patient : Entity
             BirthDate = ValidateBirthDate(birthDate, now),
             Document = NormalizeDocument(document),
             HealthPlanId = healthPlanId,
+            BloodType = bloodType?.Trim(),
+            RhFactor = rhFactor?.Trim(),
             IsActive = true,
         };
 
@@ -78,7 +88,9 @@ public sealed class Patient : Entity
         DateOnly? birthDate,
         string? document,
         Guid? healthPlanId,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        string? bloodType = null,
+        string? rhFactor = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(phone);
@@ -89,6 +101,8 @@ public sealed class Patient : Entity
         BirthDate = ValidateBirthDate(birthDate, now);
         Document = NormalizeDocument(document);
         HealthPlanId = healthPlanId;
+        BloodType = bloodType?.Trim() ?? BloodType;
+        RhFactor = rhFactor?.Trim() ?? RhFactor;
         MarkUpdated(now);
     }
 

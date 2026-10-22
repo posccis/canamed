@@ -41,6 +41,13 @@ public sealed class GynecologicalConsultationData : Entity
     public string? PrescriptionNotes { get; private set; }
     public string? GeneralOrientationNotes { get; private set; }
 
+    // Dados de Ultrassom Precoce & Referência Obstétrica (RN-005, RN-006 da SPEC-0035 / Épico 2)
+    public DateOnly? FirstUltrasoundDate { get; private set; }
+    public int? FirstUltrasoundWeeks { get; private set; }
+    public int? FirstUltrasoundDays { get; private set; }
+    public double? FirstUltrasoundCcnMm { get; private set; }
+    public GestationalAgeReference? PreferredGestationalReference { get; private set; }
+
     public static GynecologicalConsultationData Create(Guid medicalRecordId, DateTimeOffset now)
     {
         if (medicalRecordId == Guid.Empty)
@@ -117,6 +124,23 @@ public sealed class GynecologicalConsultationData : Entity
         DiagnosesJson = diagnosesJson?.Trim();
         PrescriptionNotes = prescriptionNotes?.Trim();
         GeneralOrientationNotes = generalOrientationNotes?.Trim();
+
+        MarkUpdated(now);
+    }
+
+    public void UpdateObstetricUltrasound(
+        DateOnly? firstUltrasoundDate,
+        int? firstUltrasoundWeeks,
+        int? firstUltrasoundDays,
+        double? firstUltrasoundCcnMm,
+        GestationalAgeReference? preferredGestationalReference,
+        DateTimeOffset now)
+    {
+        FirstUltrasoundDate = firstUltrasoundDate;
+        FirstUltrasoundWeeks = firstUltrasoundWeeks;
+        FirstUltrasoundDays = firstUltrasoundDays;
+        FirstUltrasoundCcnMm = firstUltrasoundCcnMm;
+        PreferredGestationalReference = preferredGestationalReference;
 
         MarkUpdated(now);
     }
