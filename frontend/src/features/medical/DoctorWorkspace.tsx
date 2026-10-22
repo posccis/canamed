@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getDoctorWorkspaceState,
@@ -19,6 +19,8 @@ import { DocumentModal } from './DocumentModal';
 import { PatientHistoryModal } from './PatientHistoryModal';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
 import { ClinicalAlertsBar } from './ClinicalAlertsBar';
+import { ObstetricCalculatorWidget } from './ObstetricCalculatorWidget';
+import { useAutoSave } from './useAutoSave';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
 
@@ -60,6 +62,72 @@ export function DoctorWorkspace() {
   const [procedureNotes, setProcedureNotes] = useState('');
   const [prescriptionNotes, setPrescriptionNotes] = useState('');
   const [generalOrientationNotes, setGeneralOrientationNotes] = useState('');
+
+  // Auto-Save Resiliente em Segundo Plano (SPEC-0035 / RN-009)
+  const activeRecordId = state?.activeConsultation?.medicalRecord?.id;
+  const autoSaveData = useMemo(() => ({
+    subjective,
+    objective,
+    assessment,
+    plan,
+    dum,
+    isDumUncertain,
+    isMenopausal,
+    isSexuallyActive,
+    dyspareunia,
+    exam,
+    procedurePerformed,
+    procedureBatch,
+    procedureNotes,
+    prescriptionNotes,
+    generalOrientationNotes,
+  }), [
+    subjective, objective, assessment, plan, dum, isDumUncertain, isMenopausal,
+    isSexuallyActive, dyspareunia, exam, procedurePerformed, procedureBatch,
+    procedureNotes, prescriptionNotes, generalOrientationNotes,
+  ]);
+
+  const { status: autoSaveStatus, lastSavedAt } = useAutoSave({
+    key: activeRecordId || 'draft',
+    data: autoSaveData,
+    enabled: Boolean(activeRecordId),
+    onSave: async (d) => {
+      if (!activeRecordId) return;
+      await Promise.all([
+        updateDraftMedicalRecord(activeRecordId, {
+          subjective: d.subjective,
+          objective: d.objective,
+          assessment: d.assessment,
+          plan: d.plan,
+        }),
+        updateGynecologicalConsultationData(activeRecordId, {
+          dum: d.dum || null,
+          isDumUncertain: d.isDumUncertain,
+          isMenopausal: d.isMenopausal,
+          chiefComplaint: d.subjective || null,
+          hma: d.subjective || null,
+          isSexuallyActive: d.isSexuallyActive,
+          dyspareunia: d.dyspareunia || null,
+          breastsIsNormal: d.exam.breastsIsNormal,
+          breastsFindings: d.exam.breastsFindings || null,
+          abdomenIsNormal: d.exam.abdomenIsNormal,
+          abdomenFindings: d.exam.abdomenFindings || null,
+          externalGenitaliaIsNormal: d.exam.externalGenitaliaIsNormal,
+          externalGenitaliaFindings: d.exam.externalGenitaliaFindings || null,
+          speculumExamIsNormal: d.exam.speculumExamIsNormal,
+          speculumExamFindings: d.exam.speculumExamFindings || null,
+          bimanualPalpationIsNormal: d.exam.bimanualPalpationIsNormal,
+          bimanualPalpationFindings: d.exam.bimanualPalpationFindings || null,
+          procedurePerformed: d.procedurePerformed || null,
+          procedureBatch: d.procedureBatch || null,
+          procedureNotes: d.procedureNotes || null,
+          prescriptionNotes: d.prescriptionNotes || null,
+          generalOrientationNotes: d.generalOrientationNotes || null,
+        }).catch(() => null),
+      ]);
+    },
+    delayMs: 5000,
+  });
 
   // RN-005 (SPEC-0029): Controle de alterações clínicas pendentes e proteção contra fechamento acidental
   const isDirty = Boolean(
@@ -720,6 +788,19 @@ export function DoctorWorkspace() {
                         Menopausa / Climatério
                       </label>
                     </div>
+
+                    {/* Calculadora Obstétrica Interativa FEBRASGO (SPEC-0035 / RN-005, RN-006) */}
+                    {!isMenopausal && (
+                      <div style={{ marginTop: '0.75rem' }}>
+                        <ObstetricCalculatorWidget
+                          dum={dum}
+                          isDumUncertain={isDumUncertain}
+                          onApplyCalculatedValues={(val) => {
+                            addToast(`Reconciliação aplicada: ${val.effectiveGaWeeks}s ${val.effectiveGaDays}d (DPP: ${new Date(val.effectiveEdd + 'T00:00:00').toLocaleDateString('pt-BR')})`, 'success');
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -945,10 +1026,19 @@ export function DoctorWorkspace() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  {savingDraft ? (
-                    <span className="form__hint" style={{ color: 'var(--color-primary)' }}>Salvando rascunho…</span>
-                  ) : draftStatus ? (
-                    <span className="form__hint" style={{ color: 'var(--color-primary)', fontWeight: 600 }}>✓ {draftStatus}</span>
+                  {autoSaveStatus === 'saving' || savingDraft ? (
+                    <span className="form__hint" style={{ color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <span className="animate-spin" style={{ display: 'inline-block' }}>⏳</span>
+                      Sincronizando com nuvem e backup local…
+                    </span>
+                  ) : autoSaveStatus === 'saved' || draftStatus ? (
+                    <span className="form__hint" style={{ color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                      ✓ Salvo automaticamente {lastSavedAt ? `às ${lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                    </span>
+                  ) : autoSaveStatus === 'error' ? (
+                    <span className="form__hint" style={{ color: '#dc2626', fontWeight: 600 }}>
+                      ⚠️ Falha na sincronização. Salvo em backup local.
+                    </span>
                   ) : isDirty ? (
                     <span className="form__hint" style={{ color: '#d97706', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d97706', display: 'inline-block' }} />
