@@ -18,6 +18,7 @@ import { GynecologicalExamSection, type GynecologicalExamState } from './Gynecol
 import { DocumentModal } from './DocumentModal';
 import { PatientHistoryModal } from './PatientHistoryModal';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
+import { ClinicalAlertsBar } from './ClinicalAlertsBar';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
 
@@ -523,6 +524,14 @@ export function DoctorWorkspace() {
                   </button>
                 </div>
               </div>
+
+              {/* Barramento Semântico de Alertas Críticos (SPEC-0035 / RN-008) */}
+              <ClinicalAlertsBar
+                bloodPressure={active.triage?.bloodPressure}
+                fastingBloodGlucose={active.triage?.bloodGlucoseMgDl}
+                rhFactor={gynProfile ? (gynProfile as unknown as { rhFactor?: string }).rhFactor : undefined}
+                bloodType={gynProfile ? (gynProfile as unknown as { bloodType?: string }).bloodType : undefined}
+              />
 
               {/* Banner Longitudinal Gineco-Obstétrico */}
               {gynProfile && (
