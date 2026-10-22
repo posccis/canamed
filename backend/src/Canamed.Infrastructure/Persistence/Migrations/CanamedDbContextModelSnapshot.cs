@@ -1739,6 +1739,22 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("external_genitalia_is_normal");
 
+                    b.Property<double?>("FirstUltrasoundCcnMm")
+                        .HasColumnType("double precision")
+                        .HasColumnName("first_ultrasound_ccn_mm");
+
+                    b.Property<DateOnly?>("FirstUltrasoundDate")
+                        .HasColumnType("date")
+                        .HasColumnName("first_ultrasound_date");
+
+                    b.Property<int?>("FirstUltrasoundDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_ultrasound_days");
+
+                    b.Property<int?>("FirstUltrasoundWeeks")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_ultrasound_weeks");
+
                     b.Property<string>("GeneralOrientationNotes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -1763,6 +1779,10 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("MedicalRecordId")
                         .HasColumnType("uuid")
                         .HasColumnName("medical_record_id");
+
+                    b.Property<int?>("PreferredGestationalReference")
+                        .HasColumnType("integer")
+                        .HasColumnName("preferred_gestational_reference");
 
                     b.Property<string>("PrescriptionNotes")
                         .HasColumnType("text")
@@ -2165,6 +2185,91 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasIndex("ClinicId", "PatientId", "ExamDate");
 
                     b.ToTable("patient_exam_attachments", (string)null);
+                });
+
+            modelBuilder.Entity("Canamed.Domain.MedicalRecords.PrenatalVisitRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BloodPressure")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("blood_pressure");
+
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("clinic_id");
+
+                    b.Property<string>("ClinicalNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("clinical_notes");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EdemaClassification")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("edema_classification");
+
+                    b.Property<int?>("FetalHeartRateBpm")
+                        .HasColumnType("integer")
+                        .HasColumnName("fetal_heart_rate_bpm");
+
+                    b.Property<bool?>("FetalMovementPresent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("fetal_movement_present");
+
+                    b.Property<string>("FetalPresentation")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("fetal_presentation");
+
+                    b.Property<int>("GestationalAgeDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("gestational_age_days");
+
+                    b.Property<int>("GestationalAgeWeeks")
+                        .HasColumnType("integer")
+                        .HasColumnName("gestational_age_weeks");
+
+                    b.Property<Guid>("MedicalRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("medical_record_id");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<double?>("UterineHeightCm")
+                        .HasColumnType("double precision")
+                        .HasColumnName("uterine_height_cm");
+
+                    b.Property<DateOnly>("VisitDate")
+                        .HasColumnType("date")
+                        .HasColumnName("visit_date");
+
+                    b.Property<double>("WeightKg")
+                        .HasColumnType("double precision")
+                        .HasColumnName("weight_kg");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.HasIndex("ClinicId", "PatientId", "VisitDate");
+
+                    b.ToTable("prenatal_visit_records", (string)null);
                 });
 
             modelBuilder.Entity("Canamed.Domain.MedicalRecords.PreventiveScreeningRecord", b =>
