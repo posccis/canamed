@@ -629,6 +629,34 @@ public sealed class MedicalRecordService(
         return visits.Select(MapPrenatalVisitToDto).ToList();
     }
 
+    public async Task<byte[]> GeneratePrenatalCardPdfAsync(
+        Guid patientId,
+        ICatalogRepository catalogRepository,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(catalogRepository);
+
+        var actor = actorAccessor.RequireActor();
+        if (!actor.Has(Permissions.RecordsRead))
+        {
+            throw new CanamedException(ProblemKind.Forbidden, "Acesso negado", "Você não tem permissão para emitir o Cartão da Gestante.", "permission-denied");
+        }
+
+        var patient = await catalogRepository.FindPatientAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        if (patient is null)
+        {
+            throw new CanamedException(ProblemKind.NotFound, "Paciente não encontrada", "A paciente informada não foi localizada.", "patient-not-found");
+        }
+
+        var gynProfile = await medicalRecordRepository.GetGynecologicalProfileAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+        var visits = await medicalRecordRepository.ListPrenatalVisitsByPatientAsync(patientId, actor.ClinicId, cancellationToken).ConfigureAwait(false);
+
+        return Canamed.Application.MedicalRecords.Services.PrenatalCardPdfGenerator.Generate(
+            patient,
+            gynProfile,
+            visits);
+    }
+
     private static PrenatalVisitDto MapPrenatalVisitToDto(PrenatalVisitRecord v) =>
         new(
             v.Id,

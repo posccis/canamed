@@ -93,6 +93,11 @@ public static class MedicalRecordEndpoints
             .Produces<IReadOnlyList<PrenatalVisitDto>>(StatusCodes.Status200OK)
             .RequirePermissions(Permissions.RecordsRead);
 
+        api.MapGet("/patients/{patientId:guid}/prenatal-card/pdf", DownloadPrenatalCardPdfAsync)
+            .WithName("DownloadPrenatalCardPdf")
+            .Produces(StatusCodes.Status200OK, contentType: "application/pdf")
+            .RequirePermissions(Permissions.RecordsRead);
+
         return api;
     }
 
@@ -226,5 +231,15 @@ public static class MedicalRecordEndpoints
     {
         var result = await service.ListPrenatalVisitsByPatientAsync(patientId, cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> DownloadPrenatalCardPdfAsync(
+        MedicalRecordService service,
+        Canamed.Application.Abstractions.ICatalogRepository catalogRepository,
+        Guid patientId,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.GeneratePrenatalCardPdfAsync(patientId, catalogRepository, cancellationToken).ConfigureAwait(false);
+        return Results.File(result, "application/pdf", $"cartao-gestante-{patientId.ToString()[..8]}.pdf");
     }
 }
