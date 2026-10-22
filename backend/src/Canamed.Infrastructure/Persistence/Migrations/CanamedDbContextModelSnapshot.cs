@@ -516,6 +516,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("actor_name");
 
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("client_ip");
+
                     b.Property<Guid?>("ClinicId")
                         .HasColumnType("uuid")
                         .HasColumnName("clinic_id");
@@ -527,6 +532,11 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at");
+
+                    b.Property<string>("ProfessionalRegistration")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("professional_registration");
 
                     b.Property<string>("ResourceId")
                         .HasMaxLength(100)
@@ -1717,8 +1727,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("dum");
 
                     b.Property<string>("Dyspareunia")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasColumnType("text")
                         .HasColumnName("dyspareunia");
 
                     b.Property<string>("ExternalGenitaliaFindings")
@@ -1736,8 +1745,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("general_orientation_notes");
 
                     b.Property<string>("Hma")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
+                        .HasColumnType("text")
                         .HasColumnName("hma");
 
                     b.Property<bool>("IsDumUncertain")
@@ -1757,8 +1765,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("medical_record_id");
 
                     b.Property<string>("PrescriptionNotes")
-                        .HasMaxLength(3000)
-                        .HasColumnType("character varying(3000)")
+                        .HasColumnType("text")
                         .HasColumnName("prescription_notes");
 
                     b.Property<string>("ProcedureBatch")
@@ -1847,8 +1854,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("ectopic_pregnancies");
 
                     b.Property<string>("FamilyCancerHistory")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("family_cancer_history");
 
                     b.Property<string>("FlowIntensity")
@@ -1890,8 +1896,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("menopause_status");
 
                     b.Property<string>("ObstetricNotes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("obstetric_notes");
 
                     b.Property<int>("Para")
@@ -1903,8 +1908,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("patient_id");
 
                     b.Property<string>("PelvicSurgeries")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("pelvic_surgeries");
 
                     b.Property<string>("PmsSymptoms")
@@ -1927,8 +1931,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnName("sexarche_age");
 
                     b.Property<string>("StiHistory")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("sti_history");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -3240,7 +3243,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasOne("Canamed.Domain.MedicalRecords.MedicalRecord", null)
                         .WithOne("GynecologicalData")
                         .HasForeignKey("Canamed.Domain.MedicalRecords.GynecologicalConsultationData", "MedicalRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -3249,7 +3252,7 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                     b.HasOne("Canamed.Domain.MedicalRecords.MedicalRecord", null)
                         .WithMany("Addenda")
                         .HasForeignKey("MedicalRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

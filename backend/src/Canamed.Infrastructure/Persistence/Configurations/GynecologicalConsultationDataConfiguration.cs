@@ -14,9 +14,15 @@ public sealed class GynecologicalConsultationDataConfiguration : IEntityTypeConf
 
         builder.Property(d => d.MedicalRecordId).IsRequired();
 
+        var encryptedConverter = new Canamed.Infrastructure.Persistence.Converters.EncryptedStringConverter();
+
         builder.Property(d => d.ChiefComplaint).HasMaxLength(500);
-        builder.Property(d => d.Hma).HasMaxLength(4000);
-        builder.Property(d => d.Dyspareunia).HasMaxLength(30);
+        builder.Property(d => d.Hma)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
+        builder.Property(d => d.Dyspareunia)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
 
         builder.Property(d => d.BreastsFindings).HasMaxLength(1000);
         builder.Property(d => d.AbdomenFindings).HasMaxLength(1000);
@@ -28,7 +34,9 @@ public sealed class GynecologicalConsultationDataConfiguration : IEntityTypeConf
         builder.Property(d => d.ProcedureBatch).HasMaxLength(50);
         builder.Property(d => d.ProcedureNotes).HasMaxLength(1000);
         builder.Property(d => d.DiagnosesJson).HasMaxLength(2000);
-        builder.Property(d => d.PrescriptionNotes).HasMaxLength(3000);
+        builder.Property(d => d.PrescriptionNotes)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
         builder.Property(d => d.GeneralOrientationNotes).HasMaxLength(2000);
 
         builder.HasIndex(d => d.MedicalRecordId).IsUnique();

@@ -20,14 +20,24 @@ public sealed class GynecologicalProfileConfiguration : IEntityTypeConfiguration
         builder.Property(p => p.PmsSymptoms).HasMaxLength(500);
         builder.Property(p => p.MenopauseStatus).HasMaxLength(30);
 
-        builder.Property(p => p.ObstetricNotes).HasMaxLength(1000);
+        var encryptedConverter = new Canamed.Infrastructure.Persistence.Converters.EncryptedStringConverter();
+
+        builder.Property(p => p.ObstetricNotes)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
         builder.Property(p => p.CurrentMethod).HasMaxLength(50);
         builder.Property(p => p.PreviousMethods).HasMaxLength(500);
         builder.Property(p => p.ReproductivePlan).HasMaxLength(50);
 
-        builder.Property(p => p.PelvicSurgeries).HasMaxLength(1000);
-        builder.Property(p => p.StiHistory).HasMaxLength(1000);
-        builder.Property(p => p.FamilyCancerHistory).HasMaxLength(1000);
+        builder.Property(p => p.PelvicSurgeries)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
+        builder.Property(p => p.StiHistory)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
+        builder.Property(p => p.FamilyCancerHistory)
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
 
         builder.HasIndex(p => new { p.ClinicId, p.PatientId }).IsUnique();
     }

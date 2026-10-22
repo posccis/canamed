@@ -155,6 +155,34 @@ public sealed class IdentityDomainTests
     }
 
     [Fact]
+    public void Roles_SegregacaoRbacClinico_ManagerNaoDevePossuirPermissoesClinicas_RN_001()
+    {
+        var managerPerms = Roles.PermissionsFor(Roles.Manager);
+        var professionalPerms = Roles.PermissionsFor(Roles.Professional);
+
+        string[] clinicalPermissions =
+        [
+            Permissions.RecordsRead,
+            Permissions.RecordsCreate,
+            Permissions.RecordsUpdate,
+            Permissions.RecordsFinalize,
+            Permissions.RecordsAddendum,
+            Permissions.DocumentsRead,
+            Permissions.DocumentsCreate,
+            Permissions.DocumentsSign,
+            Permissions.DocumentsCancel,
+            Permissions.DocumentsPrint,
+            Permissions.WorkspaceAccess
+        ];
+
+        foreach (var perm in clinicalPermissions)
+        {
+            Assert.DoesNotContain(perm, managerPerms);
+            Assert.Contains(perm, professionalPerms);
+        }
+    }
+
+    [Fact]
     public void Roles_DeveExigirMfaApenasDoGestor()
     {
         Assert.True(Roles.RequiresMfa(Roles.Manager));

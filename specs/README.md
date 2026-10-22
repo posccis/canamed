@@ -95,6 +95,10 @@ Toda SPEC deve conter, no mínimo, as seções exigidas pelo `GEMINI.md`:
 | [0031](0031-spec-redesign-dashboard-administrativo-e-medico.md) | Redesign Visual e Padrão de Interface: Dashboard Administrativo e Área do Médico | Aprovada | 2026-10-14 |
 | [0032](0032-spec-consolidacao-area-administrativa-agenda-recepcao-configuracoes.md) | Consolidação da Área Administrativa: Agenda & Recepção, Configurações da Clínica e Padronização de Entradas Financeiras | Aprovada | 2026-10-14 |
 | [0033](0033-spec-portal-do-paciente-cana-med-mulher.md) | Portal do Paciente CANA MED Mulher: Acesso Segmentado, Agendamento Inteligente em 5 Etapas e Autoatendimento Acolhedor | Aprovada | 2026-10-14 |
+| [0034](0034-spec-seguranca-imutabilidade-e-governanca-de-prontuario.md) | Segurança, Imutabilidade e Governança de Prontuário (P0) | Em implementação | 2026-10-21 |
+| [0035](0035-spec-obstetricia-e-pre-natal-especializado.md) | Core de Obstetrícia e Pré-Natal Especializado (P1) | Rascunho (Backlog) | 2026-10-21 |
+| [0036](0036-spec-prevencao-oncologica-ginecologica-bethesda-birads.md) | Core de Ginecologia e Prevenção Oncológica: Bethesda e BI-RADS (P1) | Rascunho (Backlog) | 2026-10-21 |
+| [0037](0037-spec-diferenciais-larc-mapa-cervical-e-curvas.md) | Gestão de Dispositivos LARC, Mapa Cervical e Curvas Obstétricas (P2) | Rascunho (Backlog) | 2026-10-21 |
 | [UI-001](UI/SPEC-UI-001.md) | CANAMED UI/UX Design System | Implementada | 2026-10-01 |
 
 > A [SPEC-0026](0026-spec-jornada-digital-do-paciente-e-portais-dedicados.md) propõe, sobre o

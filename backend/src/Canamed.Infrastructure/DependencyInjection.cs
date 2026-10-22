@@ -51,10 +51,16 @@ public static class DependencyInjection
             dataProtection.ProtectKeysWithDpapi();
         }
 
+        services.AddSingleton<Canamed.Infrastructure.Persistence.Interceptors.ImmutableRecordsInterceptor>();
         services.AddHttpContextAccessor();
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
         services.AddSingleton<ITotpService, TotpService>();
-        services.AddSingleton<ISecretProtector, DataProtectionSecretProtector>();
+        services.AddSingleton<ISecretProtector>(sp =>
+        {
+            var protector = new DataProtectionSecretProtector(sp.GetRequiredService<IDataProtectionProvider>());
+            Canamed.Infrastructure.Persistence.Converters.EncryptedStringConverter.AmbientProtector ??= protector;
+            return protector;
+        });
         services.AddSingleton<IMfaPolicy, ConfigurationMfaPolicy>();
         services.AddSingleton<IFileStorage, Canamed.Infrastructure.Storage.LocalFileStorage>();
         services.AddSingleton<IAccountLockoutPolicy, ConfigurationAccountLockoutPolicy>();

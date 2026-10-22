@@ -10,8 +10,18 @@ namespace Canamed.Infrastructure.Persistence;
 /// Contexto de acesso a dados do CANAMED. As tabelas seguem as convenções da seção 7 da SPEC-0001:
 /// nomes em <c>snake_case</c>, chave primária <c>id</c> (UUID) e carimbos de tempo em UTC.
 /// </summary>
-public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options) : DbContext(options)
+public sealed class CanamedDbContext : DbContext
 {
+    public CanamedDbContext(
+        DbContextOptions<CanamedDbContext> options,
+        Canamed.Application.Abstractions.ISecretProtector? secretProtector = null)
+        : base(options)
+    {
+        if (secretProtector is not null)
+        {
+            Canamed.Infrastructure.Persistence.Converters.EncryptedStringConverter.AmbientProtector ??= secretProtector;
+        }
+    }
     public DbSet<Clinic> Clinics => Set<Clinic>();
 
     public DbSet<Professional> Professionals => Set<Professional>();
@@ -90,6 +100,13 @@ public sealed class CanamedDbContext(DbContextOptions<CanamedDbContext> options)
     public DbSet<Canamed.Domain.Inventory.InventoryItem> InventoryItems => Set<Canamed.Domain.Inventory.InventoryItem>();
     public DbSet<Canamed.Domain.Inventory.InventoryMovement> InventoryMovements => Set<Canamed.Domain.Inventory.InventoryMovement>();
     public DbSet<Canamed.Domain.Clinics.ClinicPolicy> ClinicPolicies => Set<Canamed.Domain.Clinics.ClinicPolicy>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(optionsBuilder);
+        optionsBuilder.AddInterceptors(new Canamed.Infrastructure.Persistence.Interceptors.ImmutableRecordsInterceptor());
+        base.OnConfiguring(optionsBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
