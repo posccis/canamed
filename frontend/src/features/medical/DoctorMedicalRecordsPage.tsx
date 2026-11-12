@@ -6,6 +6,7 @@ import {
   getGynecologicalProfile,
   getPatientScreenings,
   listPatientPrenatalVisits,
+  addPrenatalVisit,
   type MedicalRecordResponse,
   type GynecologicalProfileDto,
   type PreventiveScreeningDto,
@@ -21,6 +22,7 @@ import { PreventiveScreeningList } from './PreventiveScreeningList';
 import { GynecologicalExamSection } from './GynecologicalExamSection';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
 import { PrenatalCardSection } from './PrenatalCardSection';
+import { ClinicalAlertsBar } from './ClinicalAlertsBar';
 import { DocumentModal } from './DocumentModal';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -316,6 +318,12 @@ export function DoctorMedicalRecordsPage() {
       ) : (
         /* Visualização Detalhada do Prontuário do Paciente */
         <div>
+          <ClinicalAlertsBar
+            rhFactor={gynProfile ? (gynProfile as unknown as { rhFactor?: string }).rhFactor : undefined}
+            bloodType={gynProfile ? (gynProfile as unknown as { bloodType?: string }).bloodType : undefined}
+            bloodPressure={prenatalVisits[0]?.bloodPressure}
+          />
+
           {/* Card Resumo do Paciente com Indicadores Ginecológicos */}
           <div
             style={{
@@ -485,6 +493,16 @@ export function DoctorMedicalRecordsPage() {
               patientId={patientId}
               patientName={selectedPatient?.name || 'Paciente'}
               visits={prenatalVisits}
+              onAddVisit={
+                records.length > 0
+                  ? async (visitPayload) => {
+                      const added = await addPrenatalVisit(records[0].id, visitPayload);
+                      if (added) {
+                        setPrenatalVisits((prev) => [...prev, added]);
+                      }
+                    }
+                  : undefined
+              }
             />
           ) : activeTab === 'records' ? (
             /* Histórico de Atendimentos SOAP e Exames Ginecológicos */

@@ -27,6 +27,32 @@ public sealed class ImmutableRecordsInterceptorTests
         var record = MedicalRecord.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, now);
         var addendum = MedicalRecordAddendum.Create(record.Id, Guid.NewGuid(), "Justificativa", "Nota clínica", now);
         var gynData = GynecologicalConsultationData.Create(record.Id, now);
+        var prenatalVisit = PrenatalVisitRecord.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            record.Id,
+            DateOnly.FromDateTime(now.UtcDateTime),
+            gestationalAgeWeeks: 20,
+            gestationalAgeDays: 2,
+            weightKg: 65.0,
+            bloodPressure: "120/80",
+            uterineHeightCm: 20.0,
+            fetalHeartRateBpm: 140,
+            fetalMovementPresent: true,
+            edemaClassification: "Ausente",
+            fetalPresentation: "Cefálica",
+            clinicalNotes: "Evolução normal.",
+            now: now);
+        var preventiveScreening = PreventiveScreeningRecord.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            record.Id,
+            "citopatologico",
+            DateOnly.FromDateTime(now.UtcDateTime),
+            "Negativo para lesão intraepitelial ou malignidade",
+            "normal",
+            DateOnly.FromDateTime(now.UtcDateTime).AddYears(1),
+            now);
         var document = MedicalDocument.CreateDraft(
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -42,6 +68,8 @@ public sealed class ImmutableRecordsInterceptorTests
         Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(record));
         Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(addendum));
         Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(gynData));
+        Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(prenatalVisit));
+        Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(preventiveScreening));
         Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(document));
         Assert.True(ImmutableRecordsInterceptor.IsImmutableEntity(audit));
     }

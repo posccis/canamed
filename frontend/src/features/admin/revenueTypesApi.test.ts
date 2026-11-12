@@ -4,7 +4,6 @@ import {
   createRevenueType,
   updateRevenueType,
   toggleRevenueTypeActive,
-  type RevenueTypeDto,
 } from './revenueTypesApi';
 
 describe('revenueTypesApi', () => {

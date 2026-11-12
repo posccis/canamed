@@ -66,3 +66,4 @@ Desktop.ini
 !.vscode/launch.json
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+output/

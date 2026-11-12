@@ -74,11 +74,50 @@ public sealed class PortalRepository(CanamedDbContext dbContext) : IPortalReposi
 
         var patients = await query.ToListAsync(cancellationToken);
 
-        return patients.FirstOrDefault(p =>
-            (!string.IsNullOrEmpty(cpfDigits) && !string.IsNullOrEmpty(p.Document) &&
-             new string(p.Document.Where(char.IsDigit).ToArray()) == cpfDigits) ||
-            (!string.IsNullOrEmpty(phoneDigits) &&
-             new string(p.Phone.Where(char.IsDigit).ToArray()) == phoneDigits));
+        if (!string.IsNullOrEmpty(cpfDigits))
+        {
+            var byCpf = patients.FirstOrDefault(p =>
+                !string.IsNullOrEmpty(p.Document) &&
+                new string(p.Document.Where(char.IsDigit).ToArray()) == cpfDigits);
+
+            if (byCpf is not null)
+            {
+                var existingPhoneDigits = string.IsNullOrEmpty(byCpf.Phone)
+                    ? string.Empty
+                    : new string(byCpf.Phone.Where(char.IsDigit).ToArray());
+
+                if (string.IsNullOrEmpty(existingPhoneDigits) || existingPhoneDigits == phoneDigits)
+                {
+                    return byCpf;
+                }
+
+                throw new InvalidOperationException(
+                    "O telefone informado não corresponde ao cadastro deste CPF. Utilize o telefone cadastrado ou contate a recepção da clínica.");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(phoneDigits))
+        {
+            var byPhone = patients.FirstOrDefault(p =>
+                !string.IsNullOrEmpty(p.Phone) &&
+                new string(p.Phone.Where(char.IsDigit).ToArray()) == phoneDigits);
+
+            if (byPhone is not null)
+            {
+                var existingCpfDigits = string.IsNullOrEmpty(byPhone.Document)
+                    ? string.Empty
+                    : new string(byPhone.Document.Where(char.IsDigit).ToArray());
+
+                if (string.IsNullOrEmpty(existingCpfDigits) || existingCpfDigits == cpfDigits)
+                {
+                    return byPhone;
+                }
+
+                throw new InvalidOperationException("Este telefone já está vinculado a outro CPF cadastrado.");
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

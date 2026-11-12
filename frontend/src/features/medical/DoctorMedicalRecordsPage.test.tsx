@@ -241,6 +241,54 @@ describe('DoctorMedicalRecordsPage Component', () => {
       expect(screen.getByText(/Negativo para neoplasia/i)).toBeInTheDocument();
     });
   });
+
+  it('habilita botão + Nova Consulta na aba Pré-Natal quando há prontuário e exibe ClinicalAlertsBar para Rh Negativo', async () => {
+    mocks.apiGet.mockImplementation(async (path: string) => {
+      if (path === '/patients') {
+        return [{ id: 'patient-pre', name: 'Juliana Gestante', phone: '81988887777', email: null, birthDate: '1995-03-10', isActive: true }];
+      }
+      if (path === '/patients/patient-pre/medical-records') {
+        return [{ id: 'rec-pre-1', clinicId: 'clinic-1', patientId: 'patient-pre', doctorId: 'doc-1', status: 'em_andamento', createdAt: '2026-10-05T10:00:00Z', updatedAt: '2026-10-05T10:00:00Z', addenda: [] }];
+      }
+      if (path === '/medical-records/patients/patient-pre/gynecological-profile') {
+        return {
+          id: 'prof-pre',
+          clinicId: 'clinic-1',
+          patientId: 'patient-pre',
+          gravida: 1,
+          para: 0,
+          cesareans: 0,
+          abortions: 0,
+          livingChildren: 0,
+          ectopicPregnancies: 0,
+          rhFactor: 'Negativo',
+          createdAt: '2026-10-05T10:00:00Z',
+          updatedAt: '2026-10-05T10:00:00Z',
+        };
+      }
+      return [];
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/medico/prontuario/patient-pre']}>
+        <Routes>
+          <Route path="/medico/prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Juliana Gestante')).toBeInTheDocument();
+      expect(screen.getByTestId('clinical-alerts-bar')).toBeInTheDocument();
+      expect(screen.getByText(/Gestante Rh Negativo/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Pré-Natal & Cartão da Gestante/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /\+ Nova Consulta/i })).toBeInTheDocument();
+    });
+  });
 });
 
 

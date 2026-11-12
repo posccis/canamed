@@ -53,6 +53,8 @@ public sealed class ImmutableRecordsInterceptor : SaveChangesInterceptor
         entity is MedicalRecord
             or MedicalRecordAddendum
             or GynecologicalConsultationData
+            or PrenatalVisitRecord
+            or PreventiveScreeningRecord
             or MedicalDocument
             or AuditEvent;
 }

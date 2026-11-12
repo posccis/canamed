@@ -84,7 +84,7 @@ export function CervicalClockMap({
       case 'mosaico': return '#C05621';     // Laranja escuro
       case 'vaso_atipico': return '#C33D49';// Vermelho alerta
       case 'biopsia': return '#9B2C2C';     // Vinho biópsia
-      default: return 'var(--brand-primary, #852A91)';
+      default: return 'var(--brand-primary, #008080)';
     }
   };
 
@@ -94,15 +94,15 @@ export function CervicalClockMap({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        background: '#FAF7FA',
+        background: '#F0FDF9',
         padding: '1rem',
         borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--color-neutral-border)',
+        border: '1px solid #B2F5EA',
         maxWidth: '100%',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <strong style={{ fontSize: '0.9rem', color: '#481361' }}>
+        <strong style={{ fontSize: '0.9rem', color: '#005F6A' }}>
           🎯 Mapa Cervical 12h (Odontograma Colposcópico)
         </strong>
         {onZtChange && (
@@ -170,7 +170,7 @@ export function CervicalClockMap({
           if (isSelected) {
             fillColor = getFindingColor(currentFinding);
           } else if (isHovered && !readOnly) {
-            fillColor = '#F7ECF8';
+            fillColor = '#E6FFFA';
           }
 
           return (
@@ -192,7 +192,7 @@ export function CervicalClockMap({
         })}
 
         {/* Orifício Externo do Colo (Centro) */}
-        <ellipse cx={cx} cy={cy} rx={16} ry={9} fill="#481361" stroke="#2D3748" strokeWidth="1.5" />
+        <ellipse cx={cx} cy={cy} rx={16} ry={9} fill="#005F6A" stroke="#2D3748" strokeWidth="1.5" />
         <text x={cx} y={cy + 3} textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold">
           OCE
         </text>
@@ -207,7 +207,7 @@ export function CervicalClockMap({
               x={pos.x}
               y={pos.y}
               textAnchor="middle"
-              fill={isSelected ? '#852A91' : '#718096'}
+              fill={isSelected ? '#008080' : '#718096'}
               fontSize="10"
               fontWeight={isSelected ? 'bold' : 'normal'}
             >

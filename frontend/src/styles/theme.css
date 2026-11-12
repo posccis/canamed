@@ -4,12 +4,12 @@
  * Não alterar valores sem atualização formal da identidade visual.
  */
 :root {
-  /* Cores de Marca Cana Med Mulher (protótipo dashboard_administrativo_canamed.html) */
-  --brand-primary: #852A91;       /* Roxo de marca (Ações principais) */
-  --brand-hover: #6F217B;         /* Roxo mais escuro (Hover) */
-  --brand-magenta: #D83C91;       /* Destaques sutis */
-  --brand-lilac: #B77AD8;         /* Apoio visual */
-  --brand-soft: #F7ECF8;          /* Fundos selecionados / Destaques suaves */
+  /* Cores de Marca Oficial Cana Med Mulher (GEMINI.md & docs/identidade-visual.md) */
+  --brand-primary: #008080;       /* Teal Verde Água Oficial */
+  --brand-hover: #005F6A;         /* Azul Petróleo Oficial */
+  --brand-magenta: #66CDAA;       /* Verde Menta Oficial */
+  --brand-lilac: #4DB6AC;         /* Apoio visual Teal/Menta */
+  --brand-soft: #E6FFFA;          /* Fundo selecionado / destaque suave Teal */
 
   /* Base Clínica Neutra */
   --base-bg: #F7F8FA;            /* Fundo geral do sistema */
@@ -35,8 +35,8 @@
   /* Compatibilidade com tokens legados do tema */
   --color-primary: var(--brand-primary);
   --color-primary-hover: var(--brand-hover);
-  --color-secondary: #6F217B;
-  --color-secondary-hover: #581862;
+  --color-secondary: #005F6A;
+  --color-secondary-hover: #004D56;
   --color-accent: var(--brand-magenta);
   --color-text: var(--content-primary);
   --color-text-muted: var(--content-secondary);
@@ -90,7 +90,7 @@
   --input-border: var(--base-border);
   --input-border-hover: var(--content-muted);
   --input-border-focus: var(--brand-primary);
-  --input-focus-ring: rgba(133, 42, 145, 0.2);
+  --input-focus-ring: rgba(0, 128, 128, 0.22);
   --input-radius: 8px;
   --input-bg: #ffffff;
   --input-bg-subtle: #f8fafc;
@@ -2741,8 +2741,112 @@ body {
 
 .btn-secondary-prototype:hover {
   background-color: var(--base-bg, #f7f8fa);
-  color: var(--brand-primary, #852a91);
-  border-color: var(--brand-primary, #852a91);
+  color: var(--brand-primary, #008080);
+  border-color: var(--brand-primary, #008080);
 }
+
+/* ==========================================================================
+   Componentes Clínicos Especializados GO (PEP Ginecológico & Obstétrico)
+   ========================================================================== */
+
+.clinical-alerts-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.clinical-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.clinical-alert--warning {
+  background-color: var(--status-warning-bg, #FDF0E1);
+  border-color: #F6AD55;
+  color: var(--status-warning, #A96512);
+}
+
+.clinical-alert--danger {
+  background-color: var(--status-error-bg, #FCECEE);
+  border-color: #FC8181;
+  color: var(--status-error, #C33D49);
+  box-shadow: var(--shadow-sm);
+}
+
+.obs-calc-card {
+  background-color: #F0FDF9;
+  border: 1px solid #B2F5EA;
+  border-radius: var(--radius-lg, 14px);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.obs-calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.prenatal-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--base-border, #E2E6EC);
+  border-radius: var(--radius-lg, 14px);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pep-section-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--base-border, #E2E6EC);
+  overflow-x: auto;
+}
+
+.pep-section-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--base-border, #E2E6EC);
+  background-color: #FFFFFF;
+  color: var(--content-secondary, #626B79);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.pep-section-tab:hover {
+  background-color: var(--brand-soft, #E6FFFA);
+  color: var(--brand-hover, #005F6A);
+  border-color: #B2F5EA;
+}
+
+.pep-section-tab--active {
+  background-color: var(--brand-primary, #008080);
+  color: #FFFFFF;
+  border-color: var(--brand-primary, #008080);
+}
+
 
 

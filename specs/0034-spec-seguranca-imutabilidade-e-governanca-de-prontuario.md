@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **ID** | SPEC-0034 |
 | **Título** | Segurança, Imutabilidade e Governança de Prontuário (P0) |
-| **Status** | Em implementação |
+| **Status** | Implementada |
 | **Versão** | 1.1 |
 | **Data** | 2026-10-21 |
 | **Autor** | Planejador e Arquiteto de Produto (`@planejador`) |

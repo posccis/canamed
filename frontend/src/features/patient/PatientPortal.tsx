@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Calendar,
-  Clock,
   User,
   Phone,
   ArrowLeft,
@@ -10,7 +9,6 @@ import {
   Check,
   X,
   AlertCircle,
-  HelpCircle,
   LogOut,
   MapPin,
   ChevronLeft,
@@ -65,7 +63,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
   // Agendamentos
   const [appointments, setAppointments] = useState<OnlineAppointment[]>([]);
-  const [loadingAppointments, setLoadingAppointments] = useState(false);
+  const [, setLoadingAppointments] = useState(false);
 
   // Auth / OTP Modal
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -205,8 +203,15 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
     if (scheduleStep !== 3 || !selectedDoctor || !meta) return;
 
     setLoadingSlots(true);
+    const effectiveTypeId = selectedAppointmentTypeId || meta.appointmentTypes?.[0]?.id;
     patientApi
-      .getAvailableSlots(meta.clinicId, selectedDoctor.specialtyId, selectedCalendarDate, selectedDoctor.id)
+      .getAvailableSlots(
+        meta.clinicId,
+        selectedDoctor.specialtyId,
+        selectedCalendarDate,
+        selectedDoctor.id,
+        effectiveTypeId
+      )
       .then((slots) => {
         setAvailableSlots(slots);
       })
@@ -216,7 +221,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
       .finally(() => {
         setLoadingSlots(false);
       });
-  }, [scheduleStep, selectedDoctor, selectedCalendarDate, meta]);
+  }, [scheduleStep, selectedDoctor, selectedCalendarDate, meta, selectedAppointmentTypeId]);
 
   // Auth: Enviar código OTP
   const handleRequestOtp = async (e: React.FormEvent) => {
@@ -387,8 +392,6 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
     sessionStorage.clear();
     setSession(null);
     setAppointments([]);
-    setDocuments([]);
-    setExamAttachments([]);
     onLogoutRequested?.();
     navigateTo('home');
     addToast('Sessão encerrada com segurança.', 'info');
@@ -408,10 +411,34 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
   // Próxima consulta em destaque
   const nextAppointment = useMemo(() => {
-    const now = new Date();
     return appointments
       .filter((a) => a.status === 'agendado' || a.status === 'Agendado' || a.status === 'confirmado')
       .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0];
+  }, [appointments]);
+
+  // Modalidades de atendimento (com fallback clínico ginecológico)
+  const appointmentTypeOptions = useMemo(() => {
+    if (meta?.appointmentTypes && meta.appointmentTypes.length > 0) {
+      return meta.appointmentTypes;
+    }
+    return [
+      { id: 'type-rotina', name: 'Consulta Ginecológica de Rotina', durationMinutes: 30 },
+      { id: 'type-prenatal', name: 'Acompanhamento Pré-Natal', durationMinutes: 30 },
+      { id: 'type-preventivo', name: 'Exame Preventivo / Papanicolaou', durationMinutes: 30 },
+      { id: 'type-diu', name: 'Inserção / Avaliação de DIU', durationMinutes: 45 },
+      { id: 'type-retorno', name: 'Retorno de Consulta (CFM 30 dias)', durationMinutes: 20 },
+    ];
+  }, [meta]);
+
+  // Elegibilidade de retorno CFM 1.958/2010 (consulta realizada nos últimos 30 dias)
+  const isEligibleForCfmReturn = useMemo(() => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return appointments.some((a) => {
+      const st = (a.status || '').toLowerCase();
+      if (st !== 'realizado' && st !== 'concluido' && st !== 'finalizado') return false;
+      const ts = new Date(a.startsAt).getTime();
+      return !isNaN(ts) && ts >= thirtyDaysAgo && ts <= Date.now() + 24 * 60 * 60 * 1000;
+    });
   }, [appointments]);
 
   // Lista de médicos combinados com especialidade
@@ -510,8 +537,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
             justifyContent: 'center',
             fontSize: '0.88rem',
             fontWeight: isSelected ? 700 : 500,
-            border: isSelected ? '2px solid #852A91' : '1px solid transparent',
-            background: isSelected ? '#852A91' : isUnavailable ? 'transparent' : '#ffffff',
+            border: isSelected ? '2px solid #008080' : '1px solid transparent',
+            background: isSelected ? '#008080' : isUnavailable ? 'transparent' : '#ffffff',
             color: isSelected ? '#ffffff' : isUnavailable ? '#CBD5E1' : '#1E293B',
             cursor: isUnavailable ? 'not-allowed' : 'pointer',
             transition: 'all 0.15s ease',
@@ -596,7 +623,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#CBD5E1' }} /> Indisponível
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#852A91' }} /> Selecionado
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#008080' }} /> Selecionado
           </div>
         </div>
       </div>
@@ -674,7 +701,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                   clinic.publicName
                 ) : (
                   <>
-                    CANA MED <span style={{ color: '#852A91', fontWeight: 500 }}>Mulher</span>
+                    CANA MED <span style={{ color: '#008080', fontWeight: 500 }}>Mulher</span>
                   </>
                 )}
               </span>
@@ -690,9 +717,9 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
               style={{
                 fontSize: '0.82rem',
                 fontWeight: 600,
-                color: '#852A91',
-                background: '#F7ECF8',
-                border: '1px solid #E9D5FF',
+                color: '#008080',
+                background: '#E6FFFA',
+                border: '1px solid #B2F5EA',
                 borderRadius: '20px',
                 padding: '0.35rem 0.85rem',
                 cursor: 'pointer',
@@ -712,7 +739,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
               borderRadius: '50%',
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              color: '#852A91',
+              color: '#008080',
               fontWeight: 700,
               fontSize: '0.88rem',
               display: 'flex',
@@ -726,7 +753,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
             {session ? (
               getInitials(session.patientName)
             ) : (
-              <User size={18} color="#852A91" />
+              <User size={18} color="#008080" />
             )}
           </button>
         </div>
@@ -760,7 +787,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     style={{
                       border: 'none',
                       background: 'transparent',
-                      color: '#852A91',
+                      color: '#008080',
                       fontSize: '0.82rem',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -779,7 +806,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     borderRadius: '16px',
                     padding: '1.25rem',
                     border: '1px solid #E2E8F0',
-                    borderLeft: '5px solid #852A91',
+                    borderLeft: '5px solid #008080',
                     boxShadow: '0 4px 12px -2px rgba(0,0,0,0.05)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
@@ -789,8 +816,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <div
                         style={{
-                          background: '#F7ECF8',
-                          color: '#852A91',
+                          background: '#E6FFFA',
+                          color: '#008080',
                           padding: '0.5rem',
                           borderRadius: '10px',
                           display: 'flex',
@@ -804,7 +831,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem', color: '#1E293B' }}>
                           {formatDateTime(nextAppointment.startsAt).date}
                         </p>
-                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: '#852A91' }}>
+                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: '#008080' }}>
                           às {formatDateTime(nextAppointment.startsAt).time}
                         </p>
                       </div>
@@ -893,7 +920,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.4rem',
-                      background: '#852A91',
+                      background: '#008080',
                       color: '#FFFFFF',
                       border: 'none',
                       borderRadius: '10px',
@@ -901,7 +928,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       fontSize: '0.85rem',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      boxShadow: '0 4px 10px rgba(133, 42, 145, 0.2)',
+                      boxShadow: '0 4px 10px rgba(0, 128, 128, 0.2)',
                     }}
                   >
                     <CalendarPlus size={16} />
@@ -940,8 +967,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       width: '42px',
                       height: '42px',
                       borderRadius: '50%',
-                      background: '#F7ECF8',
-                      color: '#852A91',
+                      background: '#E6FFFA',
+                      color: '#008080',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -976,8 +1003,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         width: '42px',
                         height: '42px',
                         borderRadius: '50%',
-                        background: '#F7ECF8',
-                        color: '#852A91',
+                        background: '#E6FFFA',
+                        color: '#008080',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1013,8 +1040,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         width: '42px',
                         height: '42px',
                         borderRadius: '50%',
-                        background: '#F7ECF8',
-                        color: '#852A91',
+                        background: '#E6FFFA',
+                        color: '#008080',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1089,7 +1116,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                   left: 0,
                   width: `${((scheduleStep - 1) / 3) * 100}%`,
                   height: '2px',
-                  background: '#852A91',
+                  background: '#008080',
                   transform: 'translateY(-50%)',
                   zIndex: 0,
                   transition: 'width 0.25s ease',
@@ -1122,8 +1149,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         width: '26px',
                         height: '26px',
                         borderRadius: '50%',
-                        border: isDone || isActive ? '2px solid #852A91' : '2px solid #CBD5E1',
-                        background: isDone || isActive ? '#852A91' : '#FFFFFF',
+                        border: isDone || isActive ? '2px solid #008080' : '2px solid #CBD5E1',
+                        background: isDone || isActive ? '#008080' : '#FFFFFF',
                         color: isDone || isActive ? '#FFFFFF' : '#94A3B8',
                         fontSize: '0.75rem',
                         fontWeight: 700,
@@ -1139,7 +1166,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       style={{
                         fontSize: '0.62rem',
                         fontWeight: isActive ? 700 : 500,
-                        color: isActive ? '#852A91' : '#64748B',
+                        color: isActive ? '#008080' : '#64748B',
                         textTransform: 'uppercase',
                         letterSpacing: '0.02em',
                         textAlign: 'center',
@@ -1167,6 +1194,66 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                   Selecione o profissional de sua preferência para o atendimento:
                 </p>
 
+                {isEligibleForCfmReturn && (
+                  <div
+                    style={{
+                      background: '#E6FFFA',
+                      border: '1px solid #4DB6AC',
+                      borderRadius: '12px',
+                      padding: '0.85rem 1rem',
+                      marginBottom: '1rem',
+                      color: '#005F6A',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <Sparkles size={18} style={{ flexShrink: 0, color: '#008080' }} />
+                    <span>
+                      Elegível para Retorno sem custo (CFM 1.958/2010) — você realizou consulta nos últimos 30 dias.
+                    </span>
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label
+                    htmlFor="step1-appt-type"
+                    style={{
+                      display: 'block',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      color: '#1E293B',
+                      marginBottom: '0.4rem',
+                    }}
+                  >
+                    Modalidade / Tipo de Atendimento
+                  </label>
+                  <select
+                    id="step1-appt-type"
+                    value={selectedAppointmentTypeId || appointmentTypeOptions[0]?.id || ''}
+                    onChange={(e) => setSelectedAppointmentTypeId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      padding: '0.7rem 0.85rem',
+                      borderRadius: '12px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '0.88rem',
+                      fontWeight: 600,
+                      color: '#1E293B',
+                      background: '#FFFFFF',
+                    }}
+                  >
+                    {appointmentTypeOptions.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.durationMinutes} min)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {doctorList.map((doc) => {
                     const isSelected = selectedDoctor?.id === doc.id;
@@ -1180,8 +1267,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           padding: '1rem',
-                          background: isSelected ? '#F7ECF8' : '#FFFFFF',
-                          border: isSelected ? '2px solid #852A91' : '1px solid #E2E8F0',
+                          background: isSelected ? '#E6FFFA' : '#FFFFFF',
+                          border: isSelected ? '2px solid #008080' : '1px solid #E2E8F0',
                           borderRadius: '14px',
                           cursor: 'pointer',
                           textAlign: 'left',
@@ -1194,7 +1281,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                               width: '44px',
                               height: '44px',
                               borderRadius: '50%',
-                              background: isSelected ? '#852A91' : '#F1F5F9',
+                              background: isSelected ? '#008080' : '#F1F5F9',
                               color: isSelected ? '#FFFFFF' : '#64748B',
                               display: 'flex',
                               alignItems: 'center',
@@ -1216,8 +1303,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                             width: '22px',
                             height: '22px',
                             borderRadius: '50%',
-                            border: isSelected ? '2px solid #852A91' : '2px solid #CBD5E1',
-                            background: isSelected ? '#852A91' : 'transparent',
+                            border: isSelected ? '2px solid #008080' : '2px solid #CBD5E1',
+                            background: isSelected ? '#008080' : 'transparent',
                             color: '#FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
@@ -1273,9 +1360,9 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                           onClick={() => setSelectedSlot(slot)}
                           style={{
                             padding: '0.85rem 0.5rem',
-                            border: isSelected ? '2px solid #852A91' : '1px solid #E2E8F0',
+                            border: isSelected ? '2px solid #008080' : '1px solid #E2E8F0',
                             borderRadius: '12px',
-                            background: isSelected ? '#852A91' : '#FFFFFF',
+                            background: isSelected ? '#008080' : '#FFFFFF',
                             color: isSelected ? '#FFFFFF' : '#1E293B',
                             fontWeight: 700,
                             fontSize: '0.9rem',
@@ -1329,8 +1416,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
                     <div
                       style={{
-                        background: '#F7ECF8',
-                        color: '#852A91',
+                        background: '#E6FFFA',
+                        color: '#008080',
                         padding: '0.75rem',
                         borderRadius: '12px',
                       }}
@@ -1341,7 +1428,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>
                         {formatDateTime(selectedSlot?.startsAt).date} às {formatDateTime(selectedSlot?.startsAt).time}
                       </h3>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#852A91', fontWeight: 600 }}>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#008080', fontWeight: 600 }}>
                         {selectedDoctor?.specialtyName}
                       </p>
                     </div>
@@ -1484,6 +1571,27 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                   </div>
                 </div>
 
+                {/* Orientações Clínicas de Preparo Ginecológico */}
+                <div
+                  style={{
+                    background: '#E6FFFA',
+                    border: '1px solid #4DB6AC',
+                    borderRadius: '12px',
+                    padding: '0.9rem 1rem',
+                    marginBottom: '1rem',
+                    color: '#005F6A',
+                    fontSize: '0.82rem',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <strong style={{ display: 'block', marginBottom: '0.3rem', color: '#008080' }}>
+                    Orientações Clínicas de Preparo
+                  </strong>
+                  <span>
+                    Para coleta de preventivo (Papanicolaou): evite relações sexuais, duchas ou cremes vaginais nas 48h anteriores e não esteja no período menstrual. Para inserção de DIU: traga exame Beta-hCG recente ou agende preferencialmente durante o fluxo menstrual.
+                  </span>
+                </div>
+
                 {/* Aviso da Política de 24h e 15 minutos */}
                 <div
                   style={{
@@ -1565,7 +1673,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       (scheduleStep === 2 && !selectedCalendarDate) ||
                       (scheduleStep === 3 && !selectedSlot)
                         ? '#CBD5E1'
-                        : '#852A91',
+                        : '#008080',
                     color: '#FFFFFF',
                     fontSize: '0.88rem',
                     fontWeight: 700,
@@ -1575,7 +1683,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       (scheduleStep === 3 && !selectedSlot)
                         ? 'not-allowed'
                         : 'pointer',
-                    boxShadow: '0 4px 10px rgba(133, 42, 145, 0.2)',
+                    boxShadow: '0 4px 10px rgba(0, 128, 128, 0.2)',
                   }}
                 >
                   Continuar
@@ -1590,7 +1698,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     padding: '0.75rem',
                     border: 'none',
                     borderRadius: '12px',
-                    background: '#852A91',
+                    background: '#008080',
                     color: '#FFFFFF',
                     fontSize: '0.88rem',
                     fontWeight: 700,
@@ -1599,7 +1707,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '0.4rem',
-                    boxShadow: '0 4px 12px rgba(133, 42, 145, 0.25)',
+                    boxShadow: '0 4px 12px rgba(0, 128, 128, 0.25)',
                   }}
                 >
                   <Check size={18} />
@@ -1644,7 +1752,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                         borderRadius: '14px',
                         padding: '1rem',
                         border: '1px solid #E2E8F0',
-                        borderLeft: '4px solid #852A91',
+                        borderLeft: '4px solid #008080',
                         marginBottom: '0.75rem',
                         cursor: 'pointer',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -1812,7 +1920,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       type="button"
                       onClick={() => navigateTo('appointments')}
                       style={{
-                        background: '#852A91',
+                        background: '#008080',
                         color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '8px',
@@ -1866,8 +1974,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                           width: '50px',
                           height: '50px',
                           borderRadius: '50%',
-                          background: '#F7ECF8',
-                          color: '#852A91',
+                          background: '#E6FFFA',
+                          color: '#008080',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -1927,10 +2035,10 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                           justifyContent: 'center',
                           gap: '0.5rem',
                           padding: '0.85rem',
-                          background: '#F7ECF8',
-                          border: '1px solid #E9D5FF',
+                          background: '#E6FFFA',
+                          border: '1px solid #B2F5EA',
                           borderRadius: '12px',
-                          color: '#852A91',
+                          color: '#008080',
                           fontWeight: 700,
                           fontSize: '0.9rem',
                           cursor: 'pointer',
@@ -2017,7 +2125,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    background: '#852A91',
+                    background: '#008080',
                     color: '#FFFFFF',
                     fontWeight: 700,
                     fontSize: '1.5rem',
@@ -2025,7 +2133,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: '0.65rem',
-                    boxShadow: '0 4px 12px rgba(133, 42, 145, 0.2)',
+                    boxShadow: '0 4px 12px rgba(0, 128, 128, 0.2)',
                   }}
                 >
                   {getInitials(session?.patientName)}
@@ -2209,7 +2317,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                 gap: '0.2rem',
                 flex: 1,
                 minWidth: 0,
-                color: isActive ? '#852A91' : '#94A3B8',
+                color: isActive ? '#008080' : '#94A3B8',
                 cursor: 'pointer',
                 transition: 'color 0.15s ease',
                 padding: '0.2rem 0',
@@ -2267,12 +2375,32 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
             <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1E293B', margin: '0 0 0.5rem' }}>
               Consulta Agendada!
             </h2>
-            <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.5, margin: '0 0 1.5rem' }}>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.5, margin: '0 0 1rem' }}>
               Seu horário com <strong>{selectedDoctor?.name}</strong> está confirmado para{' '}
               <strong>
                 {formatDateTime(selectedSlot?.startsAt).date} às {formatDateTime(selectedSlot?.startsAt).time}
               </strong>.
             </p>
+            <div
+              style={{
+                background: '#E6FFFA',
+                border: '1px solid #4DB6AC',
+                borderRadius: '10px',
+                padding: '0.75rem',
+                marginBottom: '1.25rem',
+                color: '#005F6A',
+                fontSize: '0.78rem',
+                textAlign: 'left',
+                lineHeight: 1.45,
+              }}
+            >
+              <strong style={{ display: 'block', marginBottom: '0.2rem', color: '#008080' }}>
+                Orientações Clínicas de Preparo
+              </strong>
+              <span>
+                Para coleta de preventivo (Papanicolaou): evite relações sexuais, duchas ou cremes vaginais nas 48h anteriores e não esteja no período menstrual. Para inserção de DIU: traga exame Beta-hCG recente ou agende preferencialmente durante o fluxo menstrual.
+              </span>
+            </div>
 
             <button
               type="button"
@@ -2289,7 +2417,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                 padding: '0.85rem',
                 borderRadius: '12px',
                 border: 'none',
-                background: '#852A91',
+                background: '#008080',
                 color: '#FFFFFF',
                 fontSize: '0.9rem',
                 fontWeight: 700,
@@ -2574,7 +2702,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     padding: '0.8rem',
                     borderRadius: '10px',
                     border: 'none',
-                    background: '#852A91',
+                    background: '#008080',
                     color: '#FFFFFF',
                     fontWeight: 700,
                     fontSize: '0.88rem',
@@ -2622,7 +2750,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                     padding: '0.8rem',
                     borderRadius: '10px',
                     border: 'none',
-                    background: '#852A91',
+                    background: '#008080',
                     color: '#FFFFFF',
                     fontWeight: 700,
                     fontSize: '0.88rem',
@@ -2635,7 +2763,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                 <button
                   type="button"
                   onClick={() => setOtpSent(false)}
-                  style={{ border: 'none', background: 'transparent', color: '#852A91', fontSize: '0.78rem', cursor: 'pointer' }}
+                  style={{ border: 'none', background: 'transparent', color: '#008080', fontSize: '0.78rem', cursor: 'pointer' }}
                 >
                   Alterar telefone ou reenviar
                 </button>

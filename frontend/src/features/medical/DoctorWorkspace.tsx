@@ -12,7 +12,12 @@ import {
   getGynecologicalConsultationData,
   updateGynecologicalConsultationData,
   getGynecologicalProfile,
+  getPatientPrenatalVisits,
+  addPrenatalVisit,
+  getPatientScreenings,
   type GynecologicalProfileDto,
+  type PrenatalVisitDto,
+  type PreventiveScreeningDto,
 } from './medicalRecordsApi';
 import { GynecologicalExamSection, type GynecologicalExamState } from './GynecologicalExamSection';
 import { DocumentModal } from './DocumentModal';
@@ -20,6 +25,8 @@ import { PatientHistoryModal } from './PatientHistoryModal';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
 import { ClinicalAlertsBar } from './ClinicalAlertsBar';
 import { ObstetricCalculatorWidget } from './ObstetricCalculatorWidget';
+import { PrenatalCardSection } from './PrenatalCardSection';
+import { PreventiveScreeningList } from './PreventiveScreeningList';
 import { useAutoSave } from './useAutoSave';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -39,7 +46,10 @@ export function DoctorWorkspace() {
   const [finishing, setFinishing] = useState(false);
 
   // Gynecological Specialized State
+  const [activeClinicalSection, setActiveClinicalSection] = useState<'all' | 'anamnesis' | 'prenatal' | 'exam' | 'screening' | 'soap'>('all');
   const [gynProfile, setGynProfile] = useState<GynecologicalProfileDto | null>(null);
+  const [prenatalVisits, setPrenatalVisits] = useState<PrenatalVisitDto[]>([]);
+  const [screenings, setScreenings] = useState<PreventiveScreeningDto[]>([]);
   const [dum, setDum] = useState('');
   const [isDumUncertain, setIsDumUncertain] = useState(false);
   const [isMenopausal, setIsMenopausal] = useState(false);
@@ -212,6 +222,22 @@ export function DoctorWorkspace() {
           .catch(() => {
             // Fallback seguro
           });
+
+        if (typeof getPatientPrenatalVisits === 'function') {
+          Promise.resolve(getPatientPrenatalVisits(patId))
+            .then((visits) => {
+              if (Array.isArray(visits)) setPrenatalVisits(visits);
+            })
+            .catch(() => setPrenatalVisits([]));
+        }
+
+        if (typeof getPatientScreenings === 'function') {
+          Promise.resolve(getPatientScreenings(patId))
+            .then((scrs) => {
+              if (Array.isArray(scrs)) setScreenings(scrs);
+            })
+            .catch(() => setScreenings([]));
+        }
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha ao carregar consultório.';
@@ -596,7 +622,7 @@ export function DoctorWorkspace() {
               {/* Barramento Semântico de Alertas Críticos (SPEC-0035 / RN-008) */}
               <ClinicalAlertsBar
                 bloodPressure={active.triage?.bloodPressure}
-                fastingBloodGlucose={active.triage?.bloodGlucoseMgDl}
+                fastingBloodGlucose={active.triage?.glucose}
                 rhFactor={gynProfile ? (gynProfile as unknown as { rhFactor?: string }).rhFactor : undefined}
                 bloodType={gynProfile ? (gynProfile as unknown as { bloodType?: string }).bloodType : undefined}
               />
@@ -712,35 +738,66 @@ export function DoctorWorkspace() {
                 </div>
               )}
 
-              {/* Sub-Navegação Rápida do Prontuário */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  marginBottom: '1.25rem',
-                  paddingBottom: '0.5rem',
-                  borderBottom: '1px solid var(--color-neutral-border)',
-                  overflowX: 'auto',
-                }}
-              >
-                <a href="#sec-gyn" className="button button--ghost button--small" style={{ fontSize: '0.8rem' }}>
+              {/* Sub-Navegação Rápida por Abas do Prontuário (P1-02) */}
+              <div className="pep-section-tabs" aria-label="Seções do Prontuário">
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'all'}
+                  className={`pep-section-tab ${activeClinicalSection === 'all' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('all')}
+                >
+                  📋 Visão Completa
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'anamnesis'}
+                  className={`pep-section-tab ${activeClinicalSection === 'anamnesis' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('anamnesis')}
+                >
                   🌸 DUM & Anamnese
-                </a>
-                <a href="#sec-exam" className="button button--ghost button--small" style={{ fontSize: '0.8rem' }}>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'prenatal'}
+                  className={`pep-section-tab ${activeClinicalSection === 'prenatal' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('prenatal')}
+                >
+                  🤰 Pré-Natal & Curvas ({prenatalVisits.length})
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'exam'}
+                  className={`pep-section-tab ${activeClinicalSection === 'exam' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('exam')}
+                >
                   🩺 Exame Físico Ginecológico
-                </a>
-                <a href="#sec-proc" className="button button--ghost button--small" style={{ fontSize: '0.8rem' }}>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'screening'}
+                  className={`pep-section-tab ${activeClinicalSection === 'screening' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('screening')}
+                >
+                  🛡️ Rastreamento Preventivo ({screenings.length})
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeClinicalSection === 'soap'}
+                  className={`pep-section-tab ${activeClinicalSection === 'soap' ? 'pep-section-tab--active' : ''}`}
+                  onClick={() => setActiveClinicalSection('soap')}
+                >
+                  📝 SOAP & Diagnósticos
+                </button>
+                <a href="#sec-proc" className="pep-section-tab" onClick={() => setActiveClinicalSection('all')}>
                   💉 Procedimentos (DIU/Biópsia)
                 </a>
-                <a href="#sec-soap" className="button button--ghost button--small" style={{ fontSize: '0.8rem' }}>
-                  📝 SOAP & Diagnósticos
-                </a>
-                <a href="#sec-presc" className="button button--ghost button--small" style={{ fontSize: '0.8rem' }}>
+                <a href="#sec-presc" className="pep-section-tab" onClick={() => setActiveClinicalSection('all')}>
                   💊 Prescrições & Orientações
                 </a>
               </div>
 
               {/* Bloco 1: Anamnese Ginecológica & DUM */}
+              {(activeClinicalSection === 'all' || activeClinicalSection === 'anamnesis') && (
               <div
                 id="sec-gyn"
                 style={{
@@ -836,13 +893,51 @@ export function DoctorWorkspace() {
                   </div>
                 </div>
               </div>
+              )}
+
+              {/* Bloco 1.5: Cartão da Gestante, Consultas Pré-Natais & Curvas Obstétricas (P0-02) */}
+              {(activeClinicalSection === 'all' || activeClinicalSection === 'prenatal') && (
+                <div id="sec-prenatal" style={{ marginBottom: '1.25rem' }}>
+                  <PrenatalCardSection
+                    patientId={active.patientId}
+                    patientName={active.patientName}
+                    visits={prenatalVisits}
+                    onAddVisit={
+                      active.medicalRecord?.id
+                        ? async (visitPayload) => {
+                            const added = await addPrenatalVisit(active.medicalRecord!.id, visitPayload);
+                            if (added) {
+                              setPrenatalVisits((prev) => [...prev, added]);
+                            }
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
+              )}
 
               {/* Bloco 2: Exame Físico Ginecológico Segmentado */}
-              <div id="sec-exam" style={{ marginBottom: '1.25rem' }}>
-                <GynecologicalExamSection exam={exam} onChange={setExam} />
-              </div>
+              {(activeClinicalSection === 'all' || activeClinicalSection === 'exam') && (
+                <div id="sec-exam" style={{ marginBottom: '1.25rem' }}>
+                  <GynecologicalExamSection exam={exam} onChange={setExam} />
+                </div>
+              )}
+
+              {/* Bloco 2.5: Rastreamento Preventivo Oncológico (Bethesda, DNA-HPV, BI-RADS) (P0-02) */}
+              {(activeClinicalSection === 'all' || activeClinicalSection === 'screening') && (
+                <div id="sec-screening" style={{ marginBottom: '1.25rem' }}>
+                  <PreventiveScreeningList
+                    patientId={active.patientId}
+                    patientBirthDate={active.patientBirthDate}
+                    screenings={screenings}
+                    onScreeningAdded={(newScr) => setScreenings((prev) => [newScr, ...prev])}
+                  />
+                </div>
+              )}
 
               {/* Bloco 3: Procedimentos Ginecológicos Ambulatoriais */}
+              {(activeClinicalSection === 'all' || activeClinicalSection === 'soap') && (
+              <>
               <div
                 id="sec-proc"
                 style={{
@@ -1014,6 +1109,8 @@ export function DoctorWorkspace() {
                   </div>
                 </div>
               </div>
+              </>
+              )}
 
               {/* Barra de Ações do Atendimento */}
               <div

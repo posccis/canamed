@@ -155,6 +155,13 @@ describe('DoctorWorkspace Component', () => {
       expect(screen.getByText(/Genitália Externa/i)).toBeInTheDocument();
       expect(screen.getByText(/Exame Especular/i)).toBeInTheDocument();
       expect(screen.getByText(/Toque Bimanual/i)).toBeInTheDocument();
+
+      // Integração Pré-Natal e Rastreamento Preventivo Oncológico no atendimento ativo (P0-02)
+      expect(screen.getByTestId('prenatal-card-section')).toBeInTheDocument();
+      expect(screen.getByText(/Rastreamento Preventivo Oncológico/i)).toBeInTheDocument();
+
+      // Barra de abas de navegação rápida do PEP (P1-02)
+      expect(screen.getByRole('button', { name: /Visão Completa/i })).toBeInTheDocument();
     });
   });
 });

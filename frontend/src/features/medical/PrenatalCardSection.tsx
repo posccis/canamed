@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Download, Plus, Baby, Calendar, Scale, Activity } from 'lucide-react';
+import { Download, Plus, Baby, Calendar, Activity } from 'lucide-react';
 import { useToast } from '../layout/Toast';
 import { AtalahWeightGainChart } from './AtalahWeightGainChart';
 import { UterineHeightChart } from './UterineHeightChart';
-import type { PrenatalVisitDto } from './medicalRecordsApi';
 
 export interface PrenatalVisitItem {
   id: string;
@@ -49,10 +48,10 @@ export const PrenatalCardSection: React.FC<PrenatalCardSectionProps> = ({
   const [bp, setBp] = useState('');
   const [uterineHeight, setUterineHeight] = useState('');
   const [fhr, setFhr] = useState('');
-  const [movement, setMovement] = useState<boolean | null>(true);
+  const [movement] = useState<boolean | null>(true);
   const [edema, setEdema] = useState('Ausente');
-  const [presentation, setPresentation] = useState('Cefálica');
-  const [notes, setNotes] = useState('');
+  const [presentation] = useState('Cefálica');
+  const [notes] = useState('');
 
   const handleDownloadPdf = async () => {
     try {
@@ -121,28 +120,49 @@ export const PrenatalCardSection: React.FC<PrenatalCardSectionProps> = ({
   return (
     <div
       data-testid="prenatal-card-section"
-      className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm space-y-4"
+      className="prenatal-card"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-pink-50 text-pink-700">
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.75rem',
+          borderBottom: '1px solid #E2E6EC',
+          paddingBottom: '0.85rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div
+            style={{
+              padding: '0.5rem',
+              borderRadius: '10px',
+              backgroundColor: '#E6FFFA',
+              color: '#008080',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Baby className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-neutral-800">
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#005F6A' }}>
               Cartão da Gestante & Consultas de Pré-Natal
             </h3>
-            <p className="text-xs text-neutral-500">
+            <p style={{ margin: 0, fontSize: '0.78rem', color: '#626B79' }}>
               Acompanhamento longitudinal de evolução materno-fetal padrão FEBRASGO
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {onAddVisit && (
             <button
               type="button"
-              className="button button--secondary button--small flex items-center gap-1.5"
+              className="button button--secondary button--small"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               onClick={() => setModalOpen(true)}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -152,7 +172,8 @@ export const PrenatalCardSection: React.FC<PrenatalCardSectionProps> = ({
 
           <button
             type="button"
-            className="button button--primary button--small flex items-center gap-1.5"
+            className="button button--primary button--small"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             onClick={handleDownloadPdf}
             disabled={downloading || visits.length === 0}
           >
@@ -163,53 +184,65 @@ export const PrenatalCardSection: React.FC<PrenatalCardSectionProps> = ({
       </div>
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-neutral-400">Carregando consultas pré-natais...</div>
+        <div style={{ padding: '2rem', textAlign: 'center', fontSize: '0.875rem', color: '#858D99' }}>
+          Carregando consultas pré-natais...
+        </div>
       ) : visits.length === 0 ? (
-        <div className="py-8 text-center bg-neutral-50 rounded-lg border border-dashed border-neutral-200">
-          <Calendar className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-          <p className="text-sm font-medium text-neutral-600">Nenhuma consulta pré-natal registrada</p>
-          <p className="text-xs text-neutral-400 mt-0.5">
+        <div
+          style={{
+            padding: '2rem',
+            textAlign: 'center',
+            backgroundColor: '#F0FDF9',
+            borderRadius: '10px',
+            border: '1px dashed #B2F5EA',
+          }}
+        >
+          <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: '#008080' }} />
+          <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: '#005F6A' }}>
+            Nenhuma consulta pré-natal registrada
+          </p>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: '#626B79' }}>
             Clique em "+ Nova Consulta" para lançar os parâmetros da visita obstétrica.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+        <div style={{ overflowX: 'auto' }}>
+          <table className="dashboard-table" style={{ fontSize: '0.82rem' }}>
             <thead>
-              <tr className="border-b border-neutral-200 bg-neutral-50 text-neutral-600 font-semibold">
-                <th className="py-2.5 px-3">Data</th>
-                <th className="py-2.5 px-3">IG (Sem/D)</th>
-                <th className="py-2.5 px-3">Peso (kg)</th>
-                <th className="py-2.5 px-3">PA (mmHg)</th>
-                <th className="py-2.5 px-3">AU (cm)</th>
-                <th className="py-2.5 px-3">BCF (bpm)</th>
-                <th className="py-2.5 px-3">Mov. Fetal</th>
-                <th className="py-2.5 px-3">Edema</th>
-                <th className="py-2.5 px-3">Apresentação</th>
+              <tr>
+                <th>Data</th>
+                <th>IG (Sem/D)</th>
+                <th>Peso (kg)</th>
+                <th>PA (mmHg)</th>
+                <th>AU (cm)</th>
+                <th>BCF (bpm)</th>
+                <th>Mov. Fetal</th>
+                <th>Edema</th>
+                <th>Apresentação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody>
               {visits.map((v) => (
-                <tr key={v.id} className="hover:bg-neutral-50 transition-colors">
-                  <td className="py-2.5 px-3 font-medium text-neutral-800">
+                <tr key={v.id}>
+                  <td style={{ fontWeight: 600, color: '#202631' }}>
                     {new Date(v.visitDate + 'T00:00:00').toLocaleDateString('pt-BR')}
                   </td>
-                  <td className="py-2.5 px-3 text-neutral-700">
+                  <td>
                     {v.gestationalAgeWeeks}s {v.gestationalAgeDays}d
                   </td>
-                  <td className="py-2.5 px-3 text-neutral-700">{v.weightKg.toFixed(1)}</td>
-                  <td className="py-2.5 px-3 font-medium text-neutral-800">{v.bloodPressure}</td>
-                  <td className="py-2.5 px-3 text-neutral-600">{v.uterineHeightCm ?? '-'}</td>
-                  <td className="py-2.5 px-3 text-neutral-600">{v.fetalHeartRateBpm ?? '-'}</td>
-                  <td className="py-2.5 px-3 text-neutral-600">
+                  <td>{v.weightKg.toFixed(1)}</td>
+                  <td style={{ fontWeight: 600, color: '#202631' }}>{v.bloodPressure}</td>
+                  <td>{v.uterineHeightCm ?? '-'}</td>
+                  <td>{v.fetalHeartRateBpm ?? '-'}</td>
+                  <td>
                     {v.fetalMovementPresent === true
                       ? 'Presente'
                       : v.fetalMovementPresent === false
                       ? 'Ausente'
                       : '-'}
                   </td>
-                  <td className="py-2.5 px-3 text-neutral-600">{v.edemaClassification || 'Ausente'}</td>
-                  <td className="py-2.5 px-3 text-neutral-600">{v.fetalPresentation || '-'}</td>
+                  <td>{v.edemaClassification || 'Ausente'}</td>
+                  <td>{v.fetalPresentation || '-'}</td>
                 </tr>
               ))}
             </tbody>

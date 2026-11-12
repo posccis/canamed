@@ -55,4 +55,18 @@ describe('CervicalClockMap Component', () => {
 
     expect(mockOnChange).toHaveBeenCalledWith([6]);
   });
+
+  it('utiliza paleta oficial Teal (#008080 / #005F6A) sem cores roxas legadas', () => {
+    const { container } = render(
+      <CervicalClockMap
+        selectedHours={[3]}
+        findingType="acetobranco"
+        onChange={mockOnChange}
+      />
+    );
+
+    expect(container.innerHTML).not.toContain('#852A91');
+    expect(container.innerHTML).not.toContain('#481361');
+    expect(container.innerHTML).toContain('#005F6A');
+  });
 });

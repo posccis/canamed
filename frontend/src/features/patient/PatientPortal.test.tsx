@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PatientPortal } from './PatientPortal';
 import { ToastProvider } from '../layout/Toast';
@@ -120,6 +120,104 @@ describe('PatientPortal Component', () => {
       expect(screen.getByText('Horário')).toBeInTheDocument();
       expect(screen.getByText('Confirmação')).toBeInTheDocument();
     });
+  });
+
+  it('permite selecionar a modalidade de atendimento no Passo 1, repassa appointmentTypeId para getAvailableSlots no Passo 3 e exibe orientações de preparo no Passo 4', async () => {
+    localStorage.setItem(
+      'canamed_patient_session',
+      JSON.stringify({
+        token: 'test-token',
+        patientId: 'pat-1',
+        patientName: 'Maria Silva',
+      })
+    );
+
+    const recentCompletedDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica CanaMed Recife',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Helena Costa', specialtyId: 'spec-1' }],
+      appointmentTypes: [
+        { id: 'type-rotina', name: 'Consulta Ginecológica de Rotina', durationMinutes: 30 },
+        { id: 'type-preventivo', name: 'Exame Preventivo / Papanicolaou', durationMinutes: 30 },
+        { id: 'type-retorno', name: 'Retorno de Consulta (CFM 30 dias)', durationMinutes: 20 },
+      ],
+    });
+    mocks.getMyAppointments.mockResolvedValueOnce([
+      {
+        id: 'appt-prev',
+        professionalId: 'doc-1',
+        professionalName: 'Dra. Helena Costa',
+        specialtyName: 'Ginecologia Geral',
+        startsAt: recentCompletedDate,
+        endsAt: recentCompletedDate,
+        status: 'realizado',
+      },
+    ]);
+    mocks.getAvailableSlots.mockResolvedValueOnce([
+      {
+        professionalId: 'doc-1',
+        professionalName: 'Dra. Helena Costa',
+        startsAt: '2026-10-28T14:00:00.000Z',
+        endsAt: '2026-10-28T14:30:00.000Z',
+        durationMinutes: 30,
+      },
+    ]);
+
+    const { container } = render(
+      <ToastProvider>
+        <PatientPortal initialTab="schedule" />
+      </ToastProvider>
+    );
+
+    // Verifica banner de elegibilidade de retorno CFM 1.958/2010
+    await waitFor(() => {
+      expect(screen.getByText(/Elegível para Retorno sem custo \(CFM 1\.958\/2010\)/i)).toBeInTheDocument();
+    });
+
+    // Seleciona a modalidade no Passo 1
+    const modalitySelect = screen.getByLabelText(/Modalidade \/ Tipo de Atendimento/i);
+    fireEvent.change(modalitySelect, { target: { value: 'type-preventivo' } });
+
+    // Seleciona a médica no Passo 1
+    fireEvent.click(screen.getByText('Dra. Helena Costa'));
+
+    // Avança para o Passo 2 (Data)
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    await waitFor(() => {
+      expect(screen.getByText('Escolha a data')).toBeInTheDocument();
+    });
+
+    // Avança para o Passo 3 (Horários)
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    await waitFor(() => {
+      expect(mocks.getAvailableSlots).toHaveBeenCalledWith(
+        'clinic-1',
+        'spec-1',
+        expect.any(String),
+        'doc-1',
+        'type-preventivo'
+      );
+    });
+
+    // Seleciona o primeiro horário disponível e avança para o Passo 4 (Confirmação)
+    const slotButtons = container.querySelectorAll('main button');
+    // Clica no horário retornado
+    const timeButton = Array.from(slotButtons).find((b) => b.textContent?.includes(':'));
+    expect(timeButton).toBeTruthy();
+    fireEvent.click(timeButton!);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Verifica orientações clínicas de preparo no Passo 4 e paleta oficial (sem #852A91)
+    await waitFor(() => {
+      expect(screen.getByText(/Orientações Clínicas de Preparo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Para coleta de preventivo \(Papanicolaou\): evite relações sexuais/i)).toBeInTheDocument();
+    });
+    expect(container.innerHTML).not.toContain('#852A91');
   });
 });
 

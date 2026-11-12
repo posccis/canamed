@@ -9,6 +9,8 @@ using Canamed.Domain.Auditing;
 using Canamed.Domain.Clinics;
 using Canamed.Domain.Notifications;
 using Canamed.Domain.Portal;
+using Canamed.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -97,6 +99,183 @@ public sealed class OnlineBookingServiceDevOtpTests
         Assert.False(result.Success);
         Assert.Null(result.SessionToken);
         Assert.Equal("Código inválido ou expirado.", result.Message);
+    }
+
+    [Fact]
+    public async Task VerifyOtp_WhenCpfExistsWithDifferentPhone_RejectsLoginAndDoesNotIssueSession()
+    {
+        var prodEnv = new StubHostEnvironment(Environments.Production);
+        var clinicId = Guid.NewGuid();
+
+        var options = new DbContextOptionsBuilder<CanamedDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var dbContext = new CanamedDbContext(options);
+
+        var victimPatient = Patient.Create(clinicId, "Maria Silva", "(81) 99999-8888", _now, document: "123.456.789-00");
+        dbContext.Patients.Add(victimPatient);
+
+        var (otp, plainCode) = PatientOtpCode.Create("81977776666", "12345678900", _now);
+        dbContext.PatientOtpCodes.Add(otp);
+        await dbContext.SaveChangesAsync();
+
+        var realPortalRepo = new PortalRepository(dbContext);
+        var service = new OnlineBookingService(
+            portalRepository: realPortalRepo,
+            agendaRepository: null!,
+            catalogRepository: new DummyCatalogRepository(),
+            clinicOperationRepository: null!,
+            messagingProvider: null!,
+            auditRepository: new DummyAuditRepository(),
+            unitOfWork: new PassThroughUnitOfWork(),
+            environment: prodEnv);
+
+        var result = await service.VerifyOtpAsync(
+            new VerifyOtpRequest("81977776666", "12345678900", plainCode, clinicId),
+            "127.0.0.1",
+            "TestAgent",
+            _now.AddMinutes(1));
+
+        Assert.False(result.Success);
+        Assert.Null(result.SessionToken);
+        Assert.Null(result.PatientId);
+        Assert.Equal(
+            "O telefone informado não corresponde ao cadastro deste CPF. Utilize o telefone cadastrado ou contate a recepção da clínica.",
+            result.Message);
+    }
+
+    [Fact]
+    public async Task VerifyOtp_WhenPhoneExistsWithDifferentCpf_RejectsLoginAndDoesNotIssueSession()
+    {
+        var prodEnv = new StubHostEnvironment(Environments.Production);
+        var clinicId = Guid.NewGuid();
+
+        var options = new DbContextOptionsBuilder<CanamedDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var dbContext = new CanamedDbContext(options);
+
+        var existingPatient = Patient.Create(clinicId, "Maria Silva", "(81) 99999-8888", _now, document: "123.456.789-00");
+        dbContext.Patients.Add(existingPatient);
+
+        var (otp, plainCode) = PatientOtpCode.Create("81999998888", "99988877766", _now);
+        dbContext.PatientOtpCodes.Add(otp);
+        await dbContext.SaveChangesAsync();
+
+        var realPortalRepo = new PortalRepository(dbContext);
+        var service = new OnlineBookingService(
+            portalRepository: realPortalRepo,
+            agendaRepository: null!,
+            catalogRepository: new DummyCatalogRepository(),
+            clinicOperationRepository: null!,
+            messagingProvider: null!,
+            auditRepository: new DummyAuditRepository(),
+            unitOfWork: new PassThroughUnitOfWork(),
+            environment: prodEnv);
+
+        var result = await service.VerifyOtpAsync(
+            new VerifyOtpRequest("81999998888", "99988877766", plainCode, clinicId),
+            "127.0.0.1",
+            "TestAgent",
+            _now.AddMinutes(1));
+
+        Assert.False(result.Success);
+        Assert.Null(result.SessionToken);
+        Assert.Null(result.PatientId);
+        Assert.Equal("Este telefone já está vinculado a outro CPF cadastrado.", result.Message);
+    }
+
+    [Fact]
+    public async Task GetAvailableSlotsAsync_With60MinuteAppointmentType_Returns60MinSlotsAndBlocksOverlappingStartAt0930()
+    {
+        var clinicId = Guid.NewGuid();
+        var specialtyId = Guid.NewGuid();
+        var targetDate = new DateOnly(2026, 11, 10); // Tuesday
+        var requestNow = new DateTimeOffset(2026, 11, 9, 12, 0, 0, TimeSpan.FromHours(-3));
+
+        var options = new DbContextOptionsBuilder<CanamedDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var dbContext = new CanamedDbContext(options);
+
+        var prof = Professional.Create(clinicId, "Dra. Helena", requestNow, specialtyId: specialtyId);
+        var type60 = AppointmentType.Create(
+            clinicId,
+            "Inserção de DIU",
+            AppointmentCategory.Single,
+            AppointmentCoverage.Private,
+            durationMinutes: 60,
+            now: requestNow,
+            specialtyId: specialtyId);
+
+        var operatingHour = OperatingHour.Create(
+            clinicId,
+            targetDate.DayOfWeek,
+            new TimeOnly(8, 0),
+            new TimeOnly(12, 0),
+            requestNow);
+
+        // Existing appointment occupied from 10:00 to 10:30 (-03:00)
+        var occupiedStart = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(10, 0)), TimeSpan.FromHours(-3));
+        var existingAppointment = Appointment.Schedule(
+            clinicId,
+            prof.Id,
+            Guid.NewGuid(),
+            type60.Id,
+            occupiedStart,
+            durationMinutes: 30,
+            now: requestNow);
+
+        dbContext.Professionals.Add(prof);
+        dbContext.AppointmentTypes.Add(type60);
+        dbContext.OperatingHours.Add(operatingHour);
+        dbContext.Appointments.Add(existingAppointment);
+        await dbContext.SaveChangesAsync();
+
+        var service = new OnlineBookingService(
+            portalRepository: new PortalRepository(dbContext),
+            agendaRepository: new AgendaRepository(dbContext),
+            catalogRepository: new CatalogRepository(dbContext),
+            clinicOperationRepository: new ClinicOperationRepository(dbContext),
+            messagingProvider: null!,
+            auditRepository: new DummyAuditRepository(),
+            unitOfWork: new PassThroughUnitOfWork());
+
+        var slots = await service.GetAvailableSlotsAsync(
+            clinicId,
+            specialtyId,
+            prof.Id,
+            targetDate,
+            requestNow,
+            CancellationToken.None,
+            type60.Id);
+
+        Assert.NotEmpty(slots);
+        Assert.All(slots, s =>
+        {
+            Assert.Equal(60, s.DurationMinutes);
+            Assert.Equal(TimeSpan.FromMinutes(60), s.EndsAt - s.StartsAt);
+        });
+
+        // 09:00 -> 10:00 is allowed (does not overlap 10:00 -> 10:30)
+        var slot0900 = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(9, 0)), TimeSpan.FromHours(-3));
+        Assert.Contains(slots, s => s.StartsAt == slot0900);
+
+        // 09:30 -> 10:30 overlaps 10:00 -> 10:30, so it MUST be blocked
+        var slot0930 = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(9, 30)), TimeSpan.FromHours(-3));
+        Assert.DoesNotContain(slots, s => s.StartsAt == slot0930);
+
+        // 10:00 -> 11:00 overlaps 10:00 -> 10:30, so it MUST be blocked
+        var slot1000 = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(10, 0)), TimeSpan.FromHours(-3));
+        Assert.DoesNotContain(slots, s => s.StartsAt == slot1000);
+
+        // 10:30 -> 11:30 is allowed
+        var slot1030 = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(10, 30)), TimeSpan.FromHours(-3));
+        Assert.Contains(slots, s => s.StartsAt == slot1030);
+
+        // 11:30 -> 12:30 exceeds 12:00 operating hours end, so it MUST NOT be returned
+        var slot1130 = new DateTimeOffset(targetDate.ToDateTime(new TimeOnly(11, 30)), TimeSpan.FromHours(-3));
+        Assert.DoesNotContain(slots, s => s.StartsAt == slot1130);
     }
 
     private static OnlineBookingService CreateService(FakePortalRepository portalRepo, IHostEnvironment env)

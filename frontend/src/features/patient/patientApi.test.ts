@@ -60,6 +60,16 @@ describe('patientApi', () => {
     );
   });
 
+  it('busca slots disponíveis filtrando também por appointmentTypeId quando informado', async () => {
+    mocks.apiGet.mockResolvedValueOnce([]);
+
+    await patientApi.getAvailableSlots('clinic-1', 'spec-1', '2026-10-05', 'doc-1', 'type-prev-1');
+
+    expect(mocks.apiGet).toHaveBeenCalledWith(
+      '/portal/available-slots?clinicId=clinic-1&specialtyId=spec-1&date=2026-10-05&professionalId=doc-1&appointmentTypeId=type-prev-1'
+    );
+  });
+
   it('realiza check-in no totem de autoatendimento', async () => {
     mocks.apiPost.mockResolvedValueOnce({
       ticketCode: 'N-001',

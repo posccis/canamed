@@ -57,4 +57,19 @@ describe('ClinicalAlertsBar Component (SPEC-0035 / RN-008)', () => {
 
     expect(container.firstChild).toBeNull();
   });
+
+  it('aplica classes semânticas reais do design system (.clinical-alerts-bar, .clinical-alert--danger, .clinical-alert--warning)', () => {
+    render(
+      <ClinicalAlertsBar
+        rhFactor="Negativo"
+        bloodType="O"
+        bloodPressure="150/95"
+      />
+    );
+
+    const bar = screen.getByTestId('clinical-alerts-bar');
+    expect(bar.className).toContain('clinical-alerts-bar');
+    expect(bar.querySelector('.clinical-alert--warning')).not.toBeNull();
+    expect(bar.querySelector('.clinical-alert--danger')).not.toBeNull();
+  });
 });

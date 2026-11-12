@@ -338,9 +338,10 @@ export const patientApi = {
   verifyOtp: (phone: string, cpf: string, code: string, clinicId?: string) =>
     apiPost<VerifyOtpResponse>('/portal/auth/verify-otp', { phone, cpf, code, clinicId }),
 
-  getAvailableSlots: (clinicId: string, specialtyId: string, date: string, professionalId?: string) => {
+  getAvailableSlots: (clinicId: string, specialtyId: string, date: string, professionalId?: string, appointmentTypeId?: string) => {
     const params = new URLSearchParams({ clinicId, specialtyId, date });
     if (professionalId) params.append('professionalId', professionalId);
+    if (appointmentTypeId) params.append('appointmentTypeId', appointmentTypeId);
     return apiGet<PublicSlot[]>(`/portal/available-slots?${params.toString()}`);
   },
 

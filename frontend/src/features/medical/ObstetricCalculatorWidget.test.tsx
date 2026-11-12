@@ -53,4 +53,18 @@ describe('ObstetricCalculatorWidget Component (SPEC-0035 / RN-005, RN-006)', () 
     expect(screen.getByText(/DUM incerta ou desconhecida/i)).toBeInTheDocument();
     expect(screen.getByText(/Idade gestacional balizada exclusivamente pelo 1º USG/i)).toBeInTheDocument();
   });
+
+  it('utiliza a classe semântica .obs-calc-card e paleta oficial Teal (#008080 / #005F6A)', () => {
+    render(
+      <ObstetricCalculatorWidget
+        dum="2026-05-01"
+        isDumUncertain={false}
+      />
+    );
+
+    const widget = screen.getByTestId('obstetric-calculator-widget');
+    expect(widget.className).toContain('obs-calc-card');
+    expect(widget.innerHTML).not.toContain('#852A91');
+    expect(widget.innerHTML).not.toContain('#481361');
+  });
 });

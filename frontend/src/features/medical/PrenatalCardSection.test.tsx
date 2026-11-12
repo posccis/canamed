@@ -67,4 +67,17 @@ describe('PrenatalCardSection Component (SPEC-0035 / RN-007)', () => {
 
     expect(screen.getByText(/Registrar Consulta de Pré-Natal/i)).toBeInTheDocument();
   });
+
+  it('utiliza a classe semântica .prenatal-card', () => {
+    render(
+      <PrenatalCardSection
+        patientId="pat-1"
+        patientName="Juliana Silveira"
+        visits={dummyVisits}
+      />
+    );
+
+    const card = screen.getByTestId('prenatal-card-section');
+    expect(card.className).toContain('prenatal-card');
+  });
 });

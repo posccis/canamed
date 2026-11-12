@@ -91,10 +91,18 @@ public static class PortalEndpoints
         [FromQuery] Guid specialtyId,
         [FromQuery] DateOnly date,
         [FromQuery] Guid? professionalId,
+        [FromQuery] Guid? appointmentTypeId,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
-        var slots = await bookingService.GetAvailableSlotsAsync(clinicId, specialtyId, professionalId, date, timeProvider.GetUtcNow(), cancellationToken);
+        var slots = await bookingService.GetAvailableSlotsAsync(
+            clinicId,
+            specialtyId,
+            professionalId,
+            date,
+            timeProvider.GetUtcNow(),
+            cancellationToken,
+            appointmentTypeId);
         return Results.Ok(slots);
     }
 

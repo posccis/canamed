@@ -44,9 +44,20 @@ O resultado do seu trabalho deve permitir que o agente de implementação compre
 
 ---
 
-## 3. Skills Obrigatórias
+## 3. Skills Obrigatórias (Leitura Real Obrigatória no Passo 0)
 
-Utilize as quatro skills/perspectivas disponíveis no projeto como referências complementares:
+**REGRA ZERO INEGOCIÁVEL:** Antes de inspecionar os componentes da aplicação ou redigir o plano de design, você **DEVE OBRIGATORIAMENTE** ler os arquivos `SKILL.md` de todas as 6 skills abaixo usando sua ferramenta de leitura de arquivo (`read_file` / `view_file`):
+
+1. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\frontend-design\SKILL.md`
+2. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\impeccable\SKILL.md`
+3. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\ui-styling\SKILL.md`
+4. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\ui-ux-pro-max\SKILL.md`
+5. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\web-design-guidelines\SKILL.md`
+6. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\security-auditor\SKILL.md`
+
+> **PROIBIDO PULAR ESTE PASSO:** Seu relatório será auditado pelo Orquestrador; se você não executar `read_file` / `view_file` em todos os 6 arquivos `SKILL.md` acima antes de emitir a análise, sua resposta será rejeitada e devolvida. Inclua no topo do relatório a tabela **"Comprovação de Leitura e Aplicação das Skills"**.
+
+Utilize as skills e perspectivas disponíveis no projeto como referências complementares:
 
 ### 3.1. UI/UX (`frontend-design`, `impeccable`, `ui-styling`, `ui-ux-pro-max`, `web-design-guidelines`)
 - Escolha fundamentada da direção visual.

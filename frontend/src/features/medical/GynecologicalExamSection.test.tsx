@@ -64,4 +64,22 @@ describe('GynecologicalExamSection Component', () => {
     expect(screen.getByText('⚠️ Alterado')).toBeInTheDocument();
     expect(screen.getByText(/Ectopia periorificial extensa/i)).toBeInTheDocument();
   });
+
+  it('hidrata bidirecionalmente as horas e ZT do Mapa Cervical a partir de speculumExamFindings ao reabrir', () => {
+    const examWithClockTag: GynecologicalExamState = {
+      ...initialExam,
+      speculumExamIsNormal: false,
+      speculumExamFindings: 'Lesão acetobranca tênue [Mapa Cervical: lesão/achado em 3h, 6h - ZT tipo 2]',
+    };
+
+    render(<GynecologicalExamSection exam={examWithClockTag} onChange={vi.fn()} />);
+
+    const openMapBtn = screen.getByRole('button', { name: /Mapa Cervical 12h/i });
+    fireEvent.click(openMapBtn);
+
+    expect(screen.getByText(/Setores com achados:/i)).toBeInTheDocument();
+    expect(screen.getByText('3h, 6h')).toBeInTheDocument();
+    const ztSelect = screen.getByDisplayValue(/Tipo 2 \(Componente Endocervical/i);
+    expect(ztSelect).toBeInTheDocument();
+  });
 });

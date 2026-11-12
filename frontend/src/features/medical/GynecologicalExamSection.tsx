@@ -1,5 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CervicalClockMap } from './CervicalClockMap';
+
+function parseCervicalMapFromFindings(findings: string): { hours: number[]; zt: string } {
+  if (!findings) return { hours: [], zt: '1' };
+  const match = findings.match(/\[Mapa Cervical:\s*lesão\/achado em\s*([0-9h,\s]+?)\s*-\s*ZT tipo\s*([123])\]/i);
+  if (!match) return { hours: [], zt: '1' };
+  const hours = match[1]
+    .split(',')
+    .map((s) => parseInt(s.replace(/[^0-9]/g, ''), 10))
+    .filter((n) => !isNaN(n) && n >= 1 && n <= 12);
+  return { hours, zt: match[2] || '1' };
+}
 
 export interface GynecologicalExamState {
   breastsIsNormal: boolean;
@@ -157,9 +168,20 @@ function ExamSegment({
 }
 
 export function GynecologicalExamSection({ exam, onChange, readOnly }: Props) {
+  const initialParsed = parseCervicalMapFromFindings(exam.speculumExamFindings);
   const [showCervicalMap, setShowCervicalMap] = useState(false);
-  const [cervicalHours, setCervicalHours] = useState<number[]>([]);
-  const [ztType, setZtType] = useState('1');
+  const [cervicalHours, setCervicalHours] = useState<number[]>(initialParsed.hours);
+  const [ztType, setZtType] = useState(initialParsed.zt);
+
+  useEffect(() => {
+    const parsed = parseCervicalMapFromFindings(exam.speculumExamFindings);
+    if (parsed.hours.length > 0 || exam.speculumExamFindings.includes('[Mapa Cervical:')) {
+      setCervicalHours(parsed.hours);
+      setZtType(parsed.zt);
+    } else if (!exam.speculumExamFindings) {
+      setCervicalHours([]);
+    }
+  }, [exam.speculumExamFindings]);
 
   const handleCervicalHoursChange = (hours: number[]) => {
     setCervicalHours(hours);
@@ -168,6 +190,7 @@ export function GynecologicalExamSection({ exam, onChange, readOnly }: Props) {
     const baseText = exam.speculumExamFindings.replace(/\s*\[Mapa Cervical:.*?\]/g, '');
     onChange({
       ...exam,
+      speculumExamIsNormal: hours.length > 0 ? false : exam.speculumExamIsNormal,
       speculumExamFindings: `${baseText}${hoursSummary}`.trim(),
     });
   };
@@ -229,7 +252,7 @@ export function GynecologicalExamSection({ exam, onChange, readOnly }: Props) {
         <button
           type="button"
           className="button button--ghost button--small"
-          style={{ fontSize: '0.8rem', color: '#852A91' }}
+          style={{ fontSize: '0.8rem', color: '#008080' }}
           onClick={() => setShowCervicalMap(!showCervicalMap)}
         >
           {showCervicalMap ? '▲ Ocultar Mapa Cervical 12h' : '🎯 Abrir Mapa Cervical 12h (Odontograma Colposcópico)'}

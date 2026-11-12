@@ -172,7 +172,7 @@ export function PreventiveScreeningList({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ fontSize: '1.3rem' }} aria-hidden="true">🛡️</span>
-          <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#481361' }}>
+          <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#005F6A' }}>
             Rastreamento Preventivo Oncológico & Linha do Tempo ({screenings.length})
           </h3>
         </div>
@@ -181,7 +181,7 @@ export function PreventiveScreeningList({
           <button
             type="button"
             className="button button--primary button--small"
-            style={{ background: '#852A91', borderColor: '#852A91' }}
+            style={{ background: '#008080', borderColor: '#008080' }}
             onClick={() => setModalOpen(true)}
           >
             ➕ Registrar Exame Preventivo
@@ -223,7 +223,7 @@ export function PreventiveScreeningList({
                 key={s.id}
                 style={{
                   border: isHighRisk ? '1px solid #F5B5BC' : isWarningRisk ? '1px solid #F8D3A6' : '1px solid var(--color-neutral-border)',
-                  borderLeft: isHighRisk ? '4px solid #C33D49' : isWarningRisk ? '4px solid #A96512' : '4px solid #852A91',
+                  borderLeft: isHighRisk ? '4px solid #C33D49' : isWarningRisk ? '4px solid #A96512' : '4px solid #008080',
                   borderRadius: 'var(--radius-md)',
                   padding: '0.85rem 1rem',
                   background: isHighRisk ? '#FFF8F8' : isWarningRisk ? '#FFFAF5' : 'var(--color-neutral-surface)',
@@ -236,7 +236,7 @@ export function PreventiveScreeningList({
               >
                 <div style={{ flex: '1 1 65%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
-                    <strong style={{ color: '#481361', fontSize: '0.95rem' }}>
+                    <strong style={{ color: '#005F6A', fontSize: '0.95rem' }}>
                       {getExamLabel(s.examType)}
                     </strong>
                     <span style={{ fontSize: '0.8rem', color: '#626B79' }}>
@@ -302,9 +302,9 @@ export function PreventiveScreeningList({
                           fontWeight: 700,
                           padding: '0.15rem 0.5rem',
                           borderRadius: '12px',
-                          background: s.hpvDnaResult === 'negativo' ? '#E9F5EC' : s.hpvDnaResult.includes('16_18') ? '#FCECEE' : '#FFF0F6',
-                          color: s.hpvDnaResult === 'negativo' ? '#237A52' : s.hpvDnaResult.includes('16_18') ? '#C33D49' : '#D83C91',
-                          border: `1px solid ${s.hpvDnaResult === 'negativo' ? '#BDE5C8' : s.hpvDnaResult.includes('16_18') ? '#F5B5BC' : '#FCC2D7'}`,
+                          background: s.hpvDnaResult === 'negativo' ? '#E9F5EC' : s.hpvDnaResult.includes('16_18') ? '#FCECEE' : '#E6FFFA',
+                          color: s.hpvDnaResult === 'negativo' ? '#237A52' : s.hpvDnaResult.includes('16_18') ? '#C33D49' : '#005F6A',
+                          border: `1px solid ${s.hpvDnaResult === 'negativo' ? '#BDE5C8' : s.hpvDnaResult.includes('16_18') ? '#F5B5BC' : '#B2F5EA'}`,
                         }}
                       >
                         <span aria-hidden="true">🧬</span> DNA-HPV: {s.hpvDnaResult.replace('_', ' ').toUpperCase()}
@@ -323,10 +323,10 @@ export function PreventiveScreeningList({
                         marginTop: '0.4rem',
                         padding: '0.5rem 0.75rem',
                         borderRadius: 'var(--radius-sm)',
-                        background: '#FAF5FF',
-                        borderLeft: '3px solid #852A91',
+                        background: '#F0FDF9',
+                        borderLeft: '3px solid #008080',
                         fontSize: '0.84rem',
-                        color: '#481361',
+                        color: '#005F6A',
                       }}
                     >
                       <strong>Conduta Recomendada (Diretrizes Oficiais INCA/MS / CBR):</strong> {s.clinicalConductNotes}
@@ -337,7 +337,7 @@ export function PreventiveScreeningList({
                 {s.nextDueDate && (
                   <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
                     <span style={{ color: '#626B79', display: 'block' }}>Próximo Controle:</span>
-                    <strong style={{ color: isDue ? '#C33D49' : '#852A91' }}>
+                    <strong style={{ color: isDue ? '#C33D49' : '#008080' }}>
                       {isDue ? '⚠️ Vigilância Atrasada: ' : '✅ Próximo: '}
                       {new Date(s.nextDueDate).toLocaleDateString('pt-BR')}
                     </strong>
@@ -378,7 +378,7 @@ export function PreventiveScreeningList({
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, color: '#481361' }}>Novo Exame Preventivo Oncológico</h3>
+              <h3 style={{ margin: 0, color: '#005F6A' }}>Novo Exame Preventivo Oncológico</h3>
               <button
                 type="button"
                 className="button button--ghost button--small"
@@ -427,7 +427,7 @@ export function PreventiveScreeningList({
               {isPapOrHpv && (
                 <div style={{ background: '#F7FAFC', padding: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid #E2E8F0' }}>
                   <label className="field" style={{ marginBottom: '0.5rem' }}>
-                    <span className="field__label" style={{ color: '#481361', fontWeight: 600 }}>
+                    <span className="field__label" style={{ color: '#005F6A', fontWeight: 600 }}>
                       Nomenclatura Bethesda (Sistema Internacional de Citopatologia)
                     </span>
                     <select
@@ -445,7 +445,7 @@ export function PreventiveScreeningList({
                   </label>
 
                   <label className="field">
-                    <span className="field__label" style={{ color: '#481361' }}>
+                    <span className="field__label" style={{ color: '#005F6A' }}>
                       Co-teste / Pesquisa Molecular de DNA-HPV
                     </span>
                     <select
@@ -466,7 +466,7 @@ export function PreventiveScreeningList({
               {isBreastImaging && (
                 <div style={{ background: '#F7FAFC', padding: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid #E2E8F0' }}>
                   <label className="field">
-                    <span className="field__label" style={{ color: '#481361', fontWeight: 600 }}>
+                    <span className="field__label" style={{ color: '#005F6A', fontWeight: 600 }}>
                       Classificação BI-RADS® (American College of Radiology / CBR)
                     </span>
                     <select
@@ -501,12 +501,12 @@ export function PreventiveScreeningList({
               <label className="field">
                 <span className="field__label" style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Conduta Clínica e Seguimento (Diretrizes INCA / MS / FEBRASGO)</span>
-                  <span style={{ fontSize: '0.75rem', color: '#852A91', fontWeight: 600 }}>Sugestão Baseada em Evidência</span>
+                  <span style={{ fontSize: '0.75rem', color: '#008080', fontWeight: 600 }}>Sugestão Baseada em Evidência</span>
                 </span>
                 <textarea
                   className="form__textarea"
                   rows={2}
-                  style={{ background: '#FAF5FF', borderColor: '#E9D8FD' }}
+                  style={{ background: '#F0FDF9', borderColor: '#B2F5EA' }}
                   placeholder="A conduta recomendada será calculada automaticamente ou insira orientações clínicas personalizadas..."
                   value={clinicalConductNotes}
                   onChange={(e) => setClinicalConductNotes(e.target.value)}
@@ -563,7 +563,7 @@ export function PreventiveScreeningList({
                 <button
                   type="submit"
                   className="button button--primary"
-                  style={{ background: '#852A91', borderColor: '#852A91' }}
+                  style={{ background: '#008080', borderColor: '#008080' }}
                   disabled={saving}
                 >
                   {saving ? 'Registrando…' : 'Salvar Exame'}

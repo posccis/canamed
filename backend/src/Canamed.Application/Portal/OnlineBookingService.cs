@@ -75,7 +75,16 @@ public sealed class OnlineBookingService(
                 ?? throw new InvalidOperationException("Nenhuma clínica disponível para vincular o cadastro do paciente.");
 
             // Localiza paciente existente ou cria preliminar no escopo da clínica resolvida.
-            var patient = await portalRepository.GetPatientByCpfOrPhoneAsync(request.Cpf, request.Phone, clinicId, token);
+            Patient? patient;
+            try
+            {
+                patient = await portalRepository.GetPatientByCpfOrPhoneAsync(request.Cpf, request.Phone, clinicId, token);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return new VerifyOtpResponse(false, null, null, null, ex.Message);
+            }
+
             if (patient is null)
             {
                 patient = Patient.Create(
@@ -111,7 +120,8 @@ public sealed class OnlineBookingService(
         Guid? professionalId,
         DateOnly date,
         DateTimeOffset now,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? appointmentTypeId = null)
     {
         var allProfessionals = await catalogRepository.ListProfessionalsAsync(clinicId, cancellationToken);
         var professionals = allProfessionals
@@ -138,19 +148,27 @@ public sealed class OnlineBookingService(
         var startOffset = new DateTimeOffset(targetStart, TimeSpan.FromHours(-3));
         var endOffset = new DateTimeOffset(targetEnd, TimeSpan.FromHours(-3));
 
+        AppointmentType? appointmentType = null;
+        if (appointmentTypeId.HasValue && appointmentTypeId.Value != Guid.Empty)
+        {
+            appointmentType = await catalogRepository.FindAppointmentTypeAsync(clinicId, appointmentTypeId.Value, cancellationToken);
+        }
+
+        var slotDuration = appointmentType is { DurationMinutes: > 0 } ? appointmentType.DurationMinutes : 30;
+
         foreach (var prof in professionals)
         {
             var appointments = await agendaRepository.ListAppointmentsAsync(clinicId, prof.Id, startOffset, endOffset, cancellationToken);
             var occupied = appointments.Where(a => a.OccupiesAgenda).Select(a => a.TimeRange).ToList();
 
             var cursor = startOffset;
-            while (cursor.AddMinutes(30) <= endOffset)
+            while (cursor.AddMinutes(slotDuration) <= endOffset)
             {
-                var slotRange = new TimeRange(cursor, cursor.AddMinutes(30));
+                var slotRange = new TimeRange(cursor, cursor.AddMinutes(slotDuration));
 
                 if (cursor > now.AddHours(2) && !occupied.Any(o => o.Overlaps(slotRange)))
                 {
-                    result.Add(new PublicSlotDto(prof.Id, prof.Name, cursor, cursor.AddMinutes(30), 30));
+                    result.Add(new PublicSlotDto(prof.Id, prof.Name, cursor, cursor.AddMinutes(slotDuration), slotDuration));
                 }
 
                 cursor = cursor.AddMinutes(30);

@@ -20,6 +20,21 @@ Sua missão é realizar auditorias de ponta a ponta no código-fonte, modelagem 
 
 ---
 
+## 0. REGRA ZERO INEGOCIÁVEL — Leitura Obrigatória das Skills (`SKILL.md`)
+
+**ANTES de inspecionar qualquer código ou emitir qualquer parecer, você DEVE OBRIGATORIAMENTE ler os arquivos `SKILL.md` de todas as suas 6 skills usando sua ferramenta de leitura de arquivo (`read_file` / `view_file`):**
+
+1. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\security-auditor\SKILL.md`
+2. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\frontend-design\SKILL.md`
+3. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\impeccable\SKILL.md`
+4. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\firecrawl\SKILL.md`
+5. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\verification-before-completion\SKILL.md`
+6. `D:\victor\Ideia de Produtos\Cana Med\.agents\skills\requesting-code-review\SKILL.md`
+
+> **PROIBIDO PULAR ESTE PASSO:** A auditoria será rejeitada pelo Orquestrador se não houver chamada real de leitura (`read_file` / `view_file`) para cada um dos arquivos `SKILL.md` acima no log da sessão e uma tabela de comprovação de uso de cada skill no início do seu relatório.
+
+---
+
 ## 1. Protocolo de Orquestração de Skills (Sub-Agentes & Ferramentas)
 
 Você **NÃO** trabalha isolado. Durante qualquer auditoria do Cana Med Mulher, você deve invocar e coordenar as 4 skills instaladas no workspace conforme a matriz de delegação abaixo:

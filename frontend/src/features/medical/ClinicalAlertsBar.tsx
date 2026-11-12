@@ -29,7 +29,7 @@ export const ClinicalAlertsBar: React.FC<ClinicalAlertsBarProps> = ({
     alerts.push({
       id: 'rh-negative',
       type: 'warning',
-      title: 'Gestante Rh Negativo',
+      title: `Gestante Rh Negativo${bloodType ? ` (${bloodType})` : ''}`,
       detail: 'Checar Coombs Indireto / Profilaxia Anti-D',
       icon: <Droplets className="w-4 h-4 text-amber-600 flex-shrink-0" />,
     });
@@ -72,23 +72,21 @@ export const ClinicalAlertsBar: React.FC<ClinicalAlertsBarProps> = ({
   return (
     <div
       data-testid="clinical-alerts-bar"
-      className={`space-y-2 mb-4 ${className}`}
+      className={`clinical-alerts-bar ${className}`.trim()}
       role="region"
       aria-label="Alertas Clínicos e Obstétricos"
     >
       {alerts.map((alert) => (
         <div
           key={alert.id}
-          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-all ${
-            alert.type === 'danger'
-              ? 'bg-rose-50 border-rose-200 text-rose-900 shadow-sm'
-              : 'bg-amber-50 border-amber-200 text-amber-900'
+          className={`clinical-alert ${
+            alert.type === 'danger' ? 'clinical-alert--danger' : 'clinical-alert--warning'
           }`}
         >
           {alert.icon}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="font-semibold">{alert.title}</span>
-            <span className="text-xs opacity-90">— {alert.detail}</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem 0.5rem' }}>
+            <span style={{ fontWeight: 700 }}>{alert.title}</span>
+            <span style={{ fontSize: '0.8rem', opacity: 0.92 }}>— {alert.detail}</span>
           </div>
         </div>
       ))}

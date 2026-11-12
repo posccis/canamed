@@ -50,13 +50,13 @@ export function UterineHeightChart({ visits }: Props) {
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <strong style={{ fontSize: '0.9rem', color: '#481361' }}>
+        <strong style={{ fontSize: '0.9rem', color: '#005F6A' }}>
           📏 Curva de Altura Uterina (P10 a P90 - FEBRASGO)
         </strong>
         <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
           <span style={{ color: '#E53E3E' }}>-- Percentil 10</span>
           <span style={{ color: '#3182CE' }}>-- Percentil 90</span>
-          <span style={{ color: '#852A91', fontWeight: 600 }}>● Paciente</span>
+          <span style={{ color: '#008080', fontWeight: 600 }}>● Paciente</span>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export function UterineHeightChart({ visits }: Props) {
         {validPoints.length > 1 && (
           <polyline
             fill="none"
-            stroke="#852A91"
+            stroke="#008080"
             strokeWidth="2.5"
             points={validPoints.map((p) => `${scaleX(p.gestationalAgeWeeks!)},${scaleY(p.uterineHeightCm!)}`).join(' ')}
           />
@@ -105,7 +105,7 @@ export function UterineHeightChart({ visits }: Props) {
               cx={scaleX(p.gestationalAgeWeeks!)}
               cy={scaleY(p.uterineHeightCm!)}
               r={4.5}
-              fill="#852A91"
+              fill="#008080"
               stroke="#FFFFFF"
               strokeWidth="1.5"
             >
