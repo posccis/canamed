@@ -27,6 +27,7 @@ describe('PatientPortal Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    window.scrollTo = vi.fn();
   });
 
   it('renderiza a tela inicial acolhedora com header CANA MED Mulher e botão para autenticar quando não há sessão', async () => {
@@ -219,5 +220,38 @@ describe('PatientPortal Component', () => {
     });
     expect(container.innerHTML).not.toContain('#852A91');
   });
+
+  it('renderiza os bento cards de entrada mobile do Stitch (Agendar sem criar conta vs Quero criar minha conta) e permite navegação direta', async () => {
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica Serena Saúde da Mulher',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Beatriz Faria', specialtyId: 'spec-1' }],
+    });
+
+    render(
+      <ToastProvider>
+        <PatientPortal />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Vamos cuidar de você?')).toBeInTheDocument();
+      expect(screen.getByText('Agendar sem criar conta')).toBeInTheDocument();
+      expect(screen.getByText('Mais Rápido • Menos de 1 min')).toBeInTheDocument();
+      expect(screen.getByText('Quero criar minha conta')).toBeInTheDocument();
+      expect(screen.getByText('Experiência Completa')).toBeInTheDocument();
+      expect(screen.getByText(/Dúvidas com o agendamento\?/i)).toBeInTheDocument();
+    });
+
+    // Clica em Continuar sem conta -> Deve navegar diretamente para a etapa de agendamento
+    fireEvent.click(screen.getByRole('button', { name: /Continuar sem conta/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Com quem deseja passar?')).toBeInTheDocument();
+      expect(screen.getByText('Especialista')).toBeInTheDocument();
+    });
+  });
 });
+
 

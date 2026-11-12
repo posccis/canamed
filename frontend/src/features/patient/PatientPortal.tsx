@@ -764,17 +764,267 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
         {/* VIEW: HOME */}
         {currentView === 'home' && (
           <div style={{ padding: '1.25rem' }}>
-            {/* Saudação */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1E293B', margin: '0 0 0.25rem' }}>
-                Olá, {firstName}! 👋
-              </h1>
-              <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748B' }}>
-                Bem-vinda à sua área de saúde e agendamento digital.
-              </p>
+            {/* 1. Hero & Saudação Acolhedora */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              {/* Badge Contexto de Clínica Oficial */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '20px',
+                  background: '#F0FDFA',
+                  border: '1px solid #CCFBF1',
+                  color: '#0F766E',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  marginBottom: '0.85rem',
+                }}
+              >
+                <Sparkles size={14} color="#008080" />
+                <span>
+                  Agendamento Oficial • {clinic?.publicName || (meta?.clinicName && meta.clinicName !== 'Cana Med' ? meta.clinicName : 'Saúde Especializada')}
+                </span>
+              </div>
+
+              {session ? (
+                <>
+                  <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1E293B', margin: '0 0 0.25rem' }}>
+                    Olá, {firstName}! 👋
+                  </h1>
+                  <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748B' }}>
+                    Bem-vinda à sua área de saúde e agendamento digital.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1E293B', margin: '0 0 0.4rem', letterSpacing: '-0.02em' }}>
+                    Vamos cuidar de você?
+                  </h1>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: '#64748B', lineHeight: '1.45' }}>
+                    Escolha como deseja agendar sua consulta. Você pode continuar sem criar uma conta ou criar seu acesso para acompanhar seus atendimentos. Bem-vinda à sua área de saúde e agendamento digital.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.75rem' }}>
+                    <Info size={14} color="#008080" />
+                    <span>Ambiente Seguro Criptografado • Conformidade LGPD & CFM</span>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Próximo Compromisso ou Empty State */}
+            {/* 2. Dual Modality: Bento Cards Interativos (SPEC-0033 / Stitch Mobile Login) quando não autenticado */}
+            {!session && (
+              <section aria-label="Modalidades de agendamento" style={{ marginBottom: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* CARD 1: Consulta Avulsa / Sem Conta (Primário Rápido) */}
+                <article
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    border: '1.5px solid #008080',
+                    boxShadow: '0 4px 16px -2px rgba(0, 128, 128, 0.12)',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.25rem 0.65rem',
+                        borderRadius: '20px',
+                        background: '#E6FFFA',
+                        color: '#008080',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <Sparkles size={13} />
+                      Mais Rápido • Menos de 1 min
+                    </span>
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: '#F0FDFA',
+                        color: '#008080',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CalendarPlus size={18} />
+                    </div>
+                  </div>
+
+                  <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.35rem' }}>
+                    Agendar sem criar conta
+                  </h2>
+                  <p style={{ margin: '0 0 0.85rem', fontSize: '0.82rem', color: '#64748B', lineHeight: '1.4' }}>
+                    Quer marcar sua consulta rapidamente? Escolha a especialidade, data e horário sem precisar de login prévio.
+                  </p>
+
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                    {[
+                      'Sem necessidade de login ou senha antecipada',
+                      'Preenchimento ágil apenas com dados essenciais',
+                      'Confirmação e preparo enviados pelo WhatsApp',
+                    ].map((benefit, idx) => (
+                      <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#334155' }}>
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: '#CCFBF1',
+                            color: '#0F766E',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('schedule', { resetSchedule: true })}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: 'linear-gradient(135deg, #008080 0%, #005F6A 100%)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0, 128, 128, 0.25)',
+                    }}
+                  >
+                    <span>Continuar sem conta</span>
+                    <ChevronRight size={18} />
+                  </button>
+                </article>
+
+                {/* CARD 2: Quero criar minha conta / Já sou paciente */}
+                <article
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    border: '1px solid #E2E8F0',
+                    boxShadow: '0 2px 8px -2px rgba(0,0,0,0.04)',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.25rem 0.65rem',
+                        borderRadius: '20px',
+                        background: '#F1F5F9',
+                        color: '#475569',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <User size={13} />
+                      Experiência Completa
+                    </span>
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: '#F8FAFC',
+                        color: '#005F6A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Sparkles size={18} />
+                    </div>
+                  </div>
+
+                  <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.35rem' }}>
+                    Quero criar minha conta
+                  </h2>
+                  <p style={{ margin: '0 0 0.85rem', fontSize: '0.82rem', color: '#64748B', lineHeight: '1.4' }}>
+                    Tenha acesso à sua área exclusiva para acompanhar histórico clínico, Cartão da Gestante e documentos.
+                  </p>
+
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                    {[
+                      'Acompanhe o histórico completo de consultas',
+                      'Cartão da Gestante e pré-natal digital integrado',
+                      'Acesso instantâneo com código enviado por WhatsApp',
+                    ].map((benefit, idx) => (
+                      <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#334155' }}>
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: '#F1F5F9',
+                            color: '#005F6A',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: '#F8FAFC',
+                      color: '#005F6A',
+                      border: '1.5px solid #CBD5E1',
+                      borderRadius: '12px',
+                      padding: '0.7rem 1rem',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>Criar minha conta / Acessar</span>
+                  </button>
+                </article>
+              </section>
+            )}
+
+            {/* 3. Próximo Compromisso ou Empty State */}
             <div style={{ marginBottom: '1.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1E293B', margin: 0 }}>
@@ -938,8 +1188,8 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
               )}
             </div>
 
-            {/* Ações Rápidas */}
-            <div>
+            {/* 4. Ações Rápidas */}
+            <div style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1E293B', marginBottom: '0.85rem' }}>
                 Ações rápidas
               </h2>
@@ -1089,6 +1339,77 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                 </button>
               </div>
             </div>
+
+            {/* 5. Bloco de Apoio Humanizado & Contato WhatsApp */}
+            <div
+              style={{
+                background: '#F0FDFA',
+                borderRadius: '14px',
+                border: '1px solid #CCFBF1',
+                padding: '0.9rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                marginBottom: '1.25rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    color: '#008080',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Phone size={18} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#134E4A' }}>
+                    Dúvidas com o agendamento?
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#0F766E' }}>
+                    Fale com a recepção da clínica pelo WhatsApp
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowContactModal(true)}
+                style={{
+                  background: '#008080',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                Atendimento
+              </button>
+            </div>
+
+            {/* 6. Rodapé Institucional & Certificação CFM/LGPD */}
+            <footer style={{ textAlign: 'center', padding: '0.5rem 0 1rem', borderTop: '1px solid #F1F5F9' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.78rem', color: '#64748B', marginBottom: '0.5rem' }}>
+                <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Política de Privacidade</span>
+                <span>•</span>
+                <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#94A3B8', lineHeight: 1.4 }}>
+                Ambiente seguro e certificado para a Saúde da Mulher • Resoluções CFM &amp; LGPD.
+              </p>
+            </footer>
           </div>
         )}
 
