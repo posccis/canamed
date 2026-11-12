@@ -249,13 +249,16 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
   // Auth: Validar código OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otpCode || otpCode.length < 4) {
+    let codeToVerify = otpCode.trim();
+    if (import.meta.env.DEV && (!codeToVerify || codeToVerify.length < 4)) {
+      codeToVerify = '123456';
+    } else if (!codeToVerify || codeToVerify.length < 4) {
       addToast('Digite o código de 6 dígitos recebido.', 'error');
       return;
     }
     setAuthLoading(true);
     try {
-      const res = await patientApi.verifyOtp(authPhone, authCpf, otpCode, meta?.clinicId);
+      const res = await patientApi.verifyOtp(authPhone, authCpf, codeToVerify, meta?.clinicId);
       if (res.success && res.sessionToken) {
         const resolvedName = customPatientName.trim() || res.patientName || 'Paciente';
         const newSession: PatientSession = {
@@ -274,7 +277,22 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
         addToast(res.errorMessage || 'Código inválido ou expirado.', 'error');
       }
     } catch {
-      addToast('Código inválido. Verifique e tente novamente.', 'error');
+      if (import.meta.env.DEV) {
+        const fallbackSession: PatientSession = {
+          token: `dev-token-${Date.now()}`,
+          patientId: 'pat-dev-local',
+          patientName: customPatientName.trim() || 'Paciente (Modo Dev)',
+        };
+        setSession(fallbackSession);
+        localStorage.setItem(storageKey, JSON.stringify(fallbackSession));
+        localStorage.setItem('canamed_patient_session', JSON.stringify(fallbackSession));
+        setShowAuthModal(false);
+        setOtpSent(false);
+        setOtpCode('');
+        addToast(`[DEV] Acesso liberado como ${fallbackSession.patientName}!`, 'success');
+      } else {
+        addToast('Código inválido. Verifique e tente novamente.', 'error');
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -3060,6 +3078,23 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       outline: 'none',
                     }}
                   />
+                  {import.meta.env.DEV && (
+                    <div
+                      style={{
+                        padding: '0.4rem 0.6rem',
+                        background: '#F0FDFA',
+                        border: '1px solid #CCFBF1',
+                        borderRadius: '6px',
+                        color: '#0F766E',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        marginTop: '0.35rem',
+                        textAlign: 'center',
+                      }}
+                    >
+                      [DEV] Qualquer código de confirmação é aceito automaticamente.
+                    </div>
+                  )}
                 </div>
 
                 <button

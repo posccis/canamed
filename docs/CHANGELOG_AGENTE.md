@@ -1345,6 +1345,18 @@ Implementação completa das 7 especificações administrativas aprovadas para a
 - **LOCAIS AFETADOS**: `frontend/src/features/patient/PatientPortal.tsx`, `frontend/src/features/patient/PatientPortal.test.tsx`, `docs/CHANGELOG_AGENTE.md`.
 - **RESULTADO**: 165 testes do frontend aprovados (100% green) e 273 testes unitários do backend aprovados (100% green).
 
+---
+
+### [2026-11-12] Mock Transparente de Confirmação em Desenvolvimento (Portal da Paciente)
+- **AÇÃO**: Configuração de fallback e aceitação automática de código de confirmação (OTP/2FA) em modo de desenvolvimento (`import.meta.env.DEV`):
+  1. `patientApi.requestOtp`: se a API estiver offline ou em erro durante dev, retorna resposta imediata de sucesso simulado com orientações.
+  2. `patientApi.verifyOtp`: em ambiente DEV, qualquer código informado (ou mesmo na ausência de resposta do backend) autentica com token de sessão mock e dados locais válidos.
+  3. `PatientPortal.tsx`: em submissão sem código preenchido em dev, aplica automaticamente o fallback `'123456'`, exibe aviso sutil `[DEV] Qualquer código de confirmação é aceito automaticamente.` e garante login imediato sem bloqueios.
+- **MOTIVO**: Solicitação direta do usuário: "Qualquer código de confirmação deve ser mock enquanto eu estiver desenvolvendo".
+- **LOCAIS AFETADOS**: `frontend/src/features/patient/patientApi.ts`, `frontend/src/features/patient/PatientPortal.tsx`, `docs/CHANGELOG_AGENTE.md`.
+- **RESULTADO**: Validação fluida em tempo de desenvolvimento sem depender de serviços externos de SMS/WhatsApp; 165 testes Vitest e 273 testes xUnit mantidos 100% aprovados.
+
+
 
 
 
