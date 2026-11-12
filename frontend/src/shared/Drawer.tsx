@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+﻿import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 interface DrawerProps {
@@ -93,7 +93,7 @@ export function Drawer({
                 margin: 0,
                 fontSize: '1.25rem',
                 fontWeight: 700,
-                color: 'var(--color-secondary, #005F6A)',
+                color: 'var(--color-secondary, #6F217B)',
               }}
             >
               {title}
@@ -161,3 +161,4 @@ export function Drawer({
     </>
   );
 }
+

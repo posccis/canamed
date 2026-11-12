@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   getPatientMedicalRecordHistory,
   addMedicalRecordAddendum,
   getGynecologicalProfile,
   getPatientScreenings,
   listPatientPrenatalVisits,
+  addPrenatalVisit,
   type MedicalRecordResponse,
   type GynecologicalProfileDto,
   type PreventiveScreeningDto,
@@ -20,7 +21,7 @@ import { GynecologicalProfileCard } from './GynecologicalProfileCard';
 import { PreventiveScreeningList } from './PreventiveScreeningList';
 import { GynecologicalExamSection } from './GynecologicalExamSection';
 import { PatientExamAttachmentsSection } from './PatientExamAttachmentsSection';
-import { PrenatalCardSection } from './PrenatalCardSection';
+import { PrenatalCardSection, type PrenatalVisitItem } from './PrenatalCardSection';
 import { DocumentModal } from './DocumentModal';
 import { useToast } from '../layout/Toast';
 import { DOCTOR_PATHS } from '../../navigation/routes';
@@ -28,6 +29,7 @@ import { DOCTOR_PATHS } from '../../navigation/routes';
 export function DoctorMedicalRecordsPage() {
   const { patientId } = useParams<{ patientId?: string }>();
   const { addToast } = useToast();
+  const navigate = useNavigate();
 
   const [patients, setPatients] = useState<ManagedPatient[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,6 +43,7 @@ export function DoctorMedicalRecordsPage() {
   const [screenings, setScreenings] = useState<PreventiveScreeningDto[]>([]);
   const [prenatalVisits, setPrenatalVisits] = useState<PrenatalVisitDto[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
+  const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
   // Estado para novo adendo
   const [selectedRecordForAddendum, setSelectedRecordForAddendum] = useState<string | null>(null);
@@ -53,6 +56,34 @@ export function DoctorMedicalRecordsPage() {
 
   // Aba ativa na ficha do paciente: 'records' | 'gynProfile' | 'screenings' | 'prenatal' | 'documents' | 'attachments'
   const [activeTab, setActiveTab] = useState<'records' | 'gynProfile' | 'screenings' | 'prenatal' | 'documents' | 'attachments'>('records');
+
+  const handleAddPrenatalVisit = async (visit: Omit<PrenatalVisitItem, 'id'>) => {
+    const targetRecordId = records[0]?.id;
+    if (!targetRecordId) {
+      addToast('É necessário ter ao menos um atendimento/prontuário registrado para lançar a consulta pré-natal.', 'info');
+      return;
+    }
+    try {
+      const created = await addPrenatalVisit(targetRecordId, {
+        visitDate: visit.visitDate,
+        gestationalAgeWeeks: visit.gestationalAgeWeeks,
+        gestationalAgeDays: visit.gestationalAgeDays,
+        weightKg: visit.weightKg,
+        bmi: visit.bmi ?? undefined,
+        bloodPressure: visit.bloodPressure,
+        uterineHeightCm: visit.uterineHeightCm ?? undefined,
+        fetalHeartRateBpm: visit.fetalHeartRateBpm ?? undefined,
+        fetalMovementPresent: visit.fetalMovementPresent ?? undefined,
+        edemaClassification: visit.edemaClassification ?? undefined,
+        fetalPresentation: visit.fetalPresentation ?? undefined,
+        clinicalNotes: visit.clinicalNotes ?? undefined,
+      });
+      setPrenatalVisits((prev) => [created, ...prev]);
+      addToast('Consulta pré-natal registrada com sucesso!', 'success');
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Falha ao registrar consulta pré-natal.', 'error');
+    }
+  };
 
   // Carrega catálogo de pacientes
   useEffect(() => {
@@ -400,6 +431,22 @@ export function DoctorMedicalRecordsPage() {
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               <button
                 type="button"
+                className={`button button--small ${isPrivacyMode ? 'button--warning' : 'button--secondary'}`}
+                onClick={() => setIsPrivacyMode(!isPrivacyMode)}
+                aria-pressed={isPrivacyMode}
+                title="Modo Privacidade (Oculta temporariamente dados íntimos na tela)"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-full, 999px)',
+                }}
+              >
+                <span>{isPrivacyMode ? '🕶️ Modo Privacidade Ativo' : '🕶️ Modo Privacidade'}</span>
+              </button>
+              <button
+                type="button"
                 className="button button--primary button--small"
                 onClick={() => setDocModalOpen(true)}
               >
@@ -484,11 +531,63 @@ export function DoctorMedicalRecordsPage() {
             <PrenatalCardSection
               patientId={patientId}
               patientName={selectedPatient?.name || 'Paciente'}
+              patientBirthDate={selectedPatient?.birthDate}
               visits={prenatalVisits}
+              heightCm={(selectedPatient as any)?.heightCm}
+              dum={(gynProfile as any)?.lastMenstrualPeriod || undefined}
+              bloodType={(selectedPatient as any)?.bloodType}
+              rhFactor={(selectedPatient as any)?.rhFactor}
+              gynProfile={gynProfile}
+              onAddVisit={handleAddPrenatalVisit}
             />
           ) : activeTab === 'records' ? (
             /* Histórico de Atendimentos SOAP e Exames Ginecológicos */
-            records.length === 0 ? (
+            <>
+              {records.some((r) => r.status !== 'finalizado') && (
+                <div
+                  style={{
+                    background: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    borderLeft: '4px solid #f59e0b',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '0.85rem 1.25rem',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ fontSize: '1.4rem' }}>⏳</span>
+                    <div>
+                      <strong style={{ color: '#92400e', fontSize: '0.95rem', display: 'block' }}>
+                        Atendimento Clínico em Andamento
+                      </strong>
+                      <span style={{ color: '#b45309', fontSize: '0.82rem' }}>
+                        Esta paciente possui anotações clínicas em aberto aguardando finalização.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="button button--primary button--small"
+                    onClick={() => {
+                      const draft = records.find((r) => r.status !== 'finalizado');
+                      if (draft && selectedPatient) {
+                        navigate(`/medico/consultorio?recordId=${draft.id}&patientId=${draft.patientId}`, {
+                          state: { resumeRecord: draft, patient: selectedPatient },
+                        });
+                      }
+                    }}
+                    style={{ background: '#b45309' }}
+                  >
+                    ▶ Continuar Atendimento no Consultório
+                  </button>
+                </div>
+              )}
+            {records.length === 0 ? (
               <div
                 style={{
                   background: '#ffffff',
@@ -503,7 +602,7 @@ export function DoctorMedicalRecordsPage() {
                 <p className="form__hint">Novos registros são gerados ao iniciar o atendimento no Consultório Virtual.</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div data-testid="sensitive-clinical-records" className={isPrivacyMode ? 'privacy-blur' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {records.map((record) => (
                   <article
                     key={record.id}
@@ -537,18 +636,35 @@ export function DoctorMedicalRecordsPage() {
                         )}
                       </div>
 
-                      <span
-                        style={{
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '999px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          background: record.status === 'finalizado' ? '#dcfce7' : '#fef9c3',
-                          color: record.status === 'finalizado' ? '#15803d' : '#854d0e',
-                        }}
-                      >
-                        {record.status === 'finalizado' ? '✓ Prontuário Finalizado' : '⏳ Em Andamento'}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            background: record.status === 'finalizado' ? '#dcfce7' : '#fef9c3',
+                            color: record.status === 'finalizado' ? '#15803d' : '#854d0e',
+                          }}
+                        >
+                          {record.status === 'finalizado' ? '✓ Prontuário Finalizado' : '⏳ Em Andamento'}
+                        </span>
+                        {record.status !== 'finalizado' && (
+                          <button
+                            type="button"
+                            className="button button--primary button--small"
+                            onClick={() => {
+                              navigate(`/medico/consultorio?recordId=${record.id}&patientId=${record.patientId}`, {
+                                state: { resumeRecord: record, patient: selectedPatient },
+                              });
+                            }}
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                            title="Abrir este atendimento no consultório virtual para preencher ou finalizar"
+                          >
+                            ▶ Abrir no Consultório
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Dados Ginecológicos Especializados da Consulta (se existirem) */}
@@ -598,7 +714,7 @@ export function DoctorMedicalRecordsPage() {
                           {record.gynecologicalData.procedurePerformed && (
                             <div>
                               <span className="form__hint" style={{ fontSize: '0.75rem' }}>Procedimento Realizado</span>
-                              <strong style={{ color: '#005F6A' }}>
+                              <strong style={{ color: '#6F217B' }}>
                                 💉 {record.gynecologicalData.procedurePerformed}
                               </strong>
                               {record.gynecologicalData.procedureBatch && (
@@ -617,15 +733,20 @@ export function DoctorMedicalRecordsPage() {
                           </span>
                           <GynecologicalExamSection
                             exam={{
-                              breastsIsNormal: record.gynecologicalData.breastsIsNormal,
+                              breastsStatus: (record.gynecologicalData.breastsStatus as any) ?? (record.gynecologicalData.breastsIsNormal === true ? 'Normal' : record.gynecologicalData.breastsIsNormal === false ? 'Abnormal' : 'NotEvaluated'),
+                              breastsIsNormal: record.gynecologicalData.breastsIsNormal ?? undefined,
                               breastsFindings: record.gynecologicalData.breastsFindings || '',
-                              abdomenIsNormal: record.gynecologicalData.abdomenIsNormal,
+                              abdomenStatus: (record.gynecologicalData.abdomenStatus as any) ?? (record.gynecologicalData.abdomenIsNormal === true ? 'Normal' : record.gynecologicalData.abdomenIsNormal === false ? 'Abnormal' : 'NotEvaluated'),
+                              abdomenIsNormal: record.gynecologicalData.abdomenIsNormal ?? undefined,
                               abdomenFindings: record.gynecologicalData.abdomenFindings || '',
-                              externalGenitaliaIsNormal: record.gynecologicalData.externalGenitaliaIsNormal,
+                              externalGenitaliaStatus: (record.gynecologicalData.externalGenitaliaStatus as any) ?? (record.gynecologicalData.externalGenitaliaIsNormal === true ? 'Normal' : record.gynecologicalData.externalGenitaliaIsNormal === false ? 'Abnormal' : 'NotEvaluated'),
+                              externalGenitaliaIsNormal: record.gynecologicalData.externalGenitaliaIsNormal ?? undefined,
                               externalGenitaliaFindings: record.gynecologicalData.externalGenitaliaFindings || '',
-                              speculumExamIsNormal: record.gynecologicalData.speculumExamIsNormal,
+                              speculumExamStatus: (record.gynecologicalData.speculumExamStatus as any) ?? (record.gynecologicalData.speculumExamIsNormal === true ? 'Normal' : record.gynecologicalData.speculumExamIsNormal === false ? 'Abnormal' : 'NotEvaluated'),
+                              speculumExamIsNormal: record.gynecologicalData.speculumExamIsNormal ?? undefined,
                               speculumExamFindings: record.gynecologicalData.speculumExamFindings || '',
-                              bimanualPalpationIsNormal: record.gynecologicalData.bimanualPalpationIsNormal,
+                              bimanualPalpationStatus: (record.gynecologicalData.bimanualPalpationStatus as any) ?? (record.gynecologicalData.bimanualPalpationIsNormal === true ? 'Normal' : record.gynecologicalData.bimanualPalpationIsNormal === false ? 'Abnormal' : 'NotEvaluated'),
+                              bimanualPalpationIsNormal: record.gynecologicalData.bimanualPalpationIsNormal ?? undefined,
                               bimanualPalpationFindings: record.gynecologicalData.bimanualPalpationFindings || '',
                             }}
                             onChange={() => {}}
@@ -815,7 +936,8 @@ export function DoctorMedicalRecordsPage() {
                   </article>
                 ))}
               </div>
-            )
+            )}
+            </>
           ) : activeTab === 'attachments' ? (
             /* Aba de Exames Anteriores Anexados */
             <PatientExamAttachmentsSection patientId={patientId!} canEdit={true} />
@@ -925,3 +1047,4 @@ export function DoctorMedicalRecordsPage() {
     </div>
   );
 }
+

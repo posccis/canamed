@@ -121,5 +121,188 @@ describe('PatientPortal Component', () => {
       expect(screen.getByText('Confirmação')).toBeInTheDocument();
     });
   });
-});
+  it('renderiza os cards de atendimento GO com título, ícone e duração estimada', async () => {
+    localStorage.setItem(
+      'canamed_patient_session',
+      JSON.stringify({
+        token: 'test-token',
+        patientId: 'pat-1',
+        patientName: 'Maria Silva',
+      })
+    );
 
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica CanaMed Recife',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Helena Costa', specialtyId: 'spec-1' }],
+    });
+    mocks.getAvailableSlots.mockResolvedValueOnce([]);
+    mocks.getMyAppointments.mockResolvedValueOnce([]);
+
+    render(
+      <ToastProvider>
+        <PatientPortal initialTab="schedule" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('1ª Consulta Ginecológica')).toBeInTheDocument();
+      expect(screen.getByText('45 min')).toBeInTheDocument();
+      expect(screen.getByText('Retorno de Exames')).toBeInTheDocument();
+      expect(screen.getByText('20 min')).toBeInTheDocument();
+      expect(screen.getByText('Consulta Pré-Natal')).toBeInTheDocument();
+      expect(screen.getAllByText('40 min')).toHaveLength(2);
+      expect(screen.getByText('Preventivo / Papanicolaou')).toBeInTheDocument();
+      expect(screen.getByText('30 min')).toBeInTheDocument();
+      expect(screen.getByText('Inserção / Revisão de DIU')).toBeInTheDocument();
+    });
+  });
+
+  it('abre o modal de preparo pré-exame obrigatoriamente ao selecionar Preventivo ou Inserção de DIU', async () => {
+    localStorage.setItem(
+      'canamed_patient_session',
+      JSON.stringify({
+        token: 'test-token',
+        patientId: 'pat-1',
+        patientName: 'Maria Silva',
+      })
+    );
+
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica CanaMed Recife',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Helena Costa', specialtyId: 'spec-1' }],
+    });
+    mocks.getAvailableSlots.mockResolvedValueOnce([]);
+    mocks.getMyAppointments.mockResolvedValueOnce([]);
+
+    render(
+      <ToastProvider>
+        <PatientPortal initialTab="schedule" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Preventivo / Papanicolaou')).toBeInTheDocument();
+    });
+
+    const preventivoCard = screen.getByText('Preventivo / Papanicolaou').closest('button');
+    preventivoCard?.click();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Orientações de Preparo Pré-Exame/i)).toBeInTheDocument();
+      expect(screen.getByText(/Não tive relações sexuais nas últimas 48 horas/i)).toBeInTheDocument();
+      expect(screen.getByText(/Não fiz uso de pomadas, cremes ou duchas vaginais/i)).toBeInTheDocument();
+      expect(screen.getByText(/Estou fora do período de sangramento menstrual/i)).toBeInTheDocument();
+    });
+  });
+
+    it('bloqueia o avanço e exige confirmação do checklist de preparo para Preventivo ou DIU', async () => {
+    localStorage.setItem(
+      'canamed_patient_session',
+      JSON.stringify({
+        token: 'test-token',
+        patientId: 'pat-1',
+        patientName: 'Maria Silva',
+      })
+    );
+
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica CanaMed Recife',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Helena Costa', specialtyId: 'spec-1' }],
+    });
+    mocks.getAvailableSlots.mockResolvedValueOnce([]);
+    mocks.getMyAppointments.mockResolvedValueOnce([]);
+
+    render(
+      <ToastProvider>
+        <PatientPortal initialTab="schedule" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Preventivo / Papanicolaou')).toBeInTheDocument();
+    });
+
+    // Clica no card do preventivo
+    const preventivoCard = screen.getByText('Preventivo / Papanicolaou').closest('button');
+    preventivoCard?.click();
+
+    // Modal aberto: botão de confirmar desabilitado até marcar tudo
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Confirmar e Continuar/i })).toBeDisabled();
+    });
+
+    // Fecha o modal pelo botão Fechar (X)
+    const closeBtn = screen.getByRole('button', { name: 'Fechar' });
+    closeBtn.click();
+
+    // Botão de avançar deve estar desabilitado porque o preparo não foi confirmado
+    const nextBtn = screen.getByRole('button', { name: /^Continuar$/i });
+    expect(nextBtn).toBeDisabled();
+  });
+
+  it('permite avançar após confirmar todos os itens do checklist de preparo pré-exame', async () => {
+    localStorage.setItem(
+      'canamed_patient_session',
+      JSON.stringify({
+        token: 'test-token',
+        patientId: 'pat-1',
+        patientName: 'Maria Silva',
+      })
+    );
+
+    mocks.getPortalMeta.mockResolvedValueOnce({
+      clinicId: 'clinic-1',
+      clinicName: 'Clínica CanaMed Recife',
+      specialties: [{ id: 'spec-1', name: 'Ginecologia Geral' }],
+      professionals: [{ id: 'doc-1', name: 'Dra. Helena Costa', specialtyId: 'spec-1' }],
+    });
+    mocks.getAvailableSlots.mockResolvedValueOnce([]);
+    mocks.getMyAppointments.mockResolvedValueOnce([]);
+
+    render(
+      <ToastProvider>
+        <PatientPortal initialTab="schedule" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Preventivo / Papanicolaou')).toBeInTheDocument();
+    });
+
+    // Clica no card do preventivo
+    const preventivoCard = screen.getByText('Preventivo / Papanicolaou').closest('button');
+    preventivoCard?.click();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Confirmar e Continuar/i })).toBeDisabled();
+    });
+
+    // Seleciona também a médica para habilitar o avanço
+    const docBtn = screen.getByText('Dra. Helena Costa').closest('button');
+    docBtn?.click();
+
+    // Marca todos os 4 checkboxes do modal
+    const checkboxes = screen.getAllByRole('checkbox');
+    checkboxes.forEach((cb) => {
+      (cb as HTMLInputElement).click();
+    });
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirmar e Continuar/i });
+    expect(confirmBtn).not.toBeDisabled();
+    confirmBtn.click();
+
+    await waitFor(() => {
+      expect(screen.getByText(/✓ Orientações de preparo pré-exame confirmadas/i)).toBeInTheDocument();
+    });
+
+    const nextBtn = screen.getByRole('button', { name: /^Continuar$/i });
+    expect(nextBtn).not.toBeDisabled();
+  });
+
+});

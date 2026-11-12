@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DOCTOR_PATHS, LOBBY_TV_PATH, STAFF_PATHS } from '../../navigation/routes';
 import { CanamedLogoCurta, CanamedLogoLonga } from '../../shared/CanamedLogo';
@@ -29,9 +29,9 @@ const PROFILES: ProfileOption[] = [
     title: 'Sou paciente',
     desc: 'Acesse suas consultas e informações pessoais.',
     btnText: 'Receber código de confirmação',
-    bgIcon: 'rgba(133, 42, 145, 0.1)', // #F7ECF8
+    bgIcon: 'rgba(0, 128, 128, 0.1)', // #F7ECF8
     textIcon: '#852A91', // Cor primária da marca
-    hoverBorder: '#D83C91',
+    hoverBorder: '#6F217B',
     identifierLabel: 'Celular (WhatsApp / SMS)',
     identifierPlaceholder: '(81) 99999-9999',
     targetPath: '/p/cana-med',
@@ -461,7 +461,7 @@ export function HomePage() {
               display: 'flex',
               alignItems: 'flex-start',
               gap: '1rem',
-              boxShadow: '0 8px 20px -6px rgba(133, 42, 145, 0.1)',
+              boxShadow: '0 8px 20px -6px rgba(0, 128, 128, 0.1)',
             }}
           >
             <div
@@ -1480,7 +1480,7 @@ export function HomePage() {
         }
 
         .login-profile-card:hover {
-          border-color: var(--brand-magenta, #D83C91) !important;
+          border-color: var(--brand-magenta, #6F217B) !important;
           box-shadow: 0 10px 20px -3px rgba(133, 42, 145, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.03) !important;
         }
         .login-profile-card:hover .login-icon-box {
@@ -1515,3 +1515,4 @@ export function HomePage() {
     </div>
   );
 }
+

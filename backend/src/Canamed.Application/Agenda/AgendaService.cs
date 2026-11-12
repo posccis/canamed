@@ -113,7 +113,11 @@ public sealed class AgendaService(
                     timeProvider.GetUtcNow(),
                     request.RoomId,
                     request.IsOverbooking,
-                    request.OverbookingReason);
+                    request.OverbookingReason,
+                    origin: "desk",
+                    clinicalPreAnamnesis: request.ClinicalPreAnamnesis,
+                    preExamInstructionsAcknowledged: request.PreExamInstructionsAcknowledged,
+                    plannedReturnDays: request.PlannedReturnDays);
 
                 agendaRepository.AddAppointment(appointment);
                 auditRepository.Add(AuditEvent.Record(
@@ -132,7 +136,7 @@ public sealed class AgendaService(
 
                 await agendaRepository.SaveChangesAsync(token).ConfigureAwait(false);
 
-                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false));
+                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false), actor);
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -160,7 +164,7 @@ public sealed class AgendaService(
         return new AgendaDayResponse(
             date,
             effectiveProfessionalId,
-            [.. appointments.Select(appointment => Map(appointment, names))],
+            [.. appointments.Select(appointment => Map(appointment, names, actor))],
             [.. blocks.Select(MapBlock)]);
     }
 
@@ -172,7 +176,7 @@ public sealed class AgendaService(
 
         EnsureProfessionalScope(actor, appointment.ProfessionalId);
 
-        return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], cancellationToken).ConfigureAwait(false));
+        return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], cancellationToken).ConfigureAwait(false), actor);
     }
 
     /// <summary>Consulta o histórico de agendamentos de um paciente na clínica (SPEC-0030).</summary>
@@ -190,7 +194,7 @@ public sealed class AgendaService(
         var names = await LoadNamesAsync(actor.ClinicId, appointments, cancellationToken).ConfigureAwait(false);
 
         return appointments
-            .Select(appointment => Map(appointment, names))
+            .Select(appointment => Map(appointment, names, actor))
             .ToList();
     }
 
@@ -291,7 +295,7 @@ public sealed class AgendaService(
 
                 await agendaRepository.SaveChangesAsync(token).ConfigureAwait(false);
 
-                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false));
+                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false), actor);
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -355,7 +359,7 @@ public sealed class AgendaService(
 
                 await agendaRepository.SaveChangesAsync(token).ConfigureAwait(false);
 
-                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false));
+                return Map(appointment, await LoadNamesAsync(actor.ClinicId, [appointment], token).ConfigureAwait(false), actor);
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -895,11 +899,13 @@ public sealed class AgendaService(
             roomNames);
     }
 
-    private static AppointmentResponse Map(Appointment appointment, AgendaNames names)
+    private static AppointmentResponse Map(Appointment appointment, AgendaNames names, CurrentActor? actor = null)
     {
         var type = names.AppointmentTypes.TryGetValue(appointment.AppointmentTypeId, out var descriptor)
             ? descriptor
             : new AppointmentTypeDescriptor("Atendimento", "avulsa", "particular", null);
+
+        var canReadClinical = actor?.Has(Permissions.RecordsRead) == true || actor?.Has(Permissions.WorkspaceAccess) == true;
 
         return new AppointmentResponse(
             appointment.Id,
@@ -923,7 +929,10 @@ public sealed class AgendaService(
             appointment.CreatedAt,
             appointment.UpdatedAt,
             appointment.IsOverbooking,
-            appointment.OverbookingReason);
+            appointment.OverbookingReason,
+            ClinicalPreAnamnesis: canReadClinical ? appointment.ClinicalPreAnamnesis : null,
+            PreExamInstructionsAcknowledged: appointment.PreExamInstructionsAcknowledged,
+            PlannedReturnDays: appointment.PlannedReturnDays);
     }
 
     private static BlockResponse MapBlock(ProfessionalBlock block) =>

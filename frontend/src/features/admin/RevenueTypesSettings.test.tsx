@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { RevenueTypesSettings } from './RevenueTypesSettings';
-import * as revenueApi from './revenueTypesApi';
 
 describe('RevenueTypesSettings', () => {
   const mockClinicId = 'test-clinic-id';

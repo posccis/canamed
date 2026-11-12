@@ -55,4 +55,31 @@ describe('CervicalClockMap Component', () => {
 
     expect(mockOnChange).toHaveBeenCalledWith([6]);
   });
+
+  it('suporta seleção de tipo de achado incluindo Schiller e emite callback onFindingsChange', () => {
+    const mockOnFindingsChange = vi.fn();
+    render(
+      <CervicalClockMap
+        selectedHours={[6]}
+        findingType="acetobranco"
+        ztType="2"
+        onChange={mockOnChange}
+        onFindingsChange={mockOnFindingsChange}
+      />
+    );
+
+    const schillerBtn = screen.getByRole('button', { name: /schiller/i });
+    fireEvent.click(schillerBtn);
+
+    const sector7 = screen.getByTestId('cervical-hour-7');
+    fireEvent.click(sector7);
+
+    expect(mockOnFindingsChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        finding: expect.stringMatching(/schiller/i),
+        hours: expect.arrayContaining([6, 7]),
+        transformationZone: '2',
+      })
+    );
+  });
 });

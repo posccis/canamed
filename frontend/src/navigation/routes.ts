@@ -95,6 +95,11 @@ export function patientPaths(slug: string) {
   return {
     base,
     agendar: `${base}/agendar`,
+    agendarAvulso: `${base}/agendar-avulso`,
+    cadastroRapido: `${base}/cadastro-rapido`,
+    cadastroAvancado: `${base}/cadastro-avancado`,
+    dashboard: `${base}/dashboard`,
+    cartaoGestante: `${base}/cartao-gestante`,
     agendarProfessional: (professionalSlug: string) =>
       `${base}/agendar/profissional/${encodeURIComponent(professionalSlug)}`,
     agendarSpecialty: (specialtySlug: string) =>

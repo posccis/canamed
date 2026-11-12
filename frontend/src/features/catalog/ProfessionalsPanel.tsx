@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Stethoscope,
   Search,
@@ -333,15 +333,15 @@ export function ProfessionalsPanel() {
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
                     <td style={{ padding: '0.85rem 1.25rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--color-secondary, #005F6A)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Stethoscope size={16} style={{ color: 'var(--color-primary, #008080)' }} />
+                      <div style={{ fontWeight: 600, color: 'var(--color-secondary, #6F217B)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Stethoscope size={16} style={{ color: 'var(--color-primary, #852A91)' }} />
                         <span>{prof.name}</span>
                       </div>
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem', color: '#334155' }}>
                       {prof.specialtyName ? (
-                        <span className="badge" style={{ background: '#f0fdfa', color: '#005F6A' }}>
+                        <span className="badge" style={{ background: '#f0fdfa', color: '#6F217B' }}>
                           {prof.specialtyName}
                         </span>
                       ) : (
@@ -352,7 +352,7 @@ export function ProfessionalsPanel() {
                     <td style={{ padding: '0.85rem 1rem', fontVariantNumeric: 'tabular-nums', color: '#334155' }}>
                       {prof.registrationNumber ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <Award size={14} style={{ color: '#008080' }} />
+                          <Award size={14} style={{ color: '#852A91' }} />
                           <span>{prof.registrationNumber}</span>
                         </div>
                       ) : (
@@ -362,7 +362,7 @@ export function ProfessionalsPanel() {
 
                     <td style={{ padding: '0.85rem 1rem' }}>
                       {prof.isActive ? (
-                        <span className="badge" style={{ background: '#e6fffa', color: '#005F6A', border: '1px solid #b2f5ea' }}>
+                        <span className="badge" style={{ background: '#F7ECF8', color: '#6F217B', border: '1px solid #b2f5ea' }}>
                           Ativo
                         </span>
                       ) : (
@@ -403,7 +403,7 @@ export function ProfessionalsPanel() {
                             onClick={() => void handleToggleActive(prof)}
                             title="Reativar profissional"
                             aria-label={`Reativar ${prof.name}`}
-                            style={{ color: '#008080' }}
+                            style={{ color: '#852A91' }}
                           >
                             <RotateCcw size={15} />
                           </button>
@@ -584,3 +584,4 @@ export function ProfessionalsPanel() {
     </div>
   );
 }
+

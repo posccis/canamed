@@ -11,7 +11,7 @@ export interface ClinicalAlertsBarProps {
 
 export const ClinicalAlertsBar: React.FC<ClinicalAlertsBarProps> = ({
   rhFactor,
-  bloodType,
+  // bloodType,
   bloodPressure,
   fastingBloodGlucose,
   className = '',

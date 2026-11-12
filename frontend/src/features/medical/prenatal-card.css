@@ -1,0 +1,862 @@
+/* ==========================================================================
+   CANAMED MULHER — Design Canônico: Cartão da Gestante & Pré-Natal
+   Fonte de Verdade: assets/prototypes/prot_tipo_cart_o_da_gestante_cana_med_mulher.html
+   Padrão: CSS Puro Nativo (BEM), sem dependência de Tailwind
+   ========================================================================== */
+
+:root,
+.prenatal-card {
+  /* Paleta Oficial da Marca Cana Med Mulher */
+  --prenatal-brand-deep: #6F217B;      /* Roxo institucional escuro para títulos e cabeçalhos */
+  --prenatal-brand-primary: #852A91;   /* Roxo principal da marca (ações e ênfase) */
+  --prenatal-brand-hover: #5D1A67;     /* Hover do roxo primário */
+  --prenatal-brand-magenta: #D83C91;   /* Magenta de destaque obstétrico */
+  --prenatal-brand-lilac: #B77AD8;     /* Lilás de apoio e divisórias de destaque */
+  --prenatal-brand-soft: #F7ECF8;      /* Fundo lilás suave acolhedor */
+  --prenatal-brand-cream: #FAF5FB;     /* Fundo suave para linhas zebradas e blocos de dados */
+  --prenatal-brand-border: #E9D5FF;    /* Bordas delicadas lilases */
+  --prenatal-brand-ink: #1E293B;       /* Texto escuro principal */
+  --prenatal-brand-muted: #64748B;     /* Texto secundário e legendas */
+  --prenatal-brand-white: #FFFFFF;     /* Branco puro para superfícies */
+
+  /* Cores Semânticas de Alerta e Status */
+  --prenatal-status-success-bg: #E9F5EC;
+  --prenatal-status-success-text: #237A52;
+  --prenatal-status-success-border: #A3D9B5;
+
+  --prenatal-status-warning-bg: #FDF0E1;
+  --prenatal-status-warning-text: #A96512;
+  --prenatal-status-warning-border: #FBD38D;
+
+  --prenatal-status-danger-bg: #FFF1F2;
+  --prenatal-status-danger-text: #9F1239;
+  --prenatal-status-danger-border: #FECDD3;
+
+  /* Tipografia & Fontes */
+  --prenatal-font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --prenatal-font-numeric: 'Inter', tabular-nums, sans-serif;
+
+  /* Raios e Sombras */
+  --prenatal-radius-sm: 6px;
+  --prenatal-radius-md: 10px;
+  --prenatal-radius-lg: 14px;
+  --prenatal-radius-xl: 18px;
+  --prenatal-shadow-card: 0 4px 16px rgba(111, 33, 123, 0.05);
+  --prenatal-shadow-modal: 0 20px 40px -10px rgba(111, 33, 123, 0.25);
+}
+
+/* ==========================================================================
+   1. CONTÊINER PRINCIPAL (.prenatal-card)
+   ========================================================================== */
+.prenatal-card {
+  background: var(--prenatal-brand-white);
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--prenatal-shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--prenatal-font-family);
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   2. TOPO INSTITUCIONAL (.prenatal-card__header)
+   ========================================================================== */
+.prenatal-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--prenatal-brand-border);
+  padding-bottom: 1.15rem;
+}
+
+.prenatal-card__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.prenatal-card__icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--prenatal-radius-md);
+  background: var(--prenatal-brand-soft);
+  color: var(--prenatal-brand-primary);
+  border: 1px solid rgba(183, 122, 216, 0.45);
+  flex-shrink: 0;
+}
+
+.prenatal-card__titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.prenatal-card__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--prenatal-brand-deep);
+  line-height: 1.3;
+}
+
+.prenatal-card__subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--prenatal-brand-muted);
+  line-height: 1.4;
+}
+
+.prenatal-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* Botões Especializados */
+.prenatal-card__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background-color: var(--prenatal-brand-primary);
+  color: var(--prenatal-brand-white);
+  border: 1px solid transparent;
+  border-radius: var(--prenatal-radius-sm);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(133, 42, 145, 0.25);
+}
+
+.prenatal-card__btn-primary:hover:not(:disabled) {
+  background-color: var(--prenatal-brand-hover);
+  transform: translateY(-1px);
+}
+
+.prenatal-card__btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.prenatal-card__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background-color: var(--prenatal-brand-white);
+  color: var(--prenatal-brand-primary);
+  border: 1px solid var(--prenatal-brand-primary);
+  border-radius: var(--prenatal-radius-sm);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prenatal-card__btn-secondary:hover {
+  background-color: var(--prenatal-brand-soft);
+}
+
+/* ==========================================================================
+   3. RESUMO OBSTÉTRICO EXECUTIVO (.prenatal-card__summary-card)
+   ========================================================================== */
+.prenatal-card__summary-card {
+  background-color: var(--prenatal-brand-soft);
+  border: 1px solid rgba(183, 122, 216, 0.65);
+  border-radius: var(--prenatal-radius-lg);
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.prenatal-card__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .prenatal-card__summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .prenatal-card__summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.prenatal-card__metric-tile {
+  background-color: var(--prenatal-brand-white);
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-sm);
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 64px;
+}
+
+.prenatal-card__metric-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--prenatal-brand-muted);
+  display: block;
+}
+
+.prenatal-card__metric-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--prenatal-brand-ink);
+  margin: 0.2rem 0;
+  display: block;
+  font-family: var(--prenatal-font-numeric);
+}
+
+.prenatal-card__metric-value--primary {
+  color: var(--prenatal-brand-deep);
+}
+
+.prenatal-card__metric-value--accent {
+  color: var(--prenatal-brand-primary);
+}
+
+.prenatal-card__metric-sub {
+  font-size: 0.6875rem;
+  color: var(--prenatal-brand-primary);
+  display: block;
+}
+
+.prenatal-card__metric-sub--muted {
+  color: var(--prenatal-brand-muted);
+}
+
+/* Alerta de Aloimunização (Rh Negativo) */
+.prenatal-card__rh-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #FDF2F8;
+  border: 1px solid #F472B6;
+  border-radius: var(--prenatal-radius-sm);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.75rem;
+  color: #9D174D;
+  line-height: 1.4;
+}
+
+.prenatal-card__rh-alert svg {
+  color: var(--prenatal-brand-magenta);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   4. NAVEGAÇÃO POR ABAS (.prenatal-card__tabs)
+   ========================================================================== */
+.prenatal-card__tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 2px solid #F1E8F5;
+  padding-bottom: 0;
+  overflow-x: auto;
+}
+
+.prenatal-card__tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--prenatal-brand-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.prenatal-card__tab-btn:hover {
+  color: var(--prenatal-brand-ink);
+}
+
+.prenatal-card__tab-btn--active {
+  color: var(--prenatal-brand-primary);
+  border-bottom-color: var(--prenatal-brand-primary);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   5. ABA 1: TABELA CLÍNICA DE CONSULTAS (.prenatal-card__table)
+   ========================================================================== */
+.prenatal-card__content-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.prenatal-card__empty-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  background-color: var(--prenatal-brand-cream);
+  border: 1.5px dashed var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.prenatal-card__empty-state svg {
+  color: var(--prenatal-brand-lilac);
+  margin-bottom: 0.5rem;
+}
+
+.prenatal-card__empty-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--prenatal-brand-ink);
+  margin: 0;
+}
+
+.prenatal-card__empty-desc {
+  font-size: 0.75rem;
+  color: var(--prenatal-brand-muted);
+  margin: 0.25rem 0 0;
+}
+
+.prenatal-card__table-wrapper {
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-md);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.prenatal-card__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.prenatal-card__table thead th {
+  background-color: var(--prenatal-brand-deep);
+  color: #FFFFFF;
+  padding: 0.65rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.prenatal-card__table th.num-col,
+.prenatal-card__table td.num-col {
+  text-align: center;
+}
+
+.prenatal-card__table tbody tr {
+  border-bottom: 1px solid #F1E8F5;
+  transition: background-color 0.15s ease;
+}
+
+.prenatal-card__table tbody tr:nth-child(even):not(.prenatal-card__table-notes-row) {
+  background-color: var(--prenatal-brand-cream);
+}
+
+.prenatal-card__table tbody tr:hover:not(.prenatal-card__table-notes-row) {
+  background-color: var(--prenatal-brand-soft);
+}
+
+.prenatal-card__table tbody td {
+  padding: 0.65rem 0.6rem;
+  color: var(--prenatal-brand-ink);
+  vertical-align: middle;
+  font-family: var(--prenatal-font-numeric);
+}
+
+.prenatal-card__table td.col-date {
+  font-weight: 700;
+  color: var(--prenatal-brand-ink);
+  white-space: nowrap;
+}
+
+.prenatal-card__table td.col-ig {
+  color: var(--prenatal-brand-deep);
+  font-weight: 600;
+}
+
+.prenatal-card__table td.col-imc {
+  color: var(--prenatal-brand-primary);
+  font-weight: 700;
+}
+
+.prenatal-card__table td.col-fhr {
+  color: var(--prenatal-brand-primary);
+  font-weight: 700;
+}
+
+.prenatal-card__table td.col-mv-active {
+  color: #15803D;
+  font-weight: 600;
+}
+
+.prenatal-card__table td.col-presentation {
+  color: var(--prenatal-brand-deep);
+  font-weight: 600;
+}
+
+.prenatal-card__table-notes-row td {
+  background-color: rgba(250, 245, 251, 0.85);
+  font-size: 0.6875rem;
+  font-style: italic;
+  color: var(--prenatal-brand-muted);
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid rgba(233, 213, 255, 0.6);
+}
+
+.prenatal-card__table-notes-prefix {
+  font-weight: 700;
+  font-style: normal;
+  color: var(--prenatal-brand-deep);
+  margin-right: 0.25rem;
+}
+
+/* Gráficos de Vigilância Obstétrica */
+.prenatal-card__charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   6. ABA 2: PÁGINA EXCLUSIVA DE VACINAS DA GESTANTE
+   ========================================================================== */
+.prenatal-card__vaccine-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background-color: var(--prenatal-brand-soft);
+  border: 1px solid var(--prenatal-brand-lilac);
+  border-radius: var(--prenatal-radius-md);
+  padding: 1.15rem 1.25rem;
+}
+
+.prenatal-card__vaccine-hero-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  color: var(--prenatal-brand-primary);
+  border: 1px solid var(--prenatal-brand-border);
+  flex-shrink: 0;
+}
+
+.prenatal-card__vaccine-hero-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--prenatal-brand-primary);
+  display: block;
+}
+
+.prenatal-card__vaccine-hero-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--prenatal-brand-deep);
+  margin: 0.2rem 0 0.35rem;
+}
+
+.prenatal-card__vaccine-hero-desc {
+  font-size: 0.75rem;
+  color: var(--prenatal-brand-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.prenatal-card__vaccine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.875rem;
+}
+
+.prenatal-card__vaccine-card {
+  background-color: var(--prenatal-brand-white);
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.prenatal-card__vaccine-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.prenatal-card__vaccine-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--prenatal-brand-deep);
+}
+
+.prenatal-card__vaccine-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.prenatal-card__vaccine-badge--applied {
+  background-color: var(--prenatal-status-success-bg);
+  color: var(--prenatal-status-success-text);
+  border: 1px solid var(--prenatal-status-success-border);
+}
+
+.prenatal-card__vaccine-badge--scheduled {
+  background-color: var(--prenatal-brand-soft);
+  color: var(--prenatal-brand-primary);
+  border: 1px solid var(--prenatal-brand-lilac);
+}
+
+.prenatal-card__vaccine-badge--pending {
+  background-color: var(--prenatal-status-warning-bg);
+  color: var(--prenatal-status-warning-text);
+  border: 1px solid var(--prenatal-status-warning-border);
+}
+
+.prenatal-card__vaccine-badge--none {
+  background-color: #F1F3F6;
+  color: #626B79;
+  border: 1px solid #E2E6EC;
+}
+
+.prenatal-card__vaccine-target {
+  font-size: 0.6875rem;
+  color: var(--prenatal-brand-muted);
+  margin: 0 0 0.45rem;
+}
+
+.prenatal-card__vaccine-window {
+  font-size: 0.6875rem;
+  color: var(--prenatal-brand-primary);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.65rem;
+}
+
+.prenatal-card__vaccine-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #F1E8F5;
+  padding-top: 0.6rem;
+  font-size: 0.6875rem;
+}
+
+.prenatal-card__vaccine-meta {
+  color: var(--prenatal-brand-muted);
+}
+
+.prenatal-card__vaccine-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.prenatal-card__vaccine-action-btn {
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 0.625rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: var(--prenatal-brand-cream);
+  color: var(--prenatal-brand-muted);
+  transition: all 0.15s ease;
+}
+
+.prenatal-card__vaccine-action-btn:hover {
+  background-color: var(--prenatal-brand-soft);
+  color: var(--prenatal-brand-primary);
+}
+
+.prenatal-card__vaccine-action-btn--active {
+  background-color: var(--prenatal-brand-primary);
+  color: #FFFFFF;
+}
+
+/* Alerta de Contraindicações de Vacinas */
+.prenatal-card__vaccine-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: var(--prenatal-status-danger-bg);
+  border: 1px solid var(--prenatal-status-danger-border);
+  border-radius: var(--prenatal-radius-md);
+  padding: 0.85rem 1rem;
+  color: var(--prenatal-status-danger-text);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.prenatal-card__vaccine-alert svg {
+  color: #E11D48;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   7. ABA 3: SOROLOGIAS POR TRIMESTRE
+   ========================================================================== */
+.prenatal-card__serologies-table thead th {
+  background-color: var(--prenatal-brand-deep);
+  color: #FFFFFF;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.prenatal-card__serologies-table td {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.75rem;
+}
+
+.prenatal-card__serology-exam-title {
+  font-weight: 700;
+  color: var(--prenatal-brand-ink);
+  display: block;
+}
+
+.prenatal-card__serology-exam-desc {
+  font-size: 0.6875rem;
+  color: var(--prenatal-brand-muted);
+  display: block;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.prenatal-card__serology-cell {
+  text-align: center;
+  font-weight: 500;
+  color: var(--prenatal-brand-ink);
+}
+
+.prenatal-card__serology-cell--active {
+  color: var(--prenatal-brand-primary);
+  font-weight: 700;
+}
+
+.prenatal-card__serology-select {
+  width: 100%;
+  max-width: 150px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-sm);
+  background-color: #FFFFFF;
+  color: var(--prenatal-brand-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.prenatal-card__serology-select:focus,
+.prenatal-card__serology-select:hover {
+  border-color: var(--prenatal-brand-primary);
+}
+
+/* ==========================================================================
+   8. MODAL DE NOVA CONSULTA (.prenatal-card__modal-*)
+   ========================================================================== */
+.prenatal-card__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.prenatal-card__modal-dialog {
+  background-color: var(--prenatal-brand-white);
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-xl);
+  max-width: 580px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: var(--prenatal-shadow-modal);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  box-sizing: border-box;
+}
+
+.prenatal-card__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--prenatal-brand-border);
+  padding-bottom: 0.85rem;
+}
+
+.prenatal-card__modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--prenatal-brand-deep);
+  margin: 0;
+}
+
+.prenatal-card__modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--prenatal-brand-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.prenatal-card__modal-close:hover {
+  color: var(--prenatal-brand-ink);
+}
+
+.prenatal-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.prenatal-card__form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.prenatal-card__form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 520px) {
+  .prenatal-card__form-grid-2,
+  .prenatal-card__form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prenatal-card__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.prenatal-card__field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--prenatal-brand-ink);
+  margin-bottom: 0.3rem;
+}
+
+.prenatal-card__input,
+.prenatal-card__select,
+.prenatal-card__textarea {
+  width: 100%;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--prenatal-radius-sm);
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8125rem;
+  color: var(--prenatal-brand-ink);
+  background-color: var(--prenatal-brand-white);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.prenatal-card__input:focus,
+.prenatal-card__select:focus,
+.prenatal-card__textarea:focus {
+  border-color: var(--prenatal-brand-primary);
+  box-shadow: 0 0 0 3px rgba(133, 42, 145, 0.15);
+}
+
+.prenatal-card__bmi-panel {
+  background-color: var(--prenatal-brand-cream);
+  border: 1px solid var(--prenatal-brand-border);
+  border-radius: var(--prenatal-radius-md);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.prenatal-card__bmi-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.prenatal-card__bmi-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.prenatal-card__modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  border-top: 1px solid var(--prenatal-brand-border);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}

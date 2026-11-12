@@ -116,7 +116,18 @@ public sealed record GynecologicalConsultationDataDto(
     string? PrescriptionNotes,
     string? GeneralOrientationNotes,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? BreastsStatus = null,
+    string? AbdomenStatus = null,
+    string? ExternalGenitaliaStatus = null,
+    string? SpeculumExamStatus = null,
+    string? BimanualPalpationStatus = null,
+    string? CervicalClockFindingsJson = null,
+    DateOnly? FirstUltrasoundDate = null,
+    int? FirstUltrasoundWeeks = null,
+    int? FirstUltrasoundDays = null,
+    double? FirstUltrasoundCcnMm = null,
+    string? PreferredGestationalReference = null);
 
 public sealed record UpdateGynecologicalConsultationRequest(
     DateOnly? Dum,
@@ -141,4 +152,15 @@ public sealed record UpdateGynecologicalConsultationRequest(
     string? ProcedureNotes,
     string? DiagnosesJson,
     string? PrescriptionNotes,
-    string? GeneralOrientationNotes);
+    string? GeneralOrientationNotes,
+    string? BreastsStatus = null,
+    string? AbdomenStatus = null,
+    string? ExternalGenitaliaStatus = null,
+    string? SpeculumExamStatus = null,
+    string? BimanualPalpationStatus = null,
+    string? CervicalClockFindingsJson = null,
+    DateOnly? FirstUltrasoundDate = null,
+    int? FirstUltrasoundWeeks = null,
+    int? FirstUltrasoundDays = null,
+    double? FirstUltrasoundCcnMm = null,
+    string? PreferredGestationalReference = null);

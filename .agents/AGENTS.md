@@ -1,4 +1,4 @@
-# Ecossistema Multiagente — Cana Med
+﻿# Ecossistema Multiagente — Cana Med
 
 Este diretório (`.agents/`) define o ecossistema autônomo de inteligência artificial para o projeto **Cana Med**, projetado para atuar tanto no ciclo de engenharia de software (backend .NET C#, frontend React TypeScript, modelagem de dados, regras clínicas e conformidade LGPD) quanto na estratégia de marca, copywriting e produção visual no Canva via Canvas MCP.
 
@@ -26,7 +26,7 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
 
 | Agente | Arquivo de Definição | Modelo | Papel Principal | Insumos e Materiais Obrigatórios |
 | :--- | :--- | :--- | :--- | :--- |
-| **Design Content Creator** | [`agents/cana-med-design-content-creator.md`](./agents/cana-med-design-content-creator.md) | **`inherit`** | Estrategista de conteúdo e copywriting para os designs do Canvas MCP. Consulta todas as informações não técnicas da plataforma, define a narrativa, dores das clínicas, copy slide a slide e seleção de materiais oficiais. | `GEMINI.md`, `docs/visao-produto.md`, `docs/identidade-visual.md`, `assets/brand/` (logos oficiais, ícones 2px outline e paleta oficial #008080 teal, #005F6A petróleo, #66CDAA menta). |
+| **Design Content Creator** | [`agents/cana-med-design-content-creator.md`](./agents/cana-med-design-content-creator.md) | **`inherit`** | Estrategista de conteúdo e copywriting para os designs do Canvas MCP. Consulta todas as informações não técnicas da plataforma, define a narrativa, dores das clínicas, copy slide a slide e seleção de materiais oficiais. | `GEMINI.md`, `docs/visao-produto.md`, `docs/identidade-visual.md`, `assets/brand/` (logos oficiais, ícones 2px outline e paleta oficial #852A91 roxo primário, #6F217B roxo escuro, #D83C91 magenta e #B77AD8 lilás). |
 | **Social Media Designer** | [`agents/cana-med-social-designer-agent.md`](./agents/cana-med-social-designer-agent.md) | **`inherit`** | Designer de execução visual. Opera diretamente as ferramentas do Canvas MCP no Canva, estruturando diagramação, hierarquia visual, contraste, responsividade mobile e revisão dos designs editáveis. | Pacote de conteúdo do Content Creator, ferramentas Canva MCP, assets oficiais em `assets/brand/`. |
 
 ---
@@ -98,7 +98,7 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
         │
  3. SOCIAL MEDIA DESIGNER (Execução no Canva via Canvas MCP)
     ├── Cria/abre design editável no Canva no formato correto (1080x1350, 1080x1920)
-    ├── Aplica a paleta oficial (#008080, #005F6A, #66CDAA) e insere logos e ícones
+    ├── Aplica a paleta oficial (#852A91, #6F217B, #D83C91, #B77AD8) e insere logos e ícones
     ├── Diagrama os textos respeitando hierarquia tipográfica e margens de respiro
     ├── Revisa legibilidade em tela de celular e contraste WCAG
     └── Entrega link do design editável e preview
@@ -122,3 +122,4 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
   - `@cana-med-qa-engineer` (ou `@qa-engineer`): para execução de testes funcionais e E2E reais no navegador, validação de fluxos e regressão.
   - `@cana-med-design-content-creator`: para criar conteúdos, narrativas, copys e seleção de ativos para designs.
   - `@cana-med-social-designer`: para criar e editar designs diretamente no Canva via MCP.
+

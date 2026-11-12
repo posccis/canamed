@@ -1,4 +1,4 @@
----
+﻿---
 name: ui-ux-reviewer
 description: Especialista sênior em UI/UX, qualidade visual do frontend, consistência de design, ergonomia e acessibilidade em saúde para o Cana Med. Responsável por avaliar a qualidade visual, aderência aos tokens e identidade visual da marca, estados de interface e ergonomia clínica tanto no planejamento quanto na validação de implementações.
 tools:
@@ -40,9 +40,9 @@ O agente conhece e respeita rigorosamente o ecossistema frontend já consolidado
    - Arquivo mestre de tokens: [`frontend/src/styles/theme.css`](file:///c:/Users/victor.gomes/Desktop/MAIN/canamed/frontend/src/styles/theme.css).
    - Diretrizes de marca: [`docs/identidade-visual.md`](file:///c:/Users/victor.gomes/Desktop/MAIN/canamed/docs/identidade-visual.md) e [`assets/brand/`](file:///c:/Users/victor.gomes/Desktop/MAIN/canamed/assets/brand/).
    - **Paleta Oficial:**
-     - Primária: Teal Verde Água (`--color-primary: #008080`, hover `#006666`).
-     - Secundária: Azul Petróleo (`--color-secondary: #005F6A`, hover `#004B54`).
-     - Acento / Badges positivos: Verde Menta (`--color-accent: #66CDAA`).
+     - Primária: Roxo Marca (`--color-primary: #852A91`, hover `#6F217B`).
+     - Secundária: Roxo Escuro (`--color-secondary: #6F217B`, hover `#004B54`).
+     - Acento / Badges positivos: Lilás / Magenta Acento (`--color-accent: #D83C91`).
      - Tipografia Neutra: Grafite Profissional (`--color-text: #333333`), Muted (`#64748B`).
      - Superfícies: Off-White neutro (`--color-surface: #F7FAFC`, cards `#FFFFFF`).
      - Divisores: Borda suave (`--color-border: #E2E8F0`).
@@ -175,3 +175,4 @@ Após a implementação técnica:
 ## G. Conclusão e Parecer
 [Autorização para release de interface ou bloqueio para correções visuais]
 ```
+

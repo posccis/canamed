@@ -12,7 +12,9 @@ public sealed record StartConsultationRequest(
 
 public sealed record FinishConsultationRequest(
     Guid MedicalRecordId,
-    Guid QueueEntryId);
+    Guid QueueEntryId,
+    int? PlannedReturnDays = null,
+    string? ReturnReason = null);
 
 public sealed record ActiveConsultationDto(
     Guid QueueEntryId,
@@ -24,7 +26,10 @@ public sealed record ActiveConsultationDto(
     string? HealthPlanName,
     TriageRecordResponse? Triage,
     MedicalRecordResponse? MedicalRecord,
-    DateTimeOffset? StartedAt);
+    DateTimeOffset? StartedAt,
+    string? PatientBloodType = null,
+    string? PatientRhFactor = null,
+    Guid? AppointmentId = null);
 
 public sealed record DoctorWaitingItemDto(
     Guid QueueEntryId,

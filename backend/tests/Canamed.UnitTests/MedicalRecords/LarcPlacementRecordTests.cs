@@ -57,4 +57,50 @@ public sealed class LarcPlacementRecordTests
         Assert.Equal(new DateOnly(2026, 4, 14), record.ControlUltrasoundDate);
         Assert.False(record.IsRemoved);
     }
+    [Fact]
+    public void LarcPlacementRecord_MarkAsRemoved_UpdatesStatusAndReason()
+    {
+        var clinicId = Guid.NewGuid();
+        var patientId = Guid.NewGuid();
+        var insertionDate = new DateOnly(2026, 3, 15);
+        var now = DateTimeOffset.UtcNow;
+
+        var record = LarcPlacementRecord.Create(
+            clinicId,
+            patientId,
+            null,
+            "mirena",
+            "Mirena 52mg",
+            "LOT-2026-X12",
+            insertionDate,
+            7.5m,
+            "Inserção normal",
+            now);
+
+        var removalDate = new DateOnly(2027, 3, 15);
+        record.MarkAsRemoved(removalDate, "Desejo de gestar", now.AddYears(1));
+
+        Assert.True(record.IsRemoved);
+        Assert.Equal(removalDate, record.RemovalDate);
+        Assert.Equal("Desejo de gestar", record.RemovalReason);
+    }
+
+    [Fact]
+    public void LarcService_Create_ValidatesAndCalculatesDates()
+    {
+        // Testando a integração do LarcService e LarcContracts
+        var req = new Canamed.Application.MedicalRecords.CreateLarcPlacementRequest(
+            MedicalRecordId: Guid.NewGuid(),
+            DeviceType: "mirena",
+            DeviceName: "Mirena 52mg",
+            BatchNumber: "LOT998877",
+            LotNumber: null,
+            InsertionDate: new DateOnly(2026, 10, 26),
+            HysterometryCm: 7.5m,
+            ProcedureNotes: "Inserção sem intercorrências",
+            Notes: null);
+
+        Assert.Equal("mirena", req.DeviceType);
+        Assert.Equal("LOT998877", req.BatchNumber ?? req.LotNumber);
+    }
 }

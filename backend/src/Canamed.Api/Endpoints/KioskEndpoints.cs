@@ -1,10 +1,15 @@
+using System.Collections.Concurrent;
+using Canamed.Application.Abstractions;
 using Canamed.Application.Kiosk;
+using Canamed.Domain.Auditing;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Canamed.Api.Endpoints;
 
 public static class KioskEndpoints
 {
+    private static readonly ConcurrentDictionary<string, (int Count, DateTimeOffset ResetAt)> _ipRateLimits = new();
+
     public static RouteGroupBuilder MapKioskEndpoints(this RouteGroupBuilder api)
     {
         ArgumentNullException.ThrowIfNull(api);
@@ -14,6 +19,8 @@ public static class KioskEndpoints
         group.MapGet("/{clinicId:guid}/search", SearchAppointmentsAsync)
             .WithName("KioskSearchAppointments")
             .Produces<IReadOnlyList<KioskAppointmentSearchResult>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .AllowAnonymous();
 
         group.MapPost("/check-in", ConfirmCheckInAsync)
@@ -33,18 +40,76 @@ public static class KioskEndpoints
 
     private static async Task<IResult> SearchAppointmentsAsync(
         KioskCheckInService kioskService,
+        IAuditRepository auditRepository,
         Guid clinicId,
         [FromQuery] string? q,
+        [FromQuery] string? cpf,
+        [FromQuery] string? cpfPartial,
+        [FromQuery] DateOnly? birthDate,
+        HttpContext httpContext,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(q))
+        var now = timeProvider.GetUtcNow();
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown_ip";
+
+        // Rate-limiting: Max 10 requests per minute per IP (RN-001, ER-002)
+        var limitEntry = _ipRateLimits.AddOrUpdate(
+            clientIp,
+            _ => (1, now.AddMinutes(1)),
+            (_, current) => now >= current.ResetAt ? (1, now.AddMinutes(1)) : (current.Count + 1, current.ResetAt));
+
+        if (limitEntry.Count > 10)
         {
-            return Results.Ok(Array.Empty<KioskAppointmentSearchResult>());
+            auditRepository.Add(AuditEvent.Record(
+                clinicId,
+                clientIp,
+                "Terminal Totem",
+                "RateLimitExceeded",
+                "kiosk",
+                clinicId.ToString(),
+                now,
+                $"{{\"ip\":\"{clientIp}\",\"limit\":10}}"));
+            await auditRepository.SaveChangesAsync(cancellationToken);
+
+            return Results.Problem(
+                statusCode: StatusCodes.Status429TooManyRequests,
+                title: "Limite de tentativas excedido",
+                detail: "Muitas tentativas em sequência. Por favor, aguarde um minuto ou dirija-se à recepção.");
         }
 
-        var results = await kioskService.SearchTodayAppointmentsAsync(clinicId, q, timeProvider.GetUtcNow(), cancellationToken);
-        return Results.Ok(results);
+        var resolvedCpf = !string.IsNullOrWhiteSpace(cpf) ? cpf : null;
+        var resolvedCpfPartial = !string.IsNullOrWhiteSpace(cpfPartial) ? cpfPartial : null;
+
+        if (resolvedCpf is null && resolvedCpfPartial is null && !string.IsNullOrWhiteSpace(q))
+        {
+            var digitsOnly = new string(q.Where(char.IsDigit).ToArray());
+            if (digitsOnly.Length == 11)
+            {
+                resolvedCpf = digitsOnly;
+            }
+            else if (digitsOnly.Length == 6)
+            {
+                resolvedCpfPartial = digitsOnly;
+            }
+        }
+
+        try
+        {
+            var results = await kioskService.SearchTodayAppointmentsAsync(
+                clinicId,
+                resolvedCpf,
+                resolvedCpfPartial,
+                birthDate,
+                now,
+                cancellationToken);
+
+            return Results.Ok(results);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { title = "Parâmetros de busca insuficientes", detail = ex.Message });
+        }
     }
 
     private static async Task<IResult> ConfirmCheckInAsync(

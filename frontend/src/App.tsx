@@ -21,6 +21,11 @@ import {
   PatientDocumentsPage,
   PatientHomePage,
   PatientProfilePage,
+  PatientWalkInBookingPage,
+  PatientGuestBookingPage,
+  PatientAdvancedRegistrationPage,
+  PatientDashboardRoute,
+  PatientPrenatalCardRoute,
 } from './features/patient/pages/PatientPortalPages';
 import { PatientQueuePage } from './features/patient/pages/PatientQueuePage';
 import { PrivacyPortal } from './features/patient/PrivacyPortal';
@@ -64,6 +69,11 @@ export function App() {
         <Route path="/p/:slug" element={<PatientLayout />}>
           <Route index element={<PatientHomePage />} />
           <Route path="agendar" element={<PatientBookingPage />} />
+          <Route path="agendar-avulso" element={<PatientWalkInBookingPage />} />
+          <Route path="cadastro-rapido" element={<PatientGuestBookingPage />} />
+          <Route path="cadastro-avancado" element={<PatientAdvancedRegistrationPage />} />
+          <Route path="dashboard" element={<PatientDashboardRoute />} />
+          <Route path="cartao-gestante" element={<PatientPrenatalCardRoute />} />
           <Route path="agendar/profissional/:professionalSlug" element={<PatientBookingPage />} />
           <Route path="agendar/especialidade/:specialtySlug" element={<PatientBookingPage />} />
           <Route path="consultas" element={<PatientAppointmentsPage />} />

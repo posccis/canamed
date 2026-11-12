@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Tokens visuais oficiais da marca.
  * Fonte de verdade: assets/brand/ e docs/identidade-visual.md.
  * Não alterar valores sem atualização formal da identidade visual.
@@ -518,7 +518,7 @@ body {
   -webkit-appearance: none;
   -moz-appearance: none;
   padding-right: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23008080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23852A91' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px;
@@ -718,11 +718,11 @@ body {
 }
 
 .agenda__item--status-agendado {
-  border-left-color: #005F6A;
+  border-left-color: #6F217B;
 }
 
 .agenda__item--status-confirmado {
-  border-left-color: #008080;
+  border-left-color: #852A91;
 }
 
 .agenda__item--status-aguardando {
@@ -800,7 +800,7 @@ body {
 }
 
 .agenda-weekly__header--today {
-  background: #e6f4f1;
+  background: #F7ECF8;
   border-bottom: 2px solid var(--color-primary);
 }
 
@@ -1717,9 +1717,9 @@ body {
 }
 
 .badge--risk-verde {
-  background-color: #e6fffa;
-  color: #005f6a;
-  border: 1px solid #66cdaa;
+  background-color: #F7ECF8;
+  color: #6F217B;
+  border: 1px solid #B77AD8;
 }
 
 .badge--risk-azul {
@@ -1729,9 +1729,9 @@ body {
 }
 
 .badge--payment-pago {
-  background-color: #e6fffa;
-  color: #005f6a;
-  border: 1px solid #66cdaa;
+  background-color: #F7ECF8;
+  color: #6F217B;
+  border: 1px solid #B77AD8;
 }
 
 .badge--payment-pendente {
@@ -2745,4 +2745,70 @@ body {
   border-color: var(--brand-primary, #852a91);
 }
 
+/* ==========================================================================
+   Central de Anamnese Ginecológica (Cana Med Mulher)
+   ========================================================================== */
+.complaint-chip {
+  user-select: none;
+}
+.complaint-chip:hover:not(:disabled) {
+  background-color: #E2E8F0 !important;
+  border-color: var(--color-brand-primary, #852A91) !important;
+  color: var(--color-primary-dark, #6F217B) !important;
+}
+.complaint-chip--active {
+  background-color: #F7ECF8 !important;
+  border-color: var(--color-brand-primary, #852A91) !important;
+  color: var(--color-primary-dark, #6F217B) !important;
+  box-shadow: 0 1px 3px rgba(0, 128, 128, 0.15);
+}
+.hma-snippet-btn:hover:not(:disabled) {
+  background-color: #E2E8F0 !important;
+  border-color: var(--color-brand-primary, #852A91) !important;
+  color: var(--color-primary-dark, #6F217B) !important;
+}
+
+
+
+
+/* Cockpit do Consultório: Dock e Footer Sticky (Task 8 / RN-009) */
+.consultation-dock--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-neutral-border, #CBD5E1);
+  padding: 0.65rem 0.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.consultation-footer--sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--color-neutral-border, #CBD5E1);
+  padding: 0.85rem 1.25rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modo Privacidade Clínica (Task 9 / RN-005) */
+.privacy-blur {
+  filter: blur(8px);
+  transition: filter 0.2s ease-in-out;
+  user-select: none;
+}
+
+.privacy-blur:hover,
+.privacy-blur:focus-within {
+  filter: none;
+  user-select: auto;
+}
 

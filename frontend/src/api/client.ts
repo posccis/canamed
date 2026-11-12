@@ -44,6 +44,33 @@ export async function apiGet<T>(path: string, signal?: AbortSignal, customHeader
   return request<T>('GET', path, undefined, signal, customHeaders);
 }
 
+/** Executa um GET esperando uma resposta binária (Blob / PDF / arquivo). */
+export async function apiGetBlob(path: string, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<Blob> {
+  const headers: Record<string, string> = {
+    Accept: 'application/pdf, application/octet-stream, */*',
+    'X-Canamed-Requested-With': 'canamed-spa',
+    ...customHeaders,
+  };
+
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+    signal,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('text/html')) {
+    throw new Error('A resposta do servidor foi inválida (HTML em vez de PDF). Verifique a conexão com o backend.');
+  }
+
+  return await response.blob();
+}
+
 /** Executa um POST com corpo JSON na API do CANAMED. */
 export async function apiPost<T>(path: string, body?: unknown, signal?: AbortSignal, customHeaders?: Record<string, string>): Promise<T> {
   return request<T>('POST', path, body, signal, customHeaders);

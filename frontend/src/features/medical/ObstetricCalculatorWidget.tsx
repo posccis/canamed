@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Calculator, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
+﻿import React, { useState, useMemo } from 'react';
+import { Calculator, Calendar, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface ObstetricCalculatorWidgetProps {
   dum?: string | null;
@@ -19,12 +19,26 @@ export interface ObstetricCalculatorWidgetProps {
 export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps> = ({
   dum,
   isDumUncertain = false,
-  firstUsgDate,
-  firstUsgWeeks,
-  firstUsgDays,
+  firstUsgDate: initialUsgDate,
+  firstUsgWeeks: initialUsgWeeks,
+  firstUsgDays: initialUsgDays,
   onApplyCalculatedValues,
   className = '',
 }) => {
+  // Estado local para inputs interativos de 1º USG (caso o médico queira informar no próprio widget)
+  const [showUsgInputs, setShowUsgInputs] = useState(Boolean(initialUsgDate));
+  const [usgDate, setUsgDate] = useState(initialUsgDate || '');
+  const [usgWeeks, setUsgWeeks] = useState<number | ''>(
+    initialUsgWeeks !== undefined && initialUsgWeeks !== null ? initialUsgWeeks : ''
+  );
+  const [usgDays, setUsgDays] = useState<number | ''>(
+    initialUsgDays !== undefined && initialUsgDays !== null ? initialUsgDays : ''
+  );
+
+  const effectiveUsgDate = usgDate || initialUsgDate || null;
+  const effectiveUsgWeeks = typeof usgWeeks === 'number' ? usgWeeks : (initialUsgWeeks ?? null);
+  const effectiveUsgDays = typeof usgDays === 'number' ? usgDays : (initialUsgDays ?? null);
+
   const calculation = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -58,11 +72,10 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
     let gaUsgWeeks: number | null = null;
     let gaUsgDays: number | null = null;
 
-    if (firstUsgDate && firstUsgWeeks !== undefined && firstUsgWeeks !== null) {
-      const uDate = new Date(firstUsgDate + 'T00:00:00');
+    if (effectiveUsgDate && effectiveUsgWeeks !== null) {
+      const uDate = new Date(effectiveUsgDate + 'T00:00:00');
       if (!isNaN(uDate.getTime())) {
-        const uDays = (firstUsgWeeks * 7) + (firstUsgDays || 0);
-        // Data base concepção/início: uDate - uDays
+        const uDays = (effectiveUsgWeeks * 7) + (effectiveUsgDays || 0);
         const conceptionBasis = new Date(uDate);
         conceptionBasis.setDate(conceptionBasis.getDate() - uDays);
 
@@ -97,9 +110,7 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
       const usgTotalDays = (gaUsgWeeks * 7) + (gaUsgDays || 0);
       const discrepancyDays = Math.abs(dumTotalDays - usgTotalDays);
 
-      // Critério FEBRASGO: se USG até 8s 6d e discrepância > 5 dias -> USG
-      // se USG entre 9s e 13s 6d e discrepância > 7 dias -> USG
-      const measuredWeeksAtExam = firstUsgWeeks || 0;
+      const measuredWeeksAtExam = effectiveUsgWeeks || 0;
       const isFirstTrimesterEarly = measuredWeeksAtExam <= 8;
       const threshold = isFirstTrimesterEarly ? 5 : 7;
 
@@ -137,7 +148,7 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
       effectiveDays,
       effectiveEdd,
     };
-  }, [dum, isDumUncertain, firstUsgDate, firstUsgWeeks, firstUsgDays]);
+  }, [dum, isDumUncertain, effectiveUsgDate, effectiveUsgWeeks, effectiveUsgDays]);
 
   const handleApply = () => {
     if (onApplyCalculatedValues && calculation.effectiveEdd) {
@@ -153,46 +164,129 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
   return (
     <div
       data-testid="obstetric-calculator-widget"
-      className={`bg-[#FAF7FB] border border-[#E8D4EC] rounded-xl p-4 shadow-sm space-y-3 ${className}`}
+      className={`obstetric-calculator-card ${className}`}
+      style={{
+        background: '#FAFDFD',
+        border: '1px solid #B2DFDB',
+        borderRadius: 'var(--radius-lg, 12px)',
+        padding: '1rem',
+        boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05))',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.85rem',
+      }}
     >
-      <div className="flex items-center justify-between border-b border-[#E8D4EC] pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#852A91]/10 text-[#852A91]">
-            <Calculator className="w-4 h-4" />
+      {/* Cabeçalho do Widget */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #E0F2F1',
+          paddingBottom: '0.65rem',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div
+            style={{
+              padding: '0.45rem',
+              borderRadius: '8px',
+              background: 'rgba(0, 128, 128, 0.1)',
+              color: 'var(--color-primary-dark, #6F217B)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Calculator style={{ width: '1.15rem', height: '1.15rem' }} />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-[#481361]">
+            <h4 style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--color-primary-dark, #6F217B)', margin: 0 }}>
               Calculadora Obstétrica & Reconciliação FEBRASGO
             </h4>
-            <p className="text-[11px] text-[#626B79]">
+            <p style={{ fontSize: '0.75rem', color: 'var(--color-neutral-muted, #64748B)', margin: 0 }}>
               Reconciliação automática da idade gestacional (DUM vs 1º USG CCN)
             </p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowUsgInputs(!showUsgInputs)}
+          style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            padding: '0.25rem 0.6rem',
+            borderRadius: 'var(--radius-sm, 4px)',
+            background: showUsgInputs ? '#E0F2F1' : '#FFFFFF',
+            border: '1px solid #B2DFDB',
+            color: 'var(--color-primary-dark, #6F217B)',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+          }}
+        >
+          <span>{showUsgInputs ? '▲ Ocultar 1º USG' : '▼ Informar 1º USG (CCN)'}</span>
+          {showUsgInputs ? <ChevronUp style={{ width: '0.85rem', height: '0.85rem' }} /> : <ChevronDown style={{ width: '0.85rem', height: '0.85rem' }} />}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+      {/* Grid de Estimativas: DUM vs USG */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+          gap: '0.75rem',
+          fontSize: '0.825rem',
+        }}
+      >
         {/* Bloco DUM */}
-        <div className="bg-white p-3 rounded-lg border border-[#E2E6EC]">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[#858D99] font-semibold">Estimativa por DUM</span>
-            <Calendar className="w-3.5 h-3.5 text-[#858D99]" />
+        <div
+          style={{
+            background: '#FFFFFF',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            border: '1px solid var(--color-neutral-border, #E2E8F0)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+            <span style={{ color: 'var(--color-neutral-muted, #64748B)', fontWeight: 600, fontSize: '0.75rem' }}>
+              Estimativa por DUM
+            </span>
+            <Calendar style={{ width: '0.9rem', height: '0.9rem', color: 'var(--color-neutral-muted, #64748B)' }} />
           </div>
+
           {isDumUncertain || !dum ? (
-            <div className="text-amber-800 bg-amber-50 p-2 rounded text-[11px] font-medium flex items-center gap-1.5 mt-1">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-              DUM incerta ou desconhecida
+            <div
+              style={{
+                color: '#92400E',
+                background: '#FEF3C7',
+                padding: '0.5rem',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                marginTop: '0.25rem',
+              }}
+            >
+              <AlertCircle style={{ width: '0.9rem', height: '0.9rem', flexShrink: 0 }} />
+              <span>DUM incerta ou desconhecida</span>
             </div>
           ) : (
             <>
-              <div className="text-base font-bold text-[#202631]">
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-primary-dark, #6F217B)' }}>
                 {calculation.gaDumWeeks !== null
                   ? `${calculation.gaDumWeeks}s ${calculation.gaDumDays}d`
                   : 'Data futura'}
               </div>
-              <div className="text-[11px] text-[#626B79] mt-0.5">
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-neutral-muted, #64748B)', marginTop: '0.2rem' }}>
                 DPP (Naegele):{' '}
-                <strong className="text-[#202631]">
+                <strong style={{ color: '#1E293B' }}>
                   {calculation.naegeleEdd?.toLocaleDateString('pt-BR') || '-'}
                 </strong>
               </div>
@@ -201,40 +295,136 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
         </div>
 
         {/* Bloco 1º USG */}
-        <div className="bg-white p-3 rounded-lg border border-[#E2E6EC]">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[#858D99] font-semibold">Estimativa por 1º USG Precoce</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#858D99]" />
+        <div
+          style={{
+            background: '#FFFFFF',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            border: '1px solid var(--color-neutral-border, #E2E8F0)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+            <span style={{ color: 'var(--color-neutral-muted, #64748B)', fontWeight: 600, fontSize: '0.75rem' }}>
+              Estimativa por 1º USG Precoce
+            </span>
+            <CheckCircle2 style={{ width: '0.9rem', height: '0.9rem', color: 'var(--color-brand-primary, #852A91)' }} />
           </div>
+
           {calculation.gaUsgWeeks !== null ? (
             <>
-              <div className="text-base font-bold text-[#202631]">
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-primary-dark, #6F217B)' }}>
                 {calculation.gaUsgWeeks}s {calculation.gaUsgDays}d
               </div>
-              <div className="text-[11px] text-[#626B79] mt-0.5">
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-neutral-muted, #64748B)', marginTop: '0.2rem' }}>
                 DPP por USG:{' '}
-                <strong className="text-[#202631]">
+                <strong style={{ color: '#1E293B' }}>
                   {calculation.usgEdd?.toLocaleDateString('pt-BR') || '-'}
                 </strong>
               </div>
             </>
           ) : (
-            <div className="text-[#858D99] text-[11px] py-2">
+            <div style={{ color: 'var(--color-neutral-muted, #94A3B8)', fontSize: '0.75rem', padding: '0.5rem 0' }}>
               Nenhum USG inicial informado
             </div>
           )}
         </div>
       </div>
 
-      {/* Veredito de Reconciliação */}
+      {/* Painel de Entrada de Dados do 1º USG (Retrátil) */}
+      {showUsgInputs && (
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px dashed #B2DFDB',
+            borderRadius: '8px',
+            padding: '0.75rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '0.6rem',
+            alignItems: 'end',
+          }}
+        >
+          <div>
+            <label className="form__label" htmlFor="calc-usg-date" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+              Data do 1º Ultrassom
+            </label>
+            <input
+              id="calc-usg-date"
+              type="date"
+              className="form__input"
+              value={usgDate}
+              onChange={(e) => setUsgDate(e.target.value)}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.5rem', width: '100%' }}
+            />
+          </div>
+
+          <div>
+            <label className="form__label" htmlFor="calc-usg-weeks" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+              Semanas no Exame
+            </label>
+            <input
+              id="calc-usg-weeks"
+              type="number"
+              min={4}
+              max={42}
+              placeholder="Ex.: 8"
+              className="form__input"
+              value={usgWeeks}
+              onChange={(e) => setUsgWeeks(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.5rem', width: '100%' }}
+            />
+          </div>
+
+          <div>
+            <label className="form__label" htmlFor="calc-usg-days" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+              Dias no Exame
+            </label>
+            <input
+              id="calc-usg-days"
+              type="number"
+              min={0}
+              max={6}
+              placeholder="Ex.: 4"
+              className="form__input"
+              value={usgDays}
+              onChange={(e) => setUsgDays(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.5rem', width: '100%' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Veredito de Reconciliação Oficial */}
       {calculation.explanation && (
-        <div className="p-3 rounded-lg bg-white border border-[#852A91]/25 flex flex-wrap items-center justify-between gap-2.5">
-          <div className="text-xs">
-            <span className="text-[#626B79] font-medium">Reconciliação Oficial Adotada: </span>
-            <strong className="text-sm font-bold text-[#481361]">
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            background: '#FFFFFF',
+            border: '1.5px solid var(--color-brand-primary, #852A91)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.65rem',
+          }}
+        >
+          <div style={{ fontSize: '0.825rem' }}>
+            <span style={{ color: 'var(--color-neutral-muted, #64748B)', fontWeight: 600 }}>
+              Reconciliação Oficial Adotada:{' '}
+            </span>
+            <strong style={{ fontSize: '1rem', color: 'var(--color-primary-dark, #6F217B)', marginLeft: '0.25rem' }}>
               {calculation.effectiveWeeks}s {calculation.effectiveDays}d
             </strong>
-            <span className="text-[11px] text-[#852A91] block sm:inline sm:ml-2">
+            <span
+              style={{
+                fontSize: '0.78rem',
+                color: 'var(--color-brand-primary, #852A91)',
+                fontWeight: 600,
+                display: 'block',
+                marginTop: '0.15rem',
+              }}
+            >
               ({calculation.explanation})
             </span>
           </div>
@@ -243,7 +433,13 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
             <button
               type="button"
               onClick={handleApply}
-              className="button button--primary button--small text-xs py-1 px-3 ml-auto"
+              className="button button--primary button--small"
+              style={{
+                fontSize: '0.8rem',
+                padding: '0.35rem 0.8rem',
+                marginLeft: 'auto',
+                fontWeight: 700,
+              }}
             >
               Aplicar ao Prontuário
             </button>
@@ -253,3 +449,4 @@ export const ObstetricCalculatorWidget: React.FC<ObstetricCalculatorWidgetProps>
     </div>
   );
 };
+

@@ -82,6 +82,18 @@ public sealed class QueueEntryTests
     }
 
     [Fact]
+    public void Start_DevePermitirInicioDiretoDeAguardando()
+    {
+        var entry = CheckIn(Now, QueuePriority.Normal);
+
+        entry.Start(Now.AddMinutes(5));
+
+        Assert.Equal(QueueStatus.InService, entry.Status);
+        Assert.Equal(Now.AddMinutes(5), entry.CalledAt);
+        Assert.Equal(Now.AddMinutes(5), entry.StartedAt);
+    }
+
+    [Fact]
     public void Complete_DeveRecusarQuandoNaoIniciou()
     {
         var entry = CheckIn(Now, QueuePriority.Normal);

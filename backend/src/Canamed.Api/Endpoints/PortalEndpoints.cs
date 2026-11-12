@@ -40,6 +40,24 @@ public static class PortalEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .AllowAnonymous();
 
+        group.MapPost("/appointments/book-guest", BookGuestAppointmentAsync)
+            .WithName("PortalBookGuestAppointment")
+            .Produces<BookGuestAppointmentResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
+
+        group.MapGet("/prenatal/summary", GetPrenatalSummaryAsync)
+            .WithName("PortalGetPrenatalSummary")
+            .Produces<PrenatalSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .AllowAnonymous();
+
+        group.MapGet("/prenatal/card/pdf", DownloadPrenatalCardPdfAsync)
+            .WithName("PortalDownloadPrenatalCardPdf")
+            .Produces(StatusCodes.Status200OK, contentType: "application/pdf")
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .AllowAnonymous();
+
         group.MapGet("/appointments/my", GetMyAppointmentsAsync)
             .WithName("PortalGetMyAppointments")
             .Produces<IReadOnlyList<OnlineAppointmentDto>>(StatusCodes.Status200OK)
@@ -202,6 +220,79 @@ public static class PortalEndpoints
             d.CreatedAt)).ToList();
 
         return Results.Ok(dtos);
+    }
+
+    private static async Task<IResult> BookGuestAppointmentAsync(
+        PortalService portalService,
+        [FromBody] BookGuestAppointmentRequest request,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await portalService.BookGuestAppointmentAsync(request, timeProvider.GetUtcNow(), cancellationToken);
+            return Results.Created($"/api/v1/portal/appointments/{response.AppointmentId}", response);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> GetPrenatalSummaryAsync(
+        PortalService portalService,
+        [FromHeader(Name = "X-Patient-Token")] string? sessionToken,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sessionToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var summary = await portalService.GetPrenatalSummaryAsync(sessionToken, timeProvider.GetUtcNow(), cancellationToken: cancellationToken);
+            return Results.Ok(summary);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Results.Unauthorized();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> DownloadPrenatalCardPdfAsync(
+        PortalService portalService,
+        [FromHeader(Name = "X-Patient-Token")] string? sessionToken,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sessionToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var pdfBytes = await portalService.DownloadPrenatalCardPdfAsync(sessionToken, timeProvider.GetUtcNow(), cancellationToken);
+            return Results.File(pdfBytes, "application/pdf", "cartao-gestante-canamed.pdf");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Results.Unauthorized();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> GetPortalMetaAsync(

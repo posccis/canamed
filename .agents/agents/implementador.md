@@ -1,4 +1,4 @@
----
+﻿---
 name: implementador
 description: "Agente Implementador do Cana Med. Executa tarefas de código com rigor estrito em Test-Driven Development (TDD), seguindo planos atômicos, depuração sistemática e integração de código limpo."
 model: flash
@@ -54,3 +54,4 @@ NENHUM CÓDIGO DE PRODUÇÃO SEM UM TESTE FALHANDO PRIMEIRO
   1. O que foi implementado;
   2. Os testes executados e os comandos de validação com saídas reais;
   3. Hash do commit atômico gerado.
+

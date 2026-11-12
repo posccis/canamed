@@ -12,16 +12,35 @@ public sealed class KioskCheckInService(
     IAuditRepository auditRepository,
     IUnitOfWork unitOfWork)
 {
-    public async Task<IReadOnlyList<KioskAppointmentSearchResult>> SearchTodayAppointmentsAsync(
+        public async Task<IReadOnlyList<KioskAppointmentSearchResult>> SearchTodayAppointmentsAsync(
         Guid clinicId,
-        string searchTerm,
+        string? cpf,
+        string? cpfPartial,
+        DateOnly? birthDate,
         DateTimeOffset now,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-            return [];
+        var cpfDigits = !string.IsNullOrWhiteSpace(cpf) ? new string(cpf.Where(char.IsDigit).ToArray()) : null;
+        var partialDigits = !string.IsNullOrWhiteSpace(cpfPartial) ? new string(cpfPartial.Where(char.IsDigit).ToArray()) : null;
 
-        var digitsOnly = new string(searchTerm.Where(char.IsDigit).ToArray());
+        bool hasValid11Cpf = cpfDigits is { Length: 11 };
+        bool hasValid6CpfAndBirth = partialDigits is { Length: 6 } && birthDate.HasValue;
+
+        if (!hasValid11Cpf && !hasValid6CpfAndBirth)
+        {
+            auditRepository.Add(AuditEvent.Record(
+                clinicId,
+                "kiosk_terminal",
+                "Terminal Totem",
+                "KioskSearchDenied",
+                "kiosk",
+                clinicId.ToString(),
+                now,
+                "{\"reason\":\"MissingRequiredFactors\"}"));
+
+            throw new ArgumentException("Para sua segurança, digite seu CPF completo de 11 dígitos ou informe sua data de nascimento.");
+        }
+
         var today = DateOnly.FromDateTime(now.ToOffset(TimeSpan.FromHours(-3)).Date);
 
         var startOfDay = new DateTimeOffset(today.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(-3));
@@ -41,10 +60,18 @@ public sealed class KioskCheckInService(
                 continue;
 
             var patientCpfDigits = new string((patient.Document ?? "").Where(char.IsDigit).ToArray());
-            var patientPhoneDigits = new string(patient.Phone.Where(char.IsDigit).ToArray());
 
-            bool matches = (!string.IsNullOrEmpty(digitsOnly) && (patientCpfDigits.Contains(digitsOnly) || patientPhoneDigits.Contains(digitsOnly))) ||
-                           patient.Name.Contains(searchTerm.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool matches = false;
+            if (hasValid11Cpf)
+            {
+                matches = patientCpfDigits == cpfDigits;
+            }
+            else if (hasValid6CpfAndBirth)
+            {
+                matches = patientCpfDigits.StartsWith(partialDigits!, StringComparison.Ordinal)
+                          && patient.BirthDate.HasValue
+                          && patient.BirthDate.Value == birthDate!.Value;
+            }
 
             if (!matches)
                 continue;
@@ -76,7 +103,7 @@ public sealed class KioskCheckInService(
             results.Add(new KioskAppointmentSearchResult(
                 apt.Id,
                 patient.Id,
-                MaskName(patient.Name),
+                MaskPatientName(patient.Name),
                 MaskCpf(patient.Document),
                 apt.ProfessionalId,
                 prof?.Name ?? "Médico",
@@ -87,6 +114,30 @@ public sealed class KioskCheckInService(
         }
 
         return results;
+    }
+
+    public Task<IReadOnlyList<KioskAppointmentSearchResult>> SearchTodayAppointmentsAsync(
+        Guid clinicId,
+        string? searchTerm,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return SearchTodayAppointmentsAsync(clinicId, null, null, null, now, cancellationToken);
+        }
+
+        var digitsOnly = new string(searchTerm.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length == 11)
+        {
+            return SearchTodayAppointmentsAsync(clinicId, digitsOnly, null, null, now, cancellationToken);
+        }
+        if (digitsOnly.Length == 6)
+        {
+            return SearchTodayAppointmentsAsync(clinicId, null, digitsOnly, null, now, cancellationToken);
+        }
+
+        return SearchTodayAppointmentsAsync(clinicId, null, null, null, now, cancellationToken);
     }
 
     public async Task<KioskCheckInResult> ConfirmKioskCheckInAsync(
@@ -201,17 +252,18 @@ public sealed class KioskCheckInService(
             null);
     }
 
-    private static string MaskName(string fullName)
+        public static string MaskPatientName(string fullName)
     {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "****";
+
         var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length <= 1)
-            return fullName;
+        if (parts.Length == 1)
+            return parts[0][0] + "****";
 
-        var first = parts[0];
-        var middle = string.Join(" ", parts.Skip(1).Take(parts.Length - 2).Select(p => p[0] + "."));
-        var last = parts[^1];
-
-        return string.IsNullOrWhiteSpace(middle) ? $"{first} {last}" : $"{first} {middle} {last}";
+        var first = parts[0][0] + "****";
+        var last = parts[^1][0] + "****";
+        return $"{first} {last}";
     }
 
     private static string MaskCpf(string? cpf)

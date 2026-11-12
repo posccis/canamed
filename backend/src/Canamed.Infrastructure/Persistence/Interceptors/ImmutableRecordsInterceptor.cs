@@ -54,5 +54,9 @@ public sealed class ImmutableRecordsInterceptor : SaveChangesInterceptor
             or MedicalRecordAddendum
             or GynecologicalConsultationData
             or MedicalDocument
-            or AuditEvent;
+            or AuditEvent
+            or PrenatalVisitRecord
+            or PreventiveScreeningRecord
+            or LarcPlacementRecord
+            or PatientExamAttachment;
 }

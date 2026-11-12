@@ -40,6 +40,17 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Property(appointment => appointment.CancellationReason).HasMaxLength(500);
         builder.Property(appointment => appointment.Origin).HasMaxLength(30).HasDefaultValue("desk").IsRequired();
         builder.Property(appointment => appointment.DurationMinutes).IsRequired();
+        var encryptedConverter = new Canamed.Infrastructure.Persistence.Converters.EncryptedStringConverter();
+        builder.Property(appointment => appointment.ClinicalPreAnamnesis)
+            .HasColumnName("clinical_pre_anamnesis")
+            .HasColumnType("text")
+            .HasConversion(encryptedConverter);
+        builder.Property(appointment => appointment.PreExamInstructionsAcknowledged)
+            .HasColumnName("pre_exam_instructions_acknowledged")
+            .HasDefaultValue(false);
+        builder.Property(appointment => appointment.PlannedReturnDays)
+            .HasColumnName("planned_return_days");
+
         builder.HasIndex(appointment => new { appointment.ProfessionalId, appointment.StartsAt });
         builder.HasIndex(appointment => new { appointment.ClinicId, appointment.StartsAt });
         builder.HasIndex(appointment => new { appointment.ClinicId, appointment.RoomId, appointment.StartsAt });

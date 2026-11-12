@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
-import { AgendaPage } from '../features/agenda/AgendaPage';
+// import { AgendaPage } from '../features/agenda/AgendaPage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { MfaEnrollmentPanel } from '../features/auth/MfaEnrollmentPanel';
 import { useSession } from '../features/auth/useSession';
-import { UsersPanel } from '../features/auth/UsersPanel';
-import { CatalogPanel } from '../features/catalog/CatalogPanel';
+// import { UsersPanel } from '../features/auth/UsersPanel';
+// import { CatalogPanel } from '../features/catalog/CatalogPanel';
 import { DashboardPanel } from '../features/dashboard/DashboardPanel';
-import { OperationPanel } from '../features/clinics/OperationPanel';
-import { QueuePanel } from '../features/queue/QueuePanel';
+// import { OperationPanel } from '../features/clinics/OperationPanel';
+// import { QueuePanel } from '../features/queue/QueuePanel';
 import { Sidebar } from '../features/layout/Sidebar';
 import { Topbar } from '../features/layout/Topbar';
 import { ToastProvider } from '../features/layout/Toast';
 import { GlobalSearchModal } from '../features/layout/GlobalSearchModal';
-import { LinksPanel } from '../features/layout/LinksPanel';
+// import { LinksPanel } from '../features/layout/LinksPanel';
 import { AgendaRecepcaoPanel } from '../features/agenda/AgendaRecepcaoPanel';
 import { ClinicSettingsPanel } from '../features/clinics/ClinicSettingsPanel';
 import { CashRegisterPanel } from '../features/admin/CashRegisterPanel';

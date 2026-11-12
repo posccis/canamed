@@ -45,6 +45,25 @@ public sealed class QueueRepository(CanamedDbContext dbContext) : IQueueReposito
                     || entry.Status == QueueStatus.InService),
             cancellationToken);
 
+    public async Task<IReadOnlyList<QueueEntry>> ListInServiceAsync(
+        Guid clinicId,
+        Guid? professionalId,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.QueueEntries
+            .Where(entry => entry.ClinicId == clinicId && entry.Status == QueueStatus.InService);
+
+        if (professionalId is not null)
+        {
+            query = query.Where(entry => entry.ProfessionalId == professionalId);
+        }
+
+        return await query
+            .OrderByDescending(entry => entry.StartedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public void Add(QueueEntry entry) => dbContext.QueueEntries.Add(entry);
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)

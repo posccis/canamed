@@ -27,6 +27,8 @@ type SidebarProps = {
 
 function formatRole(role?: string): string {
   switch (role) {
+    case 'admin':
+      return 'Administrador Geral (Total)';
     case 'gestor':
       return 'Gestor Clínico';
     case 'recepcionista':
@@ -69,14 +71,16 @@ export function Sidebar({
     session.permissions.includes('workspace:access') ||
     session.permissions.includes('records:read') ||
     session.role === 'profissional' ||
-    session.role === 'gestor';
+    session.role === 'gestor' ||
+    session.role === 'admin';
 
   const canAccessSettings =
     session.permissions.includes('clinic:manage') ||
     session.permissions.includes('users:manage') ||
     session.permissions.includes('policy:manage') ||
     session.permissions.includes('dpo:manage') ||
-    session.role === 'gestor';
+    session.role === 'gestor' ||
+    session.role === 'admin';
 
   function handleNav(target: StaffView) {
     onChangeView(target);

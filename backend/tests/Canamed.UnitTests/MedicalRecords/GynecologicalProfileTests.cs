@@ -173,9 +173,9 @@ public sealed class GynecologicalProfileTests
         var recordId = Guid.NewGuid();
         var data = GynecologicalConsultationData.Create(recordId, _now);
 
-        Assert.True(data.BreastsIsNormal);
-        Assert.True(data.AbdomenIsNormal);
-        Assert.True(data.SpeculumExamIsNormal);
+        Assert.Null(data.BreastsStatus);
+        Assert.Null(data.AbdomenStatus);
+        Assert.Null(data.SpeculumExamStatus);
 
         data.Update(
             dum: new DateOnly(2026, 10, 1),

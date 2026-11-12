@@ -43,6 +43,10 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("clinic_id");
 
+                    b.Property<string>("ClinicalPreAnamnesis")
+                        .HasColumnType("text")
+                        .HasColumnName("clinical_pre_anamnesis");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -89,6 +93,16 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("pendente")
                         .HasColumnName("payment_status");
+
+                    b.Property<int?>("PlannedReturnDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("planned_return_days");
+
+                    b.Property<bool>("PreExamInstructionsAcknowledged")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("pre_exam_instructions_acknowledged");
 
                     b.Property<Guid>("ProfessionalId")
                         .HasColumnType("uuid")
@@ -1696,27 +1710,35 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("abdomen_findings");
 
-                    b.Property<bool>("AbdomenIsNormal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("abdomen_is_normal");
+                    b.Property<string>("AbdomenStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("abdomen_status");
 
                     b.Property<string>("BimanualPalpationFindings")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("bimanual_palpation_findings");
 
-                    b.Property<bool>("BimanualPalpationIsNormal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("bimanual_palpation_is_normal");
+                    b.Property<string>("BimanualPalpationStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("bimanual_palpation_status");
 
                     b.Property<string>("BreastsFindings")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("breasts_findings");
 
-                    b.Property<bool>("BreastsIsNormal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("breasts_is_normal");
+                    b.Property<string>("BreastsStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("breasts_status");
+
+                    b.Property<string>("CervicalClockFindingsJson")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("cervical_clock_findings_json");
 
                     b.Property<string>("ChiefComplaint")
                         .HasMaxLength(500)
@@ -1745,9 +1767,10 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("external_genitalia_findings");
 
-                    b.Property<bool>("ExternalGenitaliaIsNormal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("external_genitalia_is_normal");
+                    b.Property<string>("ExternalGenitaliaStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("external_genitalia_status");
 
                     b.Property<double?>("FirstUltrasoundCcnMm")
                         .HasColumnType("double precision")
@@ -1790,8 +1813,9 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("medical_record_id");
 
-                    b.Property<int?>("PreferredGestationalReference")
-                        .HasColumnType("integer")
+                    b.Property<string>("PreferredGestationalReference")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("preferred_gestational_reference");
 
                     b.Property<string>("PrescriptionNotes")
@@ -1818,9 +1842,10 @@ namespace Canamed.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("speculum_exam_findings");
 
-                    b.Property<bool>("SpeculumExamIsNormal")
-                        .HasColumnType("boolean")
-                        .HasColumnName("speculum_exam_is_normal");
+                    b.Property<string>("SpeculumExamStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("speculum_exam_status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

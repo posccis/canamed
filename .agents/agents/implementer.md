@@ -1,4 +1,4 @@
----
+﻿---
 name: implementer
 description: "Alias for implementador agent. Executes code tasks in Cana Med with strict Test-Driven Development (TDD), systematic debugging, and clean architecture."
 model: flash
@@ -17,3 +17,4 @@ skills:
 > Alias pointing to the primary configuration in [`implementador.md`](./implementador.md).
 
 See [`implementador.md`](./implementador.md) for full instructions, TDD rules, and execution constraints.
+

@@ -39,6 +39,7 @@ public sealed class MfaPolicyTests
     [Theory]
     [InlineData(Roles.Receptionist)]
     [InlineData(Roles.Professional)]
+    [InlineData(Roles.Admin)]
     public void DemaisPapeis_NaoExigemMfa(string role)
     {
         Assert.False(BuildPolicy("Production", configuredValue: null).IsRequiredFor(role));

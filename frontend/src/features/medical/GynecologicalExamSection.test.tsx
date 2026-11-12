@@ -2,21 +2,21 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { GynecologicalExamSection, type GynecologicalExamState } from './GynecologicalExamSection';
 
-describe('GynecologicalExamSection Component', () => {
+describe('GynecologicalExamSection Component (Tri-State)', () => {
   const initialExam: GynecologicalExamState = {
-    breastsIsNormal: true,
+    breastsStatus: 'NotEvaluated',
     breastsFindings: '',
-    abdomenIsNormal: true,
+    abdomenStatus: 'NotEvaluated',
     abdomenFindings: '',
-    externalGenitaliaIsNormal: true,
+    externalGenitaliaStatus: 'NotEvaluated',
     externalGenitaliaFindings: '',
-    speculumExamIsNormal: true,
+    speculumExamStatus: 'NotEvaluated',
     speculumExamFindings: '',
-    bimanualPalpationIsNormal: true,
+    bimanualPalpationStatus: 'NotEvaluated',
     bimanualPalpationFindings: '',
   };
 
-  it('renderiza os 5 segmentos anatômicos com estado normal selecionado por padrão', () => {
+  it('renderiza os 5 segmentos anatômicos com 3 opções por segmento: Não Avaliado, Normal e Alterado', () => {
     const handleChange = vi.fn();
 
     render(<GynecologicalExamSection exam={initialExam} onChange={handleChange} />);
@@ -27,41 +27,54 @@ describe('GynecologicalExamSection Component', () => {
     expect(screen.getByText(/Exame Especular/i)).toBeInTheDocument();
     expect(screen.getByText(/Toque Bimanual/i)).toBeInTheDocument();
 
-    // 5 botões de Normal selecionados
-    const normalButtons = screen.getAllByText(/Normal \/ Sem alterações/i);
+    const notEvalButtons = screen.getAllByRole('button', { name: /Não Avaliado/i });
+    expect(notEvalButtons.length).toBe(5);
+
+    const normalButtons = screen.getAllByRole('button', { name: /Normal/i });
     expect(normalButtons.length).toBe(5);
+
+    const abnormalButtons = screen.getAllByRole('button', { name: /Alterado/i });
+    expect(abnormalButtons.length).toBe(5);
   });
 
-  it('permite alternar segmento para alterado e aciona onChange', () => {
+  it('ao alternar para Alterado, exibe textarea e alerta de detalhamento obrigatório', () => {
     const handleChange = vi.fn();
 
     render(<GynecologicalExamSection exam={initialExam} onChange={handleChange} />);
 
-    // Clica em detalhar achado no exame especular
-    const detailButtons = screen.getAllByText(/Detalhar achado/i);
-    fireEvent.click(detailButtons[3]); // 4º segmento: especular
+    const abnormalButtons = screen.getAllByRole('button', { name: /Alterado/i });
+    fireEvent.click(abnormalButtons[3]); // Especular
 
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        speculumExamIsNormal: false,
+        speculumExamStatus: 'Abnormal',
       }),
     );
   });
 
-  it('renderiza em modo somente leitura quando readOnly é verdadeiro', () => {
+  it('exibe textarea e aviso de obrigatoriedade quando o segmento está marcado como Alterado sem achados', () => {
     const alteredExam: GynecologicalExamState = {
       ...initialExam,
-      speculumExamIsNormal: false,
-      speculumExamFindings: 'Ectopia periorificial extensa, com sangramento de contato',
+      speculumExamStatus: 'Abnormal',
+      speculumExamFindings: '',
     };
 
-    render(<GynecologicalExamSection exam={alteredExam} onChange={vi.fn()} readOnly={true} />);
+    render(<GynecologicalExamSection exam={alteredExam} onChange={vi.fn()} />);
 
-    // Não deve conter botões de alternância
-    expect(screen.queryByText(/Detalhar achado/i)).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Descreva aspecto do colo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Detalhamento obrigatório/i)).toBeInTheDocument();
+  });
 
-    // Deve exibir badge de alterado e a descrição
-    expect(screen.getByText('⚠️ Alterado')).toBeInTheDocument();
-    expect(screen.getByText(/Ectopia periorificial extensa/i)).toBeInTheDocument();
+  it('ao marcar Exame Especular como Alterado, auto-expande a seção do Mapa Cervical 12h', () => {
+    const alteredExam: GynecologicalExamState = {
+      ...initialExam,
+      speculumExamStatus: 'Abnormal',
+      speculumExamFindings: 'Ectopia',
+    };
+
+    render(<GynecologicalExamSection exam={alteredExam} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: /Ocultar Mapa Cervical 12h/i })).toBeInTheDocument();
+    expect(screen.getByTestId('cervical-hour-12')).toBeInTheDocument();
   });
 });

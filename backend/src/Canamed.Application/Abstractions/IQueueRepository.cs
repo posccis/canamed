@@ -24,6 +24,12 @@ public interface IQueueRepository
         Guid appointmentId,
         CancellationToken cancellationToken);
 
+    /// <summary>Lista entradas com atendimento em andamento (InService) em aberto na clínica.</summary>
+    Task<IReadOnlyList<QueueEntry>> ListInServiceAsync(
+        Guid clinicId,
+        Guid? professionalId,
+        CancellationToken cancellationToken);
+
     /// <summary>Adiciona uma entrada à fila.</summary>
     void Add(QueueEntry entry);
 

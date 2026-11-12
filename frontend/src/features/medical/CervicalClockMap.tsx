@@ -1,6 +1,12 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
-export type CervicalFindingType = 'acetobranco' | 'pontilhado' | 'mosaico' | 'vaso_atipico' | 'biopsia';
+export type CervicalFindingType = 'acetobranco' | 'pontilhado' | 'mosaico' | 'vaso_atipico' | 'schiller' | 'biopsia';
+
+export interface CervicalFindingsPayload {
+  hours: number[];
+  finding: string;
+  transformationZone: string;
+}
 
 export interface CervicalClockMapProps {
   selectedHours: number[];
@@ -9,6 +15,7 @@ export interface CervicalClockMapProps {
   readOnly?: boolean;
   onChange: (hours: number[]) => void;
   onZtChange?: (zt: string) => void;
+  onFindingsChange?: (findings: CervicalFindingsPayload) => void;
 }
 
 export function CervicalClockMap({
@@ -18,27 +25,61 @@ export function CervicalClockMap({
   readOnly = false,
   onChange,
   onZtChange,
+  onFindingsChange,
 }: CervicalClockMapProps) {
   const [currentFinding, setCurrentFinding] = useState<CervicalFindingType>(findingType);
   const [hoveredHour, setHoveredHour] = useState<number | null>(null);
 
+  const notifyChange = (hours: number[], finding: CervicalFindingType, zt: string) => {
+    onChange(hours);
+    if (onFindingsChange) {
+      onFindingsChange({
+        hours,
+        finding,
+        transformationZone: zt,
+      });
+    }
+  };
+
   const toggleHour = (hour: number) => {
     if (readOnly) return;
-    if (selectedHours.includes(hour)) {
-      onChange(selectedHours.filter((h) => h !== hour));
-    } else {
-      onChange([...selectedHours, hour].sort((a, b) => a - b));
-    }
+    const nextHours = selectedHours.includes(hour)
+      ? selectedHours.filter((h) => h !== hour)
+      : [...selectedHours, hour].sort((a, b) => a - b);
+    notifyChange(nextHours, currentFinding, ztType);
   };
 
   const handleSelectAllEctopia = () => {
     if (readOnly) return;
-    onChange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    const allHours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    notifyChange(allHours, currentFinding, ztType);
   };
 
   const handleClearAll = () => {
     if (readOnly) return;
-    onChange([]);
+    notifyChange([], currentFinding, ztType);
+  };
+
+  const handleFindingSelect = (finding: CervicalFindingType) => {
+    setCurrentFinding(finding);
+    if (selectedHours.length > 0 && onFindingsChange) {
+      onFindingsChange({
+        hours: selectedHours,
+        finding,
+        transformationZone: ztType,
+      });
+    }
+  };
+
+  const handleZtSelect = (newZt: string) => {
+    if (onZtChange) onZtChange(newZt);
+    if (onFindingsChange) {
+      onFindingsChange({
+        hours: selectedHours,
+        finding: currentFinding,
+        transformationZone: newZt,
+      });
+    }
   };
 
   // Coordenadas trigonométricas para o mostrador horário (raio = 95, centro = 120, 120)
@@ -76,13 +117,14 @@ export function CervicalClockMap({
     };
   };
 
-  // Cores semânticas clínicas padronizadas pelo design system Cana Med Mulher
+  // Cores semânticas clínicas padronizadas pelo design system Cana Med Mulher (#852A91 teal, #6F217B petróleo)
   const getFindingColor = (type: CervicalFindingType) => {
     switch (type) {
       case 'acetobranco': return '#D97706'; // Âmbar acetobranco
       case 'pontilhado': return '#DD6B20';  // Laranja
       case 'mosaico': return '#C05621';     // Laranja escuro
       case 'vaso_atipico': return '#C33D49';// Vermelho alerta
+      case 'schiller': return '#B45309';    // Âmbar escuro (Schiller Positivo / Iodo Negativo)
       case 'biopsia': return '#9B2C2C';     // Vinho biópsia
       default: return 'var(--brand-primary, #852A91)';
     }
@@ -102,17 +144,17 @@ export function CervicalClockMap({
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <strong style={{ fontSize: '0.9rem', color: '#481361' }}>
+        <strong style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark, #6F217B)' }}>
           🎯 Mapa Cervical 12h (Odontograma Colposcópico)
         </strong>
-        {onZtChange && (
+        {(onZtChange || onFindingsChange) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}>
             <span style={{ color: '#626B79' }}>Zona de Transformação (ZT):</span>
             <select
               className="form__select"
               style={{ padding: '0.15rem 0.4rem', fontSize: '0.78rem' }}
               value={ztType}
-              onChange={(e) => onZtChange(e.target.value)}
+              onChange={(e) => handleZtSelect(e.target.value)}
               disabled={readOnly}
             >
               <option value="1">Tipo 1 (Totalmente Ectocervical)</option>
@@ -131,6 +173,7 @@ export function CervicalClockMap({
             { id: 'pontilhado', label: 'Pontilhado', color: '#DD6B20' },
             { id: 'mosaico', label: 'Mosaico', color: '#C05621' },
             { id: 'vaso_atipico', label: 'Vaso Atípico', color: '#C33D49' },
+            { id: 'schiller', label: 'Schiller (+)', color: '#B45309' },
             { id: 'biopsia', label: '📍 Biópsia', color: '#9B2C2C' },
           ].map((item) => (
             <button
@@ -145,7 +188,7 @@ export function CervicalClockMap({
                 borderColor: item.color,
                 border: '1px solid',
               }}
-              onClick={() => setCurrentFinding(item.id as CervicalFindingType)}
+              onClick={() => handleFindingSelect(item.id as CervicalFindingType)}
             >
               {item.label}
             </button>
@@ -191,8 +234,8 @@ export function CervicalClockMap({
           );
         })}
 
-        {/* Orifício Externo do Colo (Centro) */}
-        <ellipse cx={cx} cy={cy} rx={16} ry={9} fill="#481361" stroke="#2D3748" strokeWidth="1.5" />
+        {/* Orifício Externo do Colo (Centro) - Azul Petróleo Institucional #6F217B */}
+        <ellipse cx={cx} cy={cy} rx={16} ry={9} fill="#6F217B" stroke="#003E46" strokeWidth="1.5" />
         <text x={cx} y={cy + 3} textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold">
           OCE
         </text>
@@ -252,3 +295,4 @@ export function CervicalClockMap({
     </div>
   );
 }
+

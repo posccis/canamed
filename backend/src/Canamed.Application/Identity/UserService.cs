@@ -324,12 +324,13 @@ public sealed class UserService(
             return null;
         }
 
-        if (!string.Equals(role, Roles.Professional, StringComparison.Ordinal))
+        if (!string.Equals(role, Roles.Professional, StringComparison.Ordinal) &&
+            !string.Equals(role, Roles.Admin, StringComparison.Ordinal))
         {
             throw new CanamedException(
                 ProblemKind.Validation,
                 "Vínculo não permitido",
-                "Somente usuários com o papel de profissional podem ser vinculados a um profissional da agenda.",
+                "Somente usuários com o papel de profissional ou administrador podem ser vinculados a um profissional da agenda.",
                 "professional-link-not-allowed");
         }
 

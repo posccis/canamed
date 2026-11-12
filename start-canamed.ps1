@@ -130,8 +130,8 @@ $pgStartedByScript = $false
 if (-not $pgRunning) {
     Write-Step "PostgreSQL nao esta ouvindo na porta 5432. Tentando iniciar instancia local..."
     
-    $portablePgPath = "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_ctl.exe"
-    $portableDataDir = "D:\Tools\PostgreSQL\data"
+    $portablePgPath = if (Test-Path "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_ctl.exe") { "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_ctl.exe" } else { "C:\Tools\PostgreSQL\18.6\pgsql\bin\pg_ctl.exe" }
+    $portableDataDir = if (Test-Path "D:\Tools\PostgreSQL\data") { "D:\Tools\PostgreSQL\data" } else { "C:\Tools\PostgreSQL\data" }
 
     if (Test-Path $portablePgPath -and (Test-Path $portableDataDir)) {
         & $portablePgPath -D $portableDataDir start
@@ -139,7 +139,7 @@ if (-not $pgRunning) {
         Start-Sleep -Seconds 2
 
         # Aguarda estar pronto
-        $isReadyTool = "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_isready.exe"
+        $isReadyTool = if (Test-Path "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_isready.exe") { "D:\Tools\PostgreSQL\18.6\pgsql\bin\pg_isready.exe" } else { "C:\Tools\PostgreSQL\18.6\pgsql\bin\pg_isready.exe" }
         $attempts = 0
         while ($attempts -lt 10) {
             if (Test-Path $isReadyTool) {

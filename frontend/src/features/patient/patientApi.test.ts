@@ -94,4 +94,84 @@ describe('patientApi', () => {
     );
     expect(res.name).toBe('Maria Silva');
   });
+
+  it('realiza agendamento avulso sem conta via bookGuestAppointment com dados de triagem', async () => {
+    mocks.apiPost.mockResolvedValueOnce({
+      appointmentId: 'appt-guest-123',
+      startsAt: '2026-10-28T15:00:00Z',
+      doctorName: 'Dra. Camila Santos',
+      meetUrl: 'https://meet.canamed.com.br/sala/appt-guest-123',
+    });
+
+    const payload = {
+      clinicId: 'clinic-1',
+      professionalId: 'doc-1',
+      startsAt: '2026-10-28T15:00:00Z',
+      patientName: 'Juliana Silva',
+      cpf: '123.456.789-00',
+      phone: '(11) 99999-8888',
+      birthDate: '1995-03-20',
+      symptoms: 'Náuseas e tontura',
+      allergies: 'Dipirona',
+      isPregnant: true,
+      wantsInvoice: true,
+    };
+
+    const res = await patientApi.bookGuestAppointment(payload);
+
+    expect(mocks.apiPost).toHaveBeenCalledWith('/portal/appointments/book-guest', payload);
+    expect(res.appointmentId).toBe('appt-guest-123');
+    expect(res.doctorName).toBe('Dra. Camila Santos');
+  });
+
+  it('busca resumo do acompanhamento pré-natal com DUM, DPP e flag de Rh negativo', async () => {
+    mocks.apiGet.mockResolvedValueOnce({
+      patientId: 'pat-1',
+      patientName: 'Juliana Silva',
+      lastMenstrualPeriod: '2026-04-15',
+      estimatedDueDate: '2027-01-20',
+      currentGestationalWeeks: 28,
+      currentGestationalDays: 0,
+      isRhNegative: true,
+      bloodType: 'A',
+      rhFactor: 'Negativo',
+      fetalMilestoneName: 'Berinjela 🍆',
+      visits: [
+        {
+          id: 'v-1',
+          visitDate: '2026-10-20',
+          gestationalWeeks: 28,
+          gestationalDays: 0,
+          bloodPressure: '120/80',
+          fetalHeartRateBpm: 140,
+          uterineHeightCm: 27,
+          weightKg: 68.5,
+        },
+      ],
+    });
+
+    const res = await patientApi.getPrenatalSummary('token-juliana');
+
+    expect(mocks.apiGet).toHaveBeenCalledWith(
+      '/portal/prenatal/summary',
+      undefined,
+      { 'X-Patient-Token': 'token-juliana' }
+    );
+    expect(res.lastMenstrualPeriod).toBe('2026-04-15');
+    expect(res.isRhNegative).toBe(true);
+    expect(res.visits[0].gestationalWeeks).toBe(28);
+  });
+
+  it('baixa o Cartão da Gestante Oficial em PDF', async () => {
+    mocks.apiGet.mockResolvedValueOnce(new Blob(['%PDF-1.4...']));
+
+    const res = await patientApi.downloadPrenatalCardPdf('token-juliana');
+
+    expect(mocks.apiGet).toHaveBeenCalledWith(
+      '/portal/prenatal/card/pdf',
+      undefined,
+      { 'X-Patient-Token': 'token-juliana' }
+    );
+    expect(res).toBeDefined();
+  });
 });

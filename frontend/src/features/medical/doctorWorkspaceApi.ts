@@ -8,12 +8,15 @@ export interface ActiveConsultationDto {
   patientId: string;
   patientName: string;
   patientBirthDate?: string;
+  patientBloodType?: string | null;
+  patientRhFactor?: string | null;
   allergies?: string;
   chronicConditions?: string;
   healthPlanName?: string;
   triage?: TriageRecordResponse;
   medicalRecord?: MedicalRecordResponse;
   startedAt?: string;
+  appointmentId?: string;
 }
 
 export interface DoctorWaitingItemDto {
@@ -50,6 +53,8 @@ export interface StartConsultationRequest {
 export interface FinishConsultationRequest {
   medicalRecordId: string;
   queueEntryId: string;
+  plannedReturnDays?: number | null;
+  returnReason?: string | null;
 }
 
 export interface DoctorDashboardAppointmentDto {
@@ -74,8 +79,13 @@ export interface DoctorDashboardSummaryResponse {
   upcomingAppointments: DoctorDashboardAppointmentDto[];
 }
 
-export async function getDoctorWorkspaceState(): Promise<DoctorWorkspaceStateResponse> {
-  return apiGet<DoctorWorkspaceStateResponse>('/doctor-workspace/state');
+export async function getDoctorWorkspaceState(params?: { recordId?: string; patientId?: string; appointmentId?: string }): Promise<DoctorWorkspaceStateResponse> {
+  const query = new URLSearchParams();
+  if (params?.recordId) query.set('recordId', params.recordId);
+  if (params?.patientId) query.set('patientId', params.patientId);
+  if (params?.appointmentId) query.set('appointmentId', params.appointmentId);
+  const qs = query.toString();
+  return apiGet<DoctorWorkspaceStateResponse>(`/doctor-workspace/state${qs ? `?${qs}` : ''}`);
 }
 
 export async function doctorCallPatient(request: CallNextPatientRequest): Promise<QueueEntry> {

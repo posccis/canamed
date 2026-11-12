@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   FileText,
   Printer,
@@ -17,13 +17,67 @@ import {
 } from './medicalDocumentsApi';
 import { useToast } from '../layout/Toast';
 
-interface DocumentModalProps {
+export interface DocumentModalProps {
   isOpen: boolean;
   patientId: string;
   patientName: string;
   medicalRecordId?: string;
+  initialDocType?: MedicalDocumentType;
+  initialMedications?: Array<{ medication: string; concentration?: string; route?: string; instructions?: string; quantity?: string }> | string;
+  initialGeneralInstructions?: string;
+  initialDiagnoses?: Array<{ code: string; description?: string; category?: string }> | string;
   onClose: () => void;
   onDocumentIssued?: (doc: MedicalDocumentResponse) => void;
+}
+
+function parseInitialMedications(
+  input?: Array<{ medication: string; concentration?: string; route?: string; instructions?: string; quantity?: string }> | string
+) {
+  if (!input) {
+    return [{ medication: '', concentration: '', route: 'Oral', instructions: '', quantity: '' }];
+  }
+  if (Array.isArray(input)) {
+    if (input.length === 0) {
+      return [{ medication: '', concentration: '', route: 'Oral', instructions: '', quantity: '' }];
+    }
+    return input.map((m) => ({
+      medication: m.medication || '',
+      concentration: m.concentration || '',
+      route: m.route || 'Oral',
+      instructions: m.instructions || '',
+      quantity: m.quantity || '',
+    }));
+  }
+  if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return [{ medication: '', concentration: '', route: 'Oral', instructions: '', quantity: '' }];
+    }
+    const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (lines.length > 0) {
+      return lines.map((line) => {
+        const cleaned = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '');
+        const parts = cleaned.split(/ — | – | - /);
+        if (parts.length > 1) {
+          return {
+            medication: parts[0].trim(),
+            concentration: '',
+            route: 'Oral',
+            instructions: parts.slice(1).join(' - ').trim(),
+            quantity: '',
+          };
+        }
+        return {
+          medication: cleaned,
+          concentration: '',
+          route: 'Oral',
+          instructions: '',
+          quantity: '',
+        };
+      });
+    }
+  }
+  return [{ medication: '', concentration: '', route: 'Oral', instructions: '', quantity: '' }];
 }
 
 export function DocumentModal({
@@ -31,17 +85,51 @@ export function DocumentModal({
   patientId,
   patientName,
   medicalRecordId,
+  initialDocType,
+  initialMedications,
+  initialGeneralInstructions,
+  initialDiagnoses,
   onClose,
   onDocumentIssued,
 }: DocumentModalProps) {
   const { addToast } = useToast();
-  const [docType, setDocType] = useState<MedicalDocumentType>('receita_simples');
+  const [docType, setDocType] = useState<MedicalDocumentType>(initialDocType ?? 'receita_simples');
 
   // Receita
-  const [medications, setMedications] = useState([
-    { medication: '', concentration: '', route: 'Oral', instructions: '', quantity: '' },
-  ]);
-  const [generalInstructions, setGeneralInstructions] = useState('');
+  const [medications, setMedications] = useState(() => parseInitialMedications(initialMedications));
+  const [generalInstructions, setGeneralInstructions] = useState(initialGeneralInstructions ?? '');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialDocType) {
+        setDocType(initialDocType);
+      }
+      if (initialGeneralInstructions !== undefined) {
+        setGeneralInstructions(initialGeneralInstructions);
+      }
+      if (initialMedications !== undefined) {
+        setMedications(parseInitialMedications(initialMedications));
+      }
+      if (initialDiagnoses !== undefined) {
+        let list: Array<{ code: string; category?: string }> = [];
+        if (typeof initialDiagnoses === 'string') {
+          try {
+            list = JSON.parse(initialDiagnoses);
+          } catch {
+            list = [];
+          }
+        } else if (Array.isArray(initialDiagnoses)) {
+          list = initialDiagnoses;
+        }
+        // RN-011: Documentos públicos (atestados/declarações) filtram automaticamente hipóteses diagnósticas não confirmadas
+        const confirmedOnly = list.filter((d) => d.category === 'confirmed');
+        if (confirmedOnly.length > 0) {
+          setCidCode(confirmedOnly.map((d) => d.code).join(', '));
+          setConsentCid(true);
+        }
+      }
+    }
+  }, [isOpen, initialDocType, initialGeneralInstructions, initialMedications, initialDiagnoses]);
 
   // Atestado
   const [leaveDays, setLeaveDays] = useState(1);
@@ -277,6 +365,147 @@ export function DocumentModal({
       ? new Date(issuedDoc.signedAt).toLocaleTimeString('pt-BR')
       : '';
 
+    const isSpecialControl = issuedDoc.documentType === 'receita_controle_especial';
+
+    const renderHeader = (viaLabel?: string) => `
+      ${viaLabel ? `
+        <div style="background: #6F217B; color: #ffffff; text-align: center; font-weight: 700; font-size: 0.85rem; padding: 0.4rem; border-radius: 4px; margin-bottom: 1.25rem; letter-spacing: 0.05em; text-transform: uppercase;">
+          ${viaLabel}
+        </div>
+      ` : ''}
+      <header style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #00695c; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 52px; height: 52px; border-radius: 8px; background: #00695c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 1.75rem;">
+            C
+          </div>
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0;">Cana Med — Clínica Ginecológica</h2>
+            <p style="font-size: 0.75rem; color: #4b5563; margin: 0.2rem 0 0;">Av. Engenheiro Domingos Ferreira, 1000 - Boa Viagem, Recife - PE</p>
+            <p style="font-size: 0.75rem; color: #4b5563; margin: 0.1rem 0 0;">(81) 3000-0000 • contato@canamed.com.br</p>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-weight: 700; color: #1f2937; font-size: 0.95rem; margin: 0;">Corpo Clínico Assistencial</p>
+          <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Ginecologia e Saúde da Mulher</p>
+          <p style="font-size: 0.8rem; font-weight: 600; color: #00695c; margin: 0.15rem 0;">CRM Especializado</p>
+          <p style="font-size: 0.75rem; color: #9ca3af; margin: 0.25rem 0 0;">ID: ${issuedDoc.publicToken.slice(0, 8).toUpperCase()}</p>
+        </div>
+      </header>
+    `;
+
+    const renderPatientCard = () => `
+      <div style="background: #f9fafb; border-radius: 6px; padding: 1rem; margin-bottom: 1.75rem; border: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Paciente</p>
+          <p style="font-weight: 700; color: #1f2937; font-size: 1.1rem; margin: 0;">${patientName}</p>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Data de Emissão</p>
+          <p style="font-weight: 500; color: #1f2937; font-size: 0.95rem; margin: 0;">${dateFormatted} ${timeFormatted}</p>
+        </div>
+      </div>
+    `;
+
+    const renderTitle = () => `
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 1.4rem; font-weight: 700; letter-spacing: 0.1em; color: #1f2937; border-bottom: 2px solid #e5e7eb; display: inline-block; padding: 0 1.5rem 0.35rem; margin: 0;">
+          ${title}
+        </h1>
+      </div>
+    `;
+
+    const renderBuyerAndSupplierBlocks = () => `
+      <div class="avoid-page-break" style="margin-top: 1.25rem; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.85rem; background: #f8fafc; font-size: 0.8rem;">
+        <div style="font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem; font-size: 0.8rem;">
+          Identificação do Comprador (Portaria SVS/MS 344/98)
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <div><strong>Nome:</strong> ___________________________________</div>
+          <div><strong>RG / Órgão:</strong> _________________</div>
+          <div><strong>Telefone:</strong> _________________</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem;">
+          <div><strong>Endereço:</strong> _________________________________</div>
+          <div><strong>Cidade / UF:</strong> _________________</div>
+        </div>
+      </div>
+
+      <div class="avoid-page-break" style="margin-top: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.85rem; background: #f8fafc; font-size: 0.8rem;">
+        <div style="font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem; font-size: 0.8rem;">
+          Identificação do Fornecedor / Farmácia (Dispensação)
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <div><strong>Farmacêutico Responsável:</strong> __________________________</div>
+          <div><strong>CRF:</strong> _________________</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+          <div><strong>Data:</strong> _____ / _____ / 20____</div>
+          <div><strong>Assinatura do Farmacêutico:</strong> ________________________</div>
+        </div>
+      </div>
+    `;
+
+    const renderFooter = () => `
+      <footer class="doc-footer avoid-page-break">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+          <div style="width: 260px; border-bottom: 1px solid #1f2937; margin-bottom: 0.5rem;"></div>
+          <p style="font-weight: 700; color: #1f2937; margin: 0; font-size: 0.95rem;">Assinatura Digital do Médico Responsável</p>
+          <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Conselho Regional de Medicina • ICP-Brasil</p>
+        </div>
+
+        <div style="margin-top: 1.5rem; background: #f0fdfa; border: 1px solid #99f6e4; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.75rem; color: #134e4a;">
+          <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem;">
+            <span><strong>Código Verificador Público:</strong> <code style="font-family: monospace; font-size: 0.85rem;">${issuedDoc.publicToken}</code></span>
+            <span><strong>Validade Jurídica:</strong> MP nº 2.200-2/2001 e Lei nº 13.787/2018</span>
+          </div>
+          <p style="margin: 0; word-break: break-all; color: #047857;">
+            <strong>Hash SHA-256:</strong> ${issuedDoc.signatureHash || 'VALIDADO-DIGITALMENTE-CANAMED'}
+          </p>
+          <p style="margin: 0.35rem 0 0; color: #065f46;">
+            Para verificar a autenticidade deste documento clínico, acesse o portal de validação pública CANAMED informando o código acima.
+          </p>
+        </div>
+      </footer>
+    `;
+
+    const pagesHtml = isSpecialControl
+      ? `
+        <div class="a4-page">
+          ${renderHeader('1ª VIA — RETENÇÃO DA FARMÁCIA')}
+          ${renderPatientCard()}
+          ${renderTitle()}
+          <div style="flex: 1;">
+            ${contentHtml}
+            ${issuedDoc.patientConsentedCid && issuedDoc.cid10Code ? `<div class="avoid-page-break" style="margin-top: 1.75rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid #e2e8f0;"><strong>CID-10:</strong> ${issuedDoc.cid10Code} (Consentimento informado da paciente nos termos do Art. 73 do Código de Ética Médica)</div>` : ''}
+          </div>
+          ${renderBuyerAndSupplierBlocks()}
+          ${renderFooter()}
+        </div>
+
+        <div class="a4-page">
+          ${renderHeader('2ª VIA — ORIENTAÇÃO DA PACIENTE')}
+          ${renderPatientCard()}
+          ${renderTitle()}
+          <div style="flex: 1;">
+            ${contentHtml}
+            ${issuedDoc.patientConsentedCid && issuedDoc.cid10Code ? `<div class="avoid-page-break" style="margin-top: 1.75rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid #e2e8f0;"><strong>CID-10:</strong> ${issuedDoc.cid10Code} (Consentimento informado da paciente nos termos do Art. 73 do Código de Ética Médica)</div>` : ''}
+          </div>
+          ${renderFooter()}
+        </div>
+      `
+      : `
+        <div class="a4-page">
+          ${renderHeader()}
+          ${renderPatientCard()}
+          ${renderTitle()}
+          <div style="flex: 1;">
+            ${contentHtml}
+            ${issuedDoc.patientConsentedCid && issuedDoc.cid10Code ? `<div class="avoid-page-break" style="margin-top: 1.75rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid #e2e8f0;"><strong>CID-10:</strong> ${issuedDoc.cid10Code} (Consentimento informado da paciente nos termos do Art. 73 do Código de Ética Médica)</div>` : ''}
+          </div>
+          ${renderFooter()}
+        </div>
+      `;
+
     printWin.document.write(`
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -308,6 +537,12 @@ export function DocumentModal({
             position: relative;
             display: flex;
             flex-direction: column;
+            page-break-after: always;
+            break-after: page;
+          }
+          .a4-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
           }
           .avoid-page-break {
             page-break-inside: avoid;
@@ -335,6 +570,11 @@ export function DocumentModal({
               width: 100%;
               min-height: 100vh;
               page-break-after: always;
+              break-after: page;
+            }
+            .a4-page:last-child {
+              page-break-after: auto;
+              break-after: auto;
             }
             * {
               -webkit-print-color-adjust: exact !important;
@@ -344,81 +584,7 @@ export function DocumentModal({
         </style>
       </head>
       <body>
-        <div class="a4-page">
-          <!-- CABEÇALHO INSTITUCIONAL -->
-          <header style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #00695c; padding-bottom: 1rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-              <div style="width: 52px; height: 52px; border-radius: 8px; background: #00695c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 1.75rem;">
-                C
-              </div>
-              <div>
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0;">Cana Med — Clínica Ginecológica</h2>
-                <p style="font-size: 0.75rem; color: #4b5563; margin: 0.2rem 0 0;">Av. Engenheiro Domingos Ferreira, 1000 - Boa Viagem, Recife - PE</p>
-                <p style="font-size: 0.75rem; color: #4b5563; margin: 0.1rem 0 0;">(81) 3000-0000 • contato@canamed.com.br</p>
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <p style="font-weight: 700; color: #1f2937; font-size: 0.95rem; margin: 0;">Corpo Clínico Assistencial</p>
-              <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Ginecologia e Saúde da Mulher</p>
-              <p style="font-size: 0.8rem; font-weight: 600; color: #00695c; margin: 0.15rem 0;">CRM Especializado</p>
-              <p style="font-size: 0.75rem; color: #9ca3af; margin: 0.25rem 0 0;">ID: ${issuedDoc.publicToken.slice(0, 8).toUpperCase()}</p>
-            </div>
-          </header>
-
-          <!-- CARD PACIENTE -->
-          <div style="background: #f9fafb; border-radius: 6px; padding: 1rem; margin-bottom: 1.75rem; border: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Paciente</p>
-              <p style="font-weight: 700; color: #1f2937; font-size: 1.1rem; margin: 0;">${patientName}</p>
-            </div>
-            <div style="text-align: right;">
-              <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin: 0 0 0.25rem;">Data de Emissão</p>
-              <p style="font-weight: 500; color: #1f2937; font-size: 0.95rem; margin: 0;">${dateFormatted} ${timeFormatted}</p>
-            </div>
-          </div>
-
-          <!-- TÍTULO DO DOCUMENTO -->
-          <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="font-size: 1.4rem; font-weight: 700; letter-spacing: 0.1em; color: #1f2937; border-bottom: 2px solid #e5e7eb; display: inline-block; padding: 0 1.5rem 0.35rem; margin: 0;">
-              ${title}
-            </h1>
-          </div>
-
-          <!-- CORPO PRINCIPAL -->
-          <div style="flex: 1;">
-            ${contentHtml}
-
-            ${
-              issuedDoc.patientConsentedCid && issuedDoc.cid10Code
-                ? `<div class="avoid-page-break" style="margin-top: 1.75rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid #e2e8f0;">
-                    <strong>CID-10:</strong> ${issuedDoc.cid10Code} (Consentimento informado da paciente nos termos do Art. 73 do Código de Ética Médica)
-                  </div>`
-                : ''
-            }
-          </div>
-
-          <!-- RODAPÉ E ASSINATURA DIGITAL -->
-          <footer class="doc-footer avoid-page-break">
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-              <div style="width: 260px; border-bottom: 1px solid #1f2937; margin-bottom: 0.5rem;"></div>
-              <p style="font-weight: 700; color: #1f2937; margin: 0; font-size: 0.95rem;">Assinatura Digital do Médico Responsável</p>
-              <p style="font-size: 0.8rem; color: #4b5563; margin: 0.15rem 0;">Conselho Regional de Medicina • ICP-Brasil</p>
-            </div>
-
-            <div style="margin-top: 1.5rem; background: #f0fdfa; border: 1px solid #99f6e4; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.75rem; color: #134e4a;">
-              <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem;">
-                <span><strong>Código Verificador Público:</strong> <code style="font-family: monospace; font-size: 0.85rem;">${issuedDoc.publicToken}</code></span>
-                <span><strong>Validade Jurídica:</strong> MP nº 2.200-2/2001 e Lei nº 13.787/2018</span>
-              </div>
-              <p style="margin: 0; word-break: break-all; color: #047857;">
-                <strong>Hash SHA-256:</strong> ${issuedDoc.signatureHash || 'VALIDADO-DIGITALMENTE-CANAMED'}
-              </p>
-              <p style="margin: 0.35rem 0 0; color: #065f46;">
-                Para verificar a autenticidade deste documento clínico, acesse o portal de validação pública CANAMED informando o código acima.
-              </p>
-            </div>
-          </footer>
-        </div>
+        ${pagesHtml}
 
         <script>
           window.onload = function() {
@@ -493,13 +659,13 @@ export function DocumentModal({
                 <span style={{ fontWeight: 600, color: 'var(--color-text-muted)' }}>Código Verificador Público:</span>
                 <code
                   style={{
-                    background: '#e6fffa',
-                    color: '#005f6a',
+                    background: '#F7ECF8',
+                    color: '#6F217B',
                     fontWeight: 700,
                     padding: '0.25rem 0.6rem',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: '0.95rem',
-                    border: '1px solid #66cdaa',
+                    border: '1px solid #B77AD8',
                   }}
                 >
                   {issuedDoc.publicToken}
@@ -589,6 +755,33 @@ export function DocumentModal({
             {/* Formulário de Prescrição */}
             {(docType === 'receita_simples' || docType === 'receita_controle_especial') && (
               <div>
+                {docType === 'receita_controle_especial' && (
+                  <div
+                    className="alert alert--info"
+                    role="status"
+                    style={{
+                      marginBottom: '1rem',
+                      background: 'var(--brand-soft, #F7ECF8)',
+                      border: '1px solid #B77AD8',
+                      color: '#6F217B',
+                      padding: '0.85rem 1rem',
+                      borderRadius: '8px',
+                      fontSize: '0.88rem',
+                      lineHeight: '1.45',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                      <span>📑</span>
+                      <span>Receita de Controle Especial (Portaria SVS/MS 344/98 e RDC 44/2009)</span>
+                    </div>
+                    <p style={{ margin: 0 }}>
+                      Emissão obrigatória em <strong>duas vias</strong>:
+                      <br />• <strong>1ª VIA (Retenção da Farmácia)</strong>: arquivamento pelo estabelecimento farmacêutico com identificação do comprador e fornecedor.
+                      <br />• <strong>2ª VIA (Orientação da Paciente)</strong>: posse da paciente com posologia e instruções de tratamento.
+                    </p>
+                  </div>
+                )}
+
                 <h4 style={{ marginBottom: '0.75rem', color: 'var(--color-primary-dark)' }}>
                   Medicamentos Prescritos
                 </h4>
@@ -821,3 +1014,4 @@ export function DocumentModal({
     </div>
   );
 }
+

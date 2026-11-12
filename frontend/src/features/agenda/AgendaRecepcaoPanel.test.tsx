@@ -37,4 +37,45 @@ describe('AgendaRecepcaoPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Grade da Agenda/i }));
     expect(screen.getByTestId('mock-agenda-page')).toBeInTheDocument();
   });
+  it('filtra e exibe sugestões de pacientes no autocomplete preditivo ao digitar 3 caracteres', async () => {
+    const mockPatients = [
+      { id: 'pat-1', name: 'Maria Silva Santos', phone: '81988887777', email: null, birthDate: '1990-01-01', isActive: true },
+      { id: 'pat-2', name: 'Mariana Oliveira', phone: '81977776666', email: null, birthDate: '1992-05-10', isActive: true },
+      { id: 'pat-3', name: 'Carla Dias', phone: '81966665555', email: null, birthDate: '1988-12-12', isActive: true },
+    ];
+
+    render(<AgendaRecepcaoPanel initialPatients={mockPatients} />);
+
+    const searchInput = screen.getByPlaceholderText(/Recepção Inteligente: buscar paciente por nome, CPF ou telefone/i);
+    expect(searchInput).toBeInTheDocument();
+
+    // Digita 2 caracteres (não deve abrir sugestões ainda)
+    fireEvent.change(searchInput, { target: { value: 'Ma' } });
+    expect(screen.queryByText('Maria Silva Santos')).not.toBeInTheDocument();
+
+    // Digita 3 caracteres
+    fireEvent.change(searchInput, { target: { value: 'Mar' } });
+
+    expect(await screen.findByText('Maria Silva Santos')).toBeInTheDocument();
+    expect(screen.getByText('Mariana Oliveira')).toBeInTheDocument();
+    expect(screen.queryByText('Carla Dias')).not.toBeInTheDocument();
+  });
+
+  it('permite selecionar um paciente a partir do autocomplete preditivo', async () => {
+    const mockPatients = [
+      { id: 'pat-1', name: 'Maria Silva Santos', phone: '81988887777', email: null, birthDate: '1990-01-01', isActive: true },
+    ];
+
+    render(<AgendaRecepcaoPanel initialPatients={mockPatients} />);
+
+    const searchInput = screen.getByPlaceholderText(/Recepção Inteligente: buscar paciente por nome, CPF ou telefone/i);
+    fireEvent.change(searchInput, { target: { value: 'Maria' } });
+
+    const patientOption = await screen.findByText('Maria Silva Santos');
+    fireEvent.click(patientOption);
+
+    // O paciente deve ficar selecionado com badge de confirmação
+    expect(screen.getByText(/Paciente selecionada:/i)).toBeInTheDocument();
+  });
+
 });

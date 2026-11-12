@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Stethoscope,
@@ -40,7 +40,7 @@ const DOCTOR_NAV_DOCS = [
 /**
  * Sidebar médica moderna, com visual SaaS limpo sobre fundo branco (SPEC-UI-001 & protótipo oficial).
  * - Fundo branco (#ffffff) com borda suave lateral.
- * - Indicador visual ativo no Accent Color (#66CDAA) e destaque no Teal oficial (#008080).
+ * - Indicador visual ativo no Accent Color (#B77AD8) e destaque no Teal oficial (#852A91).
  * - Colapsável de 250px para 72px com transições suaves e acessibilidade preservada.
  */
 export function DoctorSidebar({
@@ -236,3 +236,4 @@ export function DoctorSidebar({
     </>
   );
 }
+

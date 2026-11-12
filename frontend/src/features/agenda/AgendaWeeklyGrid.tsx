@@ -1,4 +1,4 @@
-import { Lock, Plus } from 'lucide-react';
+﻿import { Lock, Plus } from 'lucide-react';
 import type { Appointment } from './agendaApi';
 import { formatTimeRange } from './agendaFormat';
 import { StatusBadge } from './StatusBadge';
@@ -31,8 +31,8 @@ type AgendaWeeklyGridProps = {
 };
 
 const statusBorderColors: Record<string, string> = {
-  agendado: '#005F6A',
-  confirmado: '#008080',
+  agendado: '#6F217B',
+  confirmado: '#852A91',
   aguardando: '#d97706',
   em_atendimento: '#4f46e5',
   atendido: '#10b981',
@@ -136,7 +136,7 @@ export function AgendaWeeklyGrid({
 
                   {/* Agendamentos Ativos */}
                   {activeAppointments.map((app) => {
-                    const borderColor = statusBorderColors[app.status] || '#005F6A';
+                    const borderColor = statusBorderColors[app.status] || '#6F217B';
 
                     return (
                       <div
@@ -248,3 +248,4 @@ export function AgendaWeeklyGrid({
     </div>
   );
 }
+

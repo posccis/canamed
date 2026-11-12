@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+﻿import { type ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface EmptyStateProps {
@@ -45,7 +45,7 @@ export function EmptyState({
             height: '48px',
             borderRadius: '50%',
             background: 'var(--color-surface, #f0fdfa)',
-            color: 'var(--color-primary, #008080)',
+            color: 'var(--color-primary, #852A91)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -61,7 +61,7 @@ export function EmptyState({
           margin: '0 0 0.5rem',
           fontSize: '1.1rem',
           fontWeight: 600,
-          color: 'var(--color-secondary, #005F6A)',
+          color: 'var(--color-secondary, #6F217B)',
         }}
       >
         {title}
@@ -93,3 +93,4 @@ export function EmptyState({
     </div>
   );
 }
+

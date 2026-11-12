@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiDelete, apiPostForm } from '../../api/client';
+import { apiGet, apiPost, apiPut, apiDelete, apiPostForm, apiGetBlob } from '../../api/client';
 
 export interface MedicalRecordAddendumResponse {
   id: string;
@@ -112,15 +112,20 @@ export interface GynecologicalConsultationDataDto {
   hma?: string | null;
   isSexuallyActive?: boolean | null;
   dyspareunia?: string | null;
-  breastsIsNormal: boolean;
+  breastsIsNormal?: boolean | null;
+  breastsStatus?: string | null;
   breastsFindings?: string | null;
-  abdomenIsNormal: boolean;
+  abdomenIsNormal?: boolean | null;
+  abdomenStatus?: string | null;
   abdomenFindings?: string | null;
-  externalGenitaliaIsNormal: boolean;
+  externalGenitaliaIsNormal?: boolean | null;
+  externalGenitaliaStatus?: string | null;
   externalGenitaliaFindings?: string | null;
-  speculumExamIsNormal: boolean;
+  speculumExamIsNormal?: boolean | null;
+  speculumExamStatus?: string | null;
   speculumExamFindings?: string | null;
-  bimanualPalpationIsNormal: boolean;
+  bimanualPalpationIsNormal?: boolean | null;
+  bimanualPalpationStatus?: string | null;
   bimanualPalpationFindings?: string | null;
   procedurePerformed?: string | null;
   procedureBatch?: string | null;
@@ -128,6 +133,12 @@ export interface GynecologicalConsultationDataDto {
   diagnosesJson?: string | null;
   prescriptionNotes?: string | null;
   generalOrientationNotes?: string | null;
+  cervicalClockFindingsJson?: string | null;
+  firstUltrasoundDate?: string | null;
+  firstUltrasoundWeeks?: number | null;
+  firstUltrasoundDays?: number | null;
+  firstUltrasoundCcnMm?: number | null;
+  preferredGestationalReference?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -140,15 +151,20 @@ export interface UpdateGynecologicalConsultationRequest {
   hma?: string | null;
   isSexuallyActive?: boolean | null;
   dyspareunia?: string | null;
-  breastsIsNormal: boolean;
+  breastsIsNormal?: boolean | null;
+  breastsStatus?: string | null;
   breastsFindings?: string | null;
-  abdomenIsNormal: boolean;
+  abdomenIsNormal?: boolean | null;
+  abdomenStatus?: string | null;
   abdomenFindings?: string | null;
-  externalGenitaliaIsNormal: boolean;
+  externalGenitaliaIsNormal?: boolean | null;
+  externalGenitaliaStatus?: string | null;
   externalGenitaliaFindings?: string | null;
-  speculumExamIsNormal: boolean;
+  speculumExamIsNormal?: boolean | null;
+  speculumExamStatus?: string | null;
   speculumExamFindings?: string | null;
-  bimanualPalpationIsNormal: boolean;
+  bimanualPalpationIsNormal?: boolean | null;
+  bimanualPalpationStatus?: string | null;
   bimanualPalpationFindings?: string | null;
   procedurePerformed?: string | null;
   procedureBatch?: string | null;
@@ -156,6 +172,12 @@ export interface UpdateGynecologicalConsultationRequest {
   diagnosesJson?: string | null;
   prescriptionNotes?: string | null;
   generalOrientationNotes?: string | null;
+  cervicalClockFindingsJson?: string | null;
+  firstUltrasoundDate?: string | null;
+  firstUltrasoundWeeks?: number | null;
+  firstUltrasoundDays?: number | null;
+  firstUltrasoundCcnMm?: number | null;
+  preferredGestationalReference?: string | null;
 }
 
 export interface MedicalRecordResponse {
@@ -350,4 +372,8 @@ export async function addPrenatalVisit(
   request: CreatePrenatalVisitRequest,
 ): Promise<PrenatalVisitDto> {
   return apiPost<PrenatalVisitDto>(`/medical-records/${medicalRecordId}/prenatal-visits`, request);
+}
+
+export async function downloadPrenatalCardPdf(patientId: string): Promise<Blob> {
+  return apiGetBlob(`/patients/${patientId}/prenatal-card/pdf`);
 }

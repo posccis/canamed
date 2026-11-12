@@ -1,3 +1,4 @@
+using Canamed.Domain.MedicalRecords;
 using Canamed.Application.Abstractions;
 using Canamed.Application.Agenda;
 using Canamed.Application.Errors;
@@ -21,7 +22,11 @@ public sealed class DoctorWorkspaceService(
     ICurrentActorAccessor actorAccessor,
     TimeProvider timeProvider)
 {
-    public async Task<DoctorWorkspaceStateResponse> GetWorkspaceStateAsync(CancellationToken cancellationToken = default)
+    public async Task<DoctorWorkspaceStateResponse> GetWorkspaceStateAsync(
+        Guid? requestedRecordId = null,
+        Guid? requestedPatientId = null,
+        Guid? requestedAppointmentId = null,
+        CancellationToken cancellationToken = default)
     {
         var actor = actorAccessor.RequireActor();
         if (!actor.Has(Permissions.WorkspaceAccess))
@@ -36,40 +41,204 @@ public sealed class DoctorWorkspaceService(
         var today = DateOnly.FromDateTime(AgendaTimeZone.ToLocal(now).DateTime);
 
         // Obter entradas da fila do dia para o médico (ou para a clínica se não for médico específico)
-        var entries = await queueRepository.ListAsync(actor.ClinicId, today, targetDoctorId, cancellationToken);
+        var entries = (await queueRepository.ListAsync(actor.ClinicId, today, targetDoctorId, cancellationToken)).ToList();
+
+        // Se não houver atendimento ativo para o médico atual (ou se for admin/gestor/permissão de agenda),
+        // busca na fila geral da clínica para capturar qualquer consulta em andamento
+        if (!entries.Any(e => e.Status == QueueStatus.InService) &&
+            (actor.Role == Roles.Admin || actor.Role == Roles.Manager || actor.Has(Permissions.AgendaRead) || entries.Count == 0))
+        {
+            var clinicEntries = await queueRepository.ListAsync(actor.ClinicId, today, null, cancellationToken);
+            if (clinicEntries.Any(e => e.Status == QueueStatus.InService) || entries.Count == 0)
+            {
+                entries = clinicEntries.ToList();
+            }
+        }
 
         ActiveConsultationDto? activeConsultation = null;
         var waitingList = new List<DoctorWaitingItemDto>();
+        QueueEntry? activeEntry = null;
 
-        foreach (var entry in entries.OrderBy(e => e.Priority == QueuePriority.Preferential ? 0 : 1).ThenBy(e => e.ArrivedAt))
+        // Caso 0: O médico solicitou explicitamente um atendimento (via recordId ou patientId)
+        if (requestedRecordId is { } reqRecId && reqRecId != Guid.Empty)
         {
-            var patient = await catalogRepository.FindPatientAsync(entry.PatientId, actor.ClinicId, cancellationToken);
-            var patientName = patient?.Name ?? "Paciente";
-
-            var triage = await triageRepository.GetByQueueEntryIdAsync(entry.Id, actor.ClinicId, cancellationToken);
-            TriageRecordResponse? triageDto = triage is null ? null : new TriageRecordResponse(
-                triage.Id,
-                triage.QueueEntryId,
-                triage.PatientId,
-                triage.ClinicId,
-                triage.RiskClassification,
-                triage.BloodPressure,
-                triage.HeartRate,
-                triage.Temperature,
-                triage.OxygenSaturation,
-                triage.Glucose,
-                triage.WeightKg,
-                triage.HeightCm,
-                triage.CalculatedBmi,
-                triage.ChiefComplaint,
-                triage.Allergies,
-                triage.RecordedAt,
-                triage.OperatorName);
-
-            if (entry.Status == QueueStatus.InService || (entry.Status == QueueStatus.Called && activeConsultation is null))
+            var targetDraft = await medicalRecordRepository.GetByIdAsync(reqRecId, actor.ClinicId, cancellationToken);
+            if (targetDraft is not null)
             {
+                if (targetDraft.AppointmentId is { } apptId)
+                {
+                    activeEntry = await queueRepository.FindOpenByAppointmentAsync(actor.ClinicId, apptId, cancellationToken);
+                }
+
+                var patient = await catalogRepository.FindPatientAsync(targetDraft.PatientId, actor.ClinicId, cancellationToken);
+                var recordDto = await medicalRecordService.GetByIdAsync(targetDraft.Id, cancellationToken);
+
+                activeConsultation = new ActiveConsultationDto(
+                    QueueEntryId: activeEntry?.Id ?? Guid.Empty,
+                    PatientId: targetDraft.PatientId,
+                    PatientName: patient?.Name ?? "Paciente",
+                    PatientBirthDate: patient?.BirthDate,
+                    Allergies: null,
+                    ChronicConditions: null,
+                    HealthPlanName: null,
+                    Triage: null,
+                    MedicalRecord: recordDto,
+                    StartedAt: targetDraft.CreatedAt,
+                    PatientBloodType: patient?.BloodType,
+                    PatientRhFactor: patient?.RhFactor);
+            }
+        }
+        else if (requestedPatientId is { } reqPatId && reqPatId != Guid.Empty)
+        {
+            var allInService = await queueRepository.ListInServiceAsync(actor.ClinicId, null, cancellationToken);
+            activeEntry = allInService.FirstOrDefault(e => e.PatientId == reqPatId);
+
+            var history = await medicalRecordRepository.GetHistoryByPatientIdAsync(reqPatId, actor.ClinicId, cancellationToken);
+            var targetDraft = history.FirstOrDefault(r => r.Status == MedicalRecordStatus.EmAndamento);
+
+            if (targetDraft is not null || activeEntry is not null)
+            {
+                var patient = await catalogRepository.FindPatientAsync(reqPatId, actor.ClinicId, cancellationToken);
                 MedicalRecordResponse? recordDto = null;
-                if (entry.AppointmentId is { } apptId)
+                if (targetDraft is not null)
+                {
+                    recordDto = await medicalRecordService.GetByIdAsync(targetDraft.Id, cancellationToken);
+                }
+
+                TriageRecordResponse? triageDto = null;
+                if (activeEntry is not null)
+                {
+                    var triage = await triageRepository.GetByQueueEntryIdAsync(activeEntry.Id, actor.ClinicId, cancellationToken);
+                    if (triage is not null)
+                    {
+                        triageDto = new TriageRecordResponse(
+                            triage.Id, triage.QueueEntryId, triage.PatientId, triage.ClinicId,
+                            triage.RiskClassification, triage.BloodPressure, triage.HeartRate,
+                            triage.Temperature, triage.OxygenSaturation, triage.Glucose,
+                            triage.WeightKg, triage.HeightCm, triage.CalculatedBmi,
+                            triage.ChiefComplaint, triage.Allergies, triage.RecordedAt, triage.OperatorName);
+                    }
+                }
+
+                activeConsultation = new ActiveConsultationDto(
+                    QueueEntryId: activeEntry?.Id ?? Guid.Empty,
+                    PatientId: reqPatId,
+                    PatientName: patient?.Name ?? "Paciente",
+                    PatientBirthDate: patient?.BirthDate,
+                    Allergies: triageDto?.Allergies,
+                    ChronicConditions: null,
+                    HealthPlanName: null,
+                    Triage: triageDto,
+                    MedicalRecord: recordDto,
+                    StartedAt: activeEntry?.StartedAt ?? targetDraft?.CreatedAt,
+                    PatientBloodType: patient?.BloodType,
+                    PatientRhFactor: patient?.RhFactor);
+            }
+        }
+        else if (requestedAppointmentId is { } reqApptId && reqApptId != Guid.Empty)
+        {
+            activeEntry = await queueRepository.FindOpenByAppointmentAsync(actor.ClinicId, reqApptId, cancellationToken);
+            Guid? patId = activeEntry?.PatientId;
+            MedicalRecord? targetDraft = null;
+
+            if (patId.HasValue)
+            {
+                var history = await medicalRecordRepository.GetHistoryByPatientIdAsync(patId.Value, actor.ClinicId, cancellationToken);
+                targetDraft = history.FirstOrDefault(r => r.AppointmentId == reqApptId || r.Status == MedicalRecordStatus.EmAndamento);
+            }
+
+            if (targetDraft is not null || activeEntry is not null)
+            {
+                var resolvedPatId = patId ?? targetDraft?.PatientId ?? Guid.Empty;
+                var patient = resolvedPatId != Guid.Empty
+                    ? await catalogRepository.FindPatientAsync(resolvedPatId, actor.ClinicId, cancellationToken)
+                    : null;
+
+                MedicalRecordResponse? recordDto = null;
+                if (targetDraft is not null)
+                {
+                    recordDto = await medicalRecordService.GetByIdAsync(targetDraft.Id, cancellationToken);
+                }
+
+                TriageRecordResponse? triageDto = null;
+                if (activeEntry is not null)
+                {
+                    var triage = await triageRepository.GetByQueueEntryIdAsync(activeEntry.Id, actor.ClinicId, cancellationToken);
+                    if (triage is not null)
+                    {
+                        triageDto = new TriageRecordResponse(
+                            triage.Id, triage.QueueEntryId, triage.PatientId, triage.ClinicId,
+                            triage.RiskClassification, triage.BloodPressure, triage.HeartRate,
+                            triage.Temperature, triage.OxygenSaturation, triage.Glucose,
+                            triage.WeightKg, triage.HeightCm, triage.CalculatedBmi,
+                            triage.ChiefComplaint, triage.Allergies, triage.RecordedAt, triage.OperatorName);
+                    }
+                }
+
+                activeConsultation = new ActiveConsultationDto(
+                    QueueEntryId: activeEntry?.Id ?? Guid.Empty,
+                    PatientId: resolvedPatId,
+                    PatientName: patient?.Name ?? "Paciente",
+                    PatientBirthDate: patient?.BirthDate,
+                    Allergies: triageDto?.Allergies,
+                    ChronicConditions: null,
+                    HealthPlanName: null,
+                    Triage: triageDto,
+                    MedicalRecord: recordDto,
+                    StartedAt: activeEntry?.StartedAt ?? targetDraft?.CreatedAt,
+                    PatientBloodType: patient?.BloodType,
+                    PatientRhFactor: patient?.RhFactor,
+                    AppointmentId: reqApptId);
+            }
+        }
+
+        // Caso 1: Se não foi solicitado explicitamente, busca na fila do dia ou nos atendimentos em andamento mais recentes
+        if (activeConsultation is null)
+        {
+            activeEntry = entries.FirstOrDefault(e => e.Status == QueueStatus.InService);
+
+            if (activeEntry is null)
+            {
+                var clinicInService = await queueRepository.ListInServiceAsync(actor.ClinicId, null, cancellationToken);
+                if (clinicInService.Count > 0)
+                {
+                    activeEntry = clinicInService.FirstOrDefault(e => targetDoctorId != null && e.ProfessionalId == targetDoctorId.Value)
+                        ?? (actor.Role == Roles.Admin || actor.Role == Roles.Manager || actor.Has(Permissions.AgendaRead) ? clinicInService.First() : null);
+                }
+            }
+
+            if (activeEntry is null)
+            {
+                activeEntry = entries.FirstOrDefault(e => e.Status == QueueStatus.Called);
+            }
+
+            if (activeEntry is not null)
+            {
+                var patient = await catalogRepository.FindPatientAsync(activeEntry.PatientId, actor.ClinicId, cancellationToken);
+                var patientName = patient?.Name ?? "Paciente";
+
+                var triage = await triageRepository.GetByQueueEntryIdAsync(activeEntry.Id, actor.ClinicId, cancellationToken);
+                TriageRecordResponse? triageDto = triage is null ? null : new TriageRecordResponse(
+                    triage.Id,
+                    triage.QueueEntryId,
+                    triage.PatientId,
+                    triage.ClinicId,
+                    triage.RiskClassification,
+                    triage.BloodPressure,
+                    triage.HeartRate,
+                    triage.Temperature,
+                    triage.OxygenSaturation,
+                    triage.Glucose,
+                    triage.WeightKg,
+                    triage.HeightCm,
+                    triage.CalculatedBmi,
+                    triage.ChiefComplaint,
+                    triage.Allergies,
+                    triage.RecordedAt,
+                    triage.OperatorName);
+
+                MedicalRecordResponse? recordDto = null;
+                if (activeEntry.AppointmentId is { } apptId)
                 {
                     var record = await medicalRecordRepository.GetByAppointmentIdAsync(apptId, actor.ClinicId, cancellationToken);
                     if (record is not null)
@@ -78,9 +247,19 @@ public sealed class DoctorWorkspaceService(
                     }
                 }
 
+                if (recordDto is null)
+                {
+                    var history = await medicalRecordRepository.GetHistoryByPatientIdAsync(activeEntry.PatientId, actor.ClinicId, cancellationToken);
+                    var draft = history.FirstOrDefault(r => r.Status == MedicalRecordStatus.EmAndamento);
+                    if (draft is not null)
+                    {
+                        recordDto = await medicalRecordService.GetByIdAsync(draft.Id, cancellationToken);
+                    }
+                }
+
                 activeConsultation = new ActiveConsultationDto(
-                    QueueEntryId: entry.Id,
-                    PatientId: entry.PatientId,
+                    QueueEntryId: activeEntry.Id,
+                    PatientId: activeEntry.PatientId,
                     PatientName: patientName,
                     PatientBirthDate: patient?.BirthDate,
                     Allergies: triage?.Allergies,
@@ -88,22 +267,66 @@ public sealed class DoctorWorkspaceService(
                     HealthPlanName: null,
                     Triage: triageDto,
                     MedicalRecord: recordDto,
-                    StartedAt: entry.StartedAt);
+                    StartedAt: activeEntry.StartedAt,
+                    PatientBloodType: patient?.BloodType,
+                    PatientRhFactor: patient?.RhFactor);
             }
-            else if (entry.IsOpen && entry.Status != QueueStatus.Completed)
+        }
+
+        // Caso 2: Se ainda não há activeConsultation, verifica se há prontuário em andamento pendente
+        if (activeConsultation is null)
+        {
+            var pendingDrafts = await medicalRecordRepository.ListPendingDraftsAsync(actor.ClinicId, targetDoctorId, cancellationToken);
+            if (pendingDrafts.Count == 0 && (actor.Role == Roles.Admin || actor.Role == Roles.Manager || actor.Has(Permissions.AgendaRead)))
             {
-                var waitingTimeMinutes = (int)Math.Max(0, (now - entry.ArrivedAt).TotalMinutes);
-                waitingList.Add(new DoctorWaitingItemDto(
-                    entry.Id,
-                    entry.PatientId,
-                    patientName,
-                    entry.Priority == QueuePriority.Preferential ? "preferencial" : "normal",
-                    entry.Status.ToString().ToLowerInvariant(),
-                    triage?.RiskClassification,
-                    waitingTimeMinutes,
-                    entry.ArrivedAt,
-                    entry.AppointmentId));
+                pendingDrafts = await medicalRecordRepository.ListPendingDraftsAsync(actor.ClinicId, null, cancellationToken);
             }
+            var targetDraft = pendingDrafts.FirstOrDefault();
+
+            if (targetDraft is not null)
+            {
+                var patient = await catalogRepository.FindPatientAsync(targetDraft.PatientId, actor.ClinicId, cancellationToken);
+                var recordDto = await medicalRecordService.GetByIdAsync(targetDraft.Id, cancellationToken);
+
+                QueueEntry? queueEntry = null;
+                if (targetDraft.AppointmentId is { } apptId)
+                {
+                    queueEntry = await queueRepository.FindOpenByAppointmentAsync(actor.ClinicId, apptId, cancellationToken);
+                }
+
+                activeConsultation = new ActiveConsultationDto(
+                    QueueEntryId: queueEntry?.Id ?? Guid.Empty,
+                    PatientId: targetDraft.PatientId,
+                    PatientName: patient?.Name ?? "Paciente",
+                    PatientBirthDate: patient?.BirthDate,
+                    Allergies: null,
+                    ChronicConditions: null,
+                    HealthPlanName: null,
+                    Triage: null,
+                    MedicalRecord: recordDto,
+                    StartedAt: targetDraft.CreatedAt);
+            }
+        }
+
+        // 2. Monta a lista de espera com os demais pacientes em aberto
+        foreach (var entry in entries.Where(e => e.IsOpen && e.Status != QueueStatus.Completed && e.Id != activeEntry?.Id)
+                     .OrderBy(e => e.Priority == QueuePriority.Preferential ? 0 : 1).ThenBy(e => e.ArrivedAt))
+        {
+            var patient = await catalogRepository.FindPatientAsync(entry.PatientId, actor.ClinicId, cancellationToken);
+            var patientName = patient?.Name ?? "Paciente";
+            var triage = await triageRepository.GetByQueueEntryIdAsync(entry.Id, actor.ClinicId, cancellationToken);
+
+            var waitingTimeMinutes = (int)Math.Max(0, (now - entry.ArrivedAt).TotalMinutes);
+            waitingList.Add(new DoctorWaitingItemDto(
+                entry.Id,
+                entry.PatientId,
+                patientName,
+                entry.Priority == QueuePriority.Preferential ? "preferencial" : "normal",
+                entry.Status.ToString().ToLowerInvariant(),
+                triage?.RiskClassification,
+                waitingTimeMinutes,
+                entry.ArrivedAt,
+                entry.AppointmentId));
         }
 
         return new DoctorWorkspaceStateResponse(
@@ -133,7 +356,7 @@ public sealed class DoctorWorkspaceService(
         }
         else
         {
-            var state = await GetWorkspaceStateAsync(cancellationToken);
+            var state = await GetWorkspaceStateAsync(null, null, cancellationToken: cancellationToken);
             var next = state.WaitingQueue.FirstOrDefault();
             if (next is null)
             {
@@ -219,6 +442,47 @@ public sealed class DoctorWorkspaceService(
 
         if (existingQueueEntry is not null)
         {
+            if (existingQueueEntry.Status == QueueStatus.InService)
+            {
+                var medicalRecord = await medicalRecordService.StartOrGetRecordAsync(
+                    new StartMedicalRecordRequest(existingQueueEntry.PatientId, existingQueueEntry.AppointmentId),
+                    cancellationToken);
+
+                var triage = await triageRepository.GetByQueueEntryIdAsync(existingQueueEntry.Id, actor.ClinicId, cancellationToken);
+                TriageRecordResponse? triageDto = triage is null ? null : new TriageRecordResponse(
+                    triage.Id,
+                    triage.QueueEntryId,
+                    triage.PatientId,
+                    triage.ClinicId,
+                    triage.RiskClassification,
+                    triage.BloodPressure,
+                    triage.HeartRate,
+                    triage.Temperature,
+                    triage.OxygenSaturation,
+                    triage.Glucose,
+                    triage.WeightKg,
+                    triage.HeightCm,
+                    triage.CalculatedBmi,
+                    triage.ChiefComplaint,
+                    triage.Allergies,
+                    triage.RecordedAt,
+                    triage.OperatorName);
+
+                var patient = await catalogRepository.FindPatientAsync(existingQueueEntry.PatientId, actor.ClinicId, cancellationToken);
+
+                return new ActiveConsultationDto(
+                    QueueEntryId: existingQueueEntry.Id,
+                    PatientId: existingQueueEntry.PatientId,
+                    PatientName: patient?.Name ?? "Paciente",
+                    PatientBirthDate: patient?.BirthDate,
+                    Allergies: triage?.Allergies,
+                    ChronicConditions: null,
+                    HealthPlanName: null,
+                    Triage: triageDto,
+                    MedicalRecord: medicalRecord,
+                    StartedAt: existingQueueEntry.StartedAt);
+            }
+
             queueEntryId = existingQueueEntry.Id;
         }
         else
@@ -258,6 +522,16 @@ public sealed class DoctorWorkspaceService(
             toUtc,
             cancellationToken);
 
+        if (appointments.Count == 0 && (actor.Role == Roles.Admin || actor.Role == Roles.Manager || actor.Has(Permissions.AgendaRead)))
+        {
+            appointments = await agendaRepository.ListAppointmentsAsync(
+                actor.ClinicId,
+                null,
+                fromUtc,
+                toUtc,
+                cancellationToken);
+        }
+
         var todayTotal = appointments.Count;
         var todayAttended = appointments.Count(a => a.Status == AppointmentStatus.Attended);
         var todayNoShow = appointments.Count(a => a.Status == AppointmentStatus.NoShow);
@@ -267,7 +541,7 @@ public sealed class DoctorWorkspaceService(
 
         var pendingDrafts = await medicalRecordRepository.CountPendingDraftsAsync(actor.ClinicId, targetDoctorId, cancellationToken);
 
-        var workspaceState = await GetWorkspaceStateAsync(cancellationToken);
+        var workspaceState = await GetWorkspaceStateAsync(null, null, cancellationToken: cancellationToken);
 
         var upcoming = new List<DoctorDashboardAppointmentDto>();
         foreach (var appt in appointments.OrderBy(a => a.StartsAt))

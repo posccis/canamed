@@ -191,4 +191,23 @@ public sealed class AppointmentTests
 
     private static Appointment Schedule(DateTimeOffset startsAt, int durationMinutes) =>
         Appointment.Schedule(ClinicId, ProfessionalId, PatientId, TypeId, startsAt, durationMinutes, Now);
+    [Fact]
+    public void Schedule_ComClinicalPreAnamnesis_ArmazenaQueixaConfidencial_RN_005()
+    {
+        var appointment = Appointment.Schedule(
+            ClinicId,
+            ProfessionalId,
+            PatientId,
+            TypeId,
+            Now.AddHours(2),
+            30,
+            Now,
+            clinicalPreAnamnesis: "Queixa ginecológica íntima informada online",
+            preExamInstructionsAcknowledged: true,
+            plannedReturnDays: 30);
+
+        Assert.Equal("Queixa ginecológica íntima informada online", appointment.ClinicalPreAnamnesis);
+        Assert.True(appointment.PreExamInstructionsAcknowledged);
+        Assert.Equal(30, appointment.PlannedReturnDays);
+    }
 }

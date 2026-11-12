@@ -437,6 +437,7 @@ export function AgendaPage() {
             patients={patients}
             appointmentTypes={appointmentTypes}
             rooms={rooms}
+            existingAppointments={agenda.state.status === 'ready' ? agenda.state.data.appointments : []}
             defaultProfessionalId={professionalId || professionals[0]?.id || ''}
             defaultDate={date}
             onCreated={() => handleDone('Agendamento criado.')}

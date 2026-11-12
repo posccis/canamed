@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import {
   Activity,
   CalendarPlus,
@@ -814,7 +814,7 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
                             </td>
                             <td style={{ textAlign: 'center' }}>{prof.totalAppointments}</td>
                             <td style={{ textAlign: 'center' }}>
-                              <span style={{ color: '#008080', fontWeight: 600 }}>
+                              <span style={{ color: '#852A91', fontWeight: 600 }}>
                                 {prof.attendedCount}
                               </span>
                             </td>
@@ -912,3 +912,4 @@ export function DashboardPanel({ onNavigate }: DashboardPanelProps) {
     </div>
   );
 }
+

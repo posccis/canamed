@@ -49,6 +49,58 @@ export interface OnlineAppointment {
   paymentStatus: string;
 }
 
+/** Agendamento de Consulta Avulsa sem conta prévia (SPEC-0036 / RN-004 / RN-005). */
+export interface BookGuestPayload {
+  clinicId: string;
+  professionalId: string;
+  startsAt: string;
+  patientName: string;
+  cpf: string;
+  phone: string;
+  birthDate: string;
+  symptoms?: string;
+  allergies?: string;
+  isPregnant: boolean;
+  wantsInvoice: boolean;
+  appointmentTypeId?: string;
+}
+
+export interface BookGuestResponse {
+  appointmentId: string;
+  startsAt: string;
+  doctorName: string;
+  meetUrl?: string;
+  instructions?: string;
+}
+
+/** Consulta de pré-natal para a linha do tempo (SPEC-0036 / RN-014). */
+export interface PrenatalVisitItem {
+  id: string;
+  visitDate: string;
+  gestationalWeeks: number;
+  gestationalDays: number;
+  bloodPressure: string;
+  fetalHeartRateBpm?: number;
+  uterineHeightCm?: number;
+  weightKg: number;
+}
+
+/** Resumo do acompanhamento pré-natal (SPEC-0036 / RN-011 / RN-018). */
+export interface PrenatalSummaryResponse {
+  patientId: string;
+  patientName: string;
+  lastMenstrualPeriod?: string;
+  estimatedDueDate?: string;
+  currentGestationalWeeks: number;
+  currentGestationalDays: number;
+  isRhNegative: boolean;
+  bloodType?: string;
+  rhFactor?: string;
+  knownAllergies?: string;
+  fetalMilestoneName?: string;
+  visits: PrenatalVisitItem[];
+}
+
 export interface KioskSearchResult {
   appointmentId: string;
   patientId: string;
@@ -352,6 +404,20 @@ export const patientApi = {
 
   cancelMyAppointment: (sessionToken: string, appointmentId: string, reason: string) =>
     apiPost<{ message: string }>(`/portal/appointments/${appointmentId}/cancel`, { reason }, undefined, {
+      'X-Patient-Token': sessionToken,
+    }),
+
+  // SPEC-0036: Cana Med Mulher (Consulta Avulsa, Pré-Natal & Cartão da Gestante)
+  bookGuestAppointment: (payload: BookGuestPayload) =>
+    apiPost<BookGuestResponse>('/portal/appointments/book-guest', payload),
+
+  getPrenatalSummary: (sessionToken: string) =>
+    apiGet<PrenatalSummaryResponse>('/portal/prenatal/summary', undefined, {
+      'X-Patient-Token': sessionToken,
+    }),
+
+  downloadPrenatalCardPdf: (sessionToken: string) =>
+    apiGet<Blob>('/portal/prenatal/card/pdf', undefined, {
       'X-Patient-Token': sessionToken,
     }),
 

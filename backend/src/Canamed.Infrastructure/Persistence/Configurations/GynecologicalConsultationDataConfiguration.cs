@@ -24,6 +24,11 @@ public sealed class GynecologicalConsultationDataConfiguration : IEntityTypeConf
             .HasColumnType("text")
             .HasConversion(encryptedConverter);
 
+        builder.Property(d => d.BreastsStatus).HasMaxLength(20);
+        builder.Property(d => d.AbdomenStatus).HasMaxLength(20);
+        builder.Property(d => d.ExternalGenitaliaStatus).HasMaxLength(20);
+        builder.Property(d => d.SpeculumExamStatus).HasMaxLength(20);
+        builder.Property(d => d.BimanualPalpationStatus).HasMaxLength(20);
         builder.Property(d => d.BreastsFindings).HasMaxLength(1000);
         builder.Property(d => d.AbdomenFindings).HasMaxLength(1000);
         builder.Property(d => d.ExternalGenitaliaFindings).HasMaxLength(1000);
@@ -38,6 +43,8 @@ public sealed class GynecologicalConsultationDataConfiguration : IEntityTypeConf
             .HasColumnType("text")
             .HasConversion(encryptedConverter);
         builder.Property(d => d.GeneralOrientationNotes).HasMaxLength(2000);
+        builder.Property(d => d.CervicalClockFindingsJson).HasMaxLength(4000);
+        builder.Property(d => d.PreferredGestationalReference).HasConversion<string>().HasMaxLength(50);
 
         builder.HasIndex(d => d.MedicalRecordId).IsUnique();
     }

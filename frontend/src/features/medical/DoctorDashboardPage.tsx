@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -115,7 +115,7 @@ export function DoctorDashboardPage() {
       {activeConsultation ? (
         <section
           style={{
-            background: 'linear-gradient(135deg, var(--brand-primary, #852a91) 0%, #6f217b 100%)',
+            background: 'linear-gradient(135deg, var(--brand-primary, #852A91) 0%, #6F217B 100%)',
             color: '#ffffff',
             borderRadius: '14px',
             padding: '1.5rem',
@@ -178,7 +178,7 @@ export function DoctorDashboardPage() {
               className="button"
               style={{
                 background: '#ffffff',
-                color: 'var(--brand-primary, #852a91)',
+                color: 'var(--brand-primary, #852A91)',
                 fontWeight: 700,
                 borderRadius: '8px',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
@@ -206,10 +206,10 @@ export function DoctorDashboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div
               style={{
-                background: 'var(--brand-soft, #f7ecf8)',
+                background: 'var(--brand-soft, #F7ECF8)',
                 padding: '0.85rem',
                 borderRadius: '12px',
-                color: 'var(--brand-primary, #852a91)',
+                color: 'var(--brand-primary, #852A91)',
               }}
             >
               <Stethoscope size={26} />
@@ -339,14 +339,14 @@ export function DoctorDashboardPage() {
             </div>
           </div>
           <div className="dashboard-kpi-card__bottom">
-            <span className="dashboard-kpi-card__value" style={{ color: 'var(--brand-primary, #852a91)' }}>
+            <span className="dashboard-kpi-card__value" style={{ color: 'var(--brand-primary, #852A91)' }}>
               {summary ? summary.pendingDraftRecordsCount : '—'}
             </span>
             <span
               style={{
                 fontSize: '0.75rem',
-                color: 'var(--brand-primary, #852a91)',
-                backgroundColor: 'var(--brand-soft, #f7ecf8)',
+                color: 'var(--brand-primary, #852A91)',
+                backgroundColor: 'var(--brand-soft, #F7ECF8)',
                 padding: '0.15rem 0.45rem',
                 borderRadius: '6px',
                 fontWeight: 600,
@@ -363,7 +363,7 @@ export function DoctorDashboardPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--content-primary, #202631)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users size={20} color="var(--brand-primary, #852a91)" />
+              <Users size={20} color="var(--brand-primary, #852A91)" />
               Próximos Pacientes da Agenda de Hoje
             </h3>
             <p className="form__hint" style={{ margin: '0.2rem 0 0', color: 'var(--content-muted, #858d99)' }}>
@@ -374,7 +374,7 @@ export function DoctorDashboardPage() {
           <Link
             to={DOCTOR_PATHS.agenda}
             className="button button--ghost"
-            style={{ fontWeight: 600, color: 'var(--brand-primary, #852a91)', fontSize: '0.85rem' }}
+            style={{ fontWeight: 600, color: 'var(--brand-primary, #852A91)', fontSize: '0.85rem' }}
           >
             Ver Agenda Completa ↗
           </Link>
@@ -522,3 +522,4 @@ export function DoctorDashboardPage() {
     </div>
   );
 }
+

@@ -13,8 +13,8 @@ export function PatientLayout() {
 
   return (
     <ToastProvider>
-      <div className="patient-surface">
-        <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', margin: 0, padding: 0 }}>
+      <div className="w-full min-h-screen bg-background text-on-surface antialiased font-body-md flex flex-col">
+        <main className="w-full flex-1 flex flex-col m-0 p-0">
           <Outlet context={{ slug, paths }} />
         </main>
       </div>

@@ -1,4 +1,4 @@
-using Canamed.Application.Identity;
+﻿using Canamed.Application.Identity;
 using Canamed.Domain.Identity;
 
 namespace Canamed.UnitTests.Identity;
@@ -188,7 +188,24 @@ public sealed class IdentityDomainTests
         Assert.True(Roles.RequiresMfa(Roles.Manager));
         Assert.False(Roles.RequiresMfa(Roles.Receptionist));
         Assert.False(Roles.RequiresMfa(Roles.Professional));
+        Assert.False(Roles.RequiresMfa(Roles.Admin));
         Assert.False(Roles.Exists("papel-inventado"));
+    }
+
+    [Fact]
+    public void Roles_Admin_DevePossuirTodasAsPermissoesDoSistema()
+    {
+        var adminPerms = Roles.PermissionsFor(Roles.Admin);
+        Assert.Equal(Permissions.All.Count, adminPerms.Count);
+
+        // Deve possuir todas as permissões do sistema (gestão, auditoria, faturamento e clínicas)
+        foreach (var perm in Permissions.All)
+        {
+            Assert.Contains(perm, adminPerms);
+        }
+        Assert.Contains(Permissions.PrivacyManage, adminPerms);
+        Assert.Contains(Permissions.FinancialAdmin, adminPerms);
+        Assert.Contains(Permissions.ClinicManage, adminPerms);
     }
 
     [Fact]

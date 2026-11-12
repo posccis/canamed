@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Gestação — Cartão da Gestante Editorial | Cana Med Mulher</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              deep: '#6F217B',       // Roxo escuro institucional para títulos e cabeçalhos
+              primary: '#852A91',    // Roxo principal
+              sage: '#852A91',       // Aliasing semântico para Roxo principal
+              soft: '#F7ECF8',       // Fundo lilás suave
+              sageLight: '#F7ECF8',  // Aliasing
+              cream: '#FAF5FB',      // Creme / lilás muito leve para blocos de informação
+              magenta: '#D83C91',    // Magenta acento
+              terracotta: '#D83C91', // Aliasing
+              terraLight: '#FDF2F8', // Rosa suave
+              lilac: '#B77AD8',      // Lilás apoio
+              border: '#E9D5FF',     // Divisórias delicadas lilases
+              ink: '#1E293B',        // Texto principal
+              warmGray: '#64748B'    // Neutro secundário
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --a4-width: 210mm;
+      --a4-height: 297mm;
+    }
+
+    body {
+      background-color: #F3EEF5;
+      color: #1E293B;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .a4-sheet {
+      width: var(--a4-width);
+      min-height: var(--a4-height);
+      max-height: var(--a4-height);
+      background: #FFFFFF;
+      margin: 0 auto 2rem auto;
+      padding: 16mm 18mm 14mm 18mm;
+      box-shadow: 0 12px 32px rgba(111, 33, 123, 0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-sizing: border-box;
+      transition: filter 0.25s ease;
+    }
+
+    body.grayscale-mode .a4-sheet {
+      filter: grayscale(100%) contrast(105%);
+    }
+
+    .contract-badge {
+      display: none;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    body.show-contract .contract-badge {
+      display: inline-block;
+    }
+    .badge-current {
+      background-color: #F7ECF8;
+      color: #6F217B;
+      border: 1px solid #B77AD8;
+    }
+    .badge-evolution {
+      background-color: #FEF3C7;
+      color: #B45309;
+      border: 1px solid #FCD34D;
+    }
+    .badge-schema {
+      background-color: #FDF2F8;
+      color: #D83C91;
+      border: 1px solid #F472B6;
+    }
+
+    .clinical-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .clinical-table th {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #FFFFFF;
+      background-color: #6F217B;
+      border-top: 1.5px solid #6F217B;
+      border-bottom: 1px solid #B77AD8;
+      padding: 7px 5px;
+      text-align: left;
+      line-height: 1.25;
+    }
+    .clinical-table td {
+      font-size: 10.5px;
+      padding: 8px 5px;
+      border-bottom: 1px solid #F1E8F5;
+      color: #1E293B;
+      vertical-align: middle;
+    }
+    .clinical-table tr:nth-child(even) td {
+      background-color: #FAF5FB;
+    }
+    .clinical-table td.num-col,
+    .clinical-table th.num-col {
+      text-align: center;
+    }
+
+    @media print {
+      body {
+        background: #FFFFFF;
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .a4-sheet {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+        width: 210mm;
+        height: 297mm;
+      }
+    }
+  </style>
+</head>
+<body class="pb-16">
+
+  <!-- BARRA DE CONTROLE DO PROTÓTIPO -->
+  <header class="no-print sticky top-0 z-50 bg-[#6F217B] text-white shadow-md border-b border-white/10">
+    <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-[#B77AD8] font-bold block">Protótipo Editorial A4 — 6 Páginas</span>
+          <h1 class="text-sm font-bold text-white">Cartão da Gestante Editorial · Cana Med Mulher</h1>
+        </div>
+      </div>
+
+      <!-- Navegação das 6 páginas -->
+      <nav class="flex items-center gap-1 bg-black/20 p-1 rounded-lg text-xs">
+        <a href="#page-1" class="px-2 py-1 rounded hover:bg-white/15 transition text-white/90">Pág 1 · Identificação</a>
+        <a href="#page-2" class="px-2 py-1 rounded hover:bg-white/15 transition text-white/90">Pág 2 · Dados & Sorologias</a>
+        <a href="#page-3" class="px-2 py-1 rounded bg-[#D83C91] text-white font-semibold hover:opacity-90 transition">Pág 3 · Vacinas Gestante</a>
+        <a href="#page-4" class="px-2 py-1 rounded hover:bg-white/15 transition text-white/90">Pág 4 · Curvas Gráficas</a>
+        <a href="#page-5" class="px-2 py-1 rounded hover:bg-white/15 transition text-white/90">Pág 5 · Consultas 1–10</a>
+        <a href="#page-6" class="px-2 py-1 rounded hover:bg-white/15 transition text-white/90">Pág 6 · Anotações & Alertas</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-grayscale" onclick="toggleGrayscale()" class="text-xs px-2.5 py-1.5 rounded border border-white/25 hover:bg-white/10 transition flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span>
+          Simular P&B
+        </button>
+        <button id="btn-contract" onclick="toggleContractBadges()" class="text-xs px-2.5 py-1.5 rounded border border-purple-300/40 text-purple-200 hover:bg-purple-500/20 transition flex items-center gap-1">
+          <span>Contrato C#</span>
+        </button>
+        <button onclick="window.print()" class="text-xs px-3 py-1.5 rounded bg-white text-[#6F217B] font-bold hover:bg-purple-50 transition shadow-sm">
+          Imprimir / Salvar PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEGENDA DO CONTRATO C# -->
+  <div id="contract-legend" class="no-print hidden max-w-[210mm] mx-auto mt-4 mb-2 bg-white border border-[#E9D5FF] rounded-lg p-3 shadow-sm text-xs flex flex-wrap items-center justify-between gap-2">
+    <span class="font-semibold text-[#6F217B]">Mapeamento de Dados (`PrenatalCardPdfGenerator.cs`):</span>
+    <div class="flex flex-wrap gap-3">
+      <span><strong class="px-1.5 py-0.5 rounded bg-[#F7ECF8] text-[#6F217B] border border-[#B77AD8]">ATUAL</strong> Disponível no gerador</span>
+      <span><strong class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">CÁLCULO</strong> Derivável na camada de apresentação</span>
+      <span><strong class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 border border-pink-300">NOVO</strong> Carteira de Vacinas e Sorologias Expandidas</span>
+    </div>
+  </div>
+
+  <main class="mt-6">
+
+    <!-- =====================================================================
+         PÁGINA 1 — MINHA GESTAÇÃO (APRESENTAÇÃO E IDENTIFICAÇÃO)
+         ===================================================================== -->
+    <section id="page-1" class="a4-sheet">
+      <div>
+        <!-- Topo Institucional -->
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-4">
+          <div class="flex items-center gap-2.5">
+            <!-- Símbolo Cana Med Mulher em Roxo -->
+            <svg class="w-7 h-7 text-[#852A91]" viewBox="0 0 32 32" fill="none">
+              <path d="M16 28V12" stroke="#6F217B" stroke-width="2" stroke-linecap="round"/>
+              <path d="M16 20C16 14 21 10 26 10C26 15 22 20 16 20Z" stroke="#852A91" stroke-width="2" stroke-linejoin="round" fill="#F7ECF8"/>
+              <path d="M16 16C16 11 11 7 6 7C6 12 10 16 16 16Z" stroke="#D83C91" stroke-width="2" stroke-linejoin="round" fill="#FDF2F8"/>
+            </svg>
+            <div>
+              <span class="text-xs font-bold tracking-widest uppercase text-[#6F217B] block">Cana Med Mulher</span>
+              <span class="text-[10px] text-[#64748B]">Caderneta de Cuidado e Acompanhamento Materno</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] uppercase tracking-wider text-[#64748B] block">Emissão do Documento</span>
+            <span class="text-xs font-semibold text-[#1E293B]">26/10/2026</span>
+          </div>
+        </div>
+
+        <!-- Hero Editorial de Acolhimento -->
+        <div class="mt-7 mb-7 relative rounded-2xl bg-[#F7ECF8] border border-[#B77AD8]/50 p-7 overflow-hidden">
+          <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-[#852A91] mb-2">
+            Meu acompanhamento pré-natal
+          </span>
+          <h2 class="font-serif text-4xl font-bold text-[#6F217B] tracking-tight leading-tight">
+            Minha Gestação
+          </h2>
+          <p class="text-xs text-[#64748B] max-w-lg mt-2 leading-relaxed">
+            Este cartão é seu registro oficial e afetivo de saúde materna. Mantenha-o sempre em sua bolsa e apresente em todas as consultas, exames laboratoriais e maternidade.
+          </p>
+        </div>
+
+        <!-- Bloco 1: Quem sou eu (Identificação) -->
+        <div class="mb-7">
+          <div class="flex items-center justify-between mb-3 border-b border-[#E9D5FF] pb-1.5">
+            <h3 class="font-serif text-2xl font-semibold text-[#6F217B]">Quem sou eu</h3>
+            <span class="text-[11px] text-[#64748B]">Identificação da gestante</span>
+          </div>
+
+          <div class="grid grid-cols-12 gap-3.5">
+            <div class="col-span-8 rounded-xl bg-[#FAF5FB] border border-[#E9D5FF] p-4 flex flex-col justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Nome completo</span>
+              <p class="text-lg font-bold text-[#1E293B] mt-1">Helena Vasconcelos Albuquerque</p>
+              <div class="flex items-center gap-4 mt-3 text-xs text-[#64748B]">
+                <span>Nascimento: <strong class="text-[#1E293B]">14/03/1994</strong> (32 anos)</span>
+                <span>Prontuário: <strong class="text-[#1E293B]">#MED-2026-8812</strong></span>
+              </div>
+            </div>
+
+            <!-- Tipagem Sanguínea e Fator Rh em Destaque -->
+            <div class="col-span-4 rounded-xl bg-[#852A91] text-white p-4 flex flex-col items-center justify-center text-center shadow-sm">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-purple-200">Tipo Sanguíneo & Rh</span>
+              <span class="font-serif text-4xl font-bold text-white my-1">A+</span>
+              <span class="text-[11px] font-semibold text-purple-100">Fator Rh Positivo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco 2: Meu Histórico Obstétrico (GPA Humanizado) -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3 border-b border-[#E9D5FF] pb-1.5">
+            <h3 class="font-serif text-2xl font-semibold text-[#6F217B]">Meu histórico obstétrico</h3>
+            <span class="text-[11px] text-[#64748B]">Gestações anteriores</span>
+          </div>
+
+          <div class="grid grid-cols-5 gap-3">
+            <div class="bg-[#FAF5FB] border border-[#E9D5FF] rounded-xl p-3.5 text-center">
+              <span class="text-3xl font-serif font-bold text-[#6F217B] block mb-1">2</span>
+              <span class="text-xs font-bold text-[#6F217B] block">Gestações</span>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">Incluindo a atual</span>
+            </div>
+            <div class="bg-[#FAF5FB] border border-[#E9D5FF] rounded-xl p-3.5 text-center">
+              <span class="text-3xl font-serif font-bold text-[#6F217B] block mb-1">1</span>
+              <span class="text-xs font-bold text-[#6F217B] block">Partos normais</span>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">Vaginais prévios</span>
+            </div>
+            <div class="bg-[#FAF5FB] border border-[#E9D5FF] rounded-xl p-3.5 text-center">
+              <span class="text-3xl font-serif font-bold text-[#6F217B] block mb-1">0</span>
+              <span class="text-xs font-bold text-[#6F217B] block">Cesarianas</span>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">Partos cirúrgicos</span>
+            </div>
+            <div class="bg-[#FAF5FB] border border-[#E9D5FF] rounded-xl p-3.5 text-center">
+              <span class="text-3xl font-serif font-bold text-[#6F217B] block mb-1">0</span>
+              <span class="text-xs font-bold text-[#6F217B] block">Abortamentos</span>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">Sem perdas prévias</span>
+            </div>
+            <div class="bg-[#F7ECF8] border border-[#B77AD8] rounded-xl p-3.5 text-center">
+              <span class="text-3xl font-serif font-bold text-[#852A91] block mb-1">1</span>
+              <span class="text-xs font-bold text-[#852A91] block">Filhos vivos</span>
+              <span class="text-[10px] text-[#6F217B] block mt-0.5">Nascido saudável</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orientação de Cuidado -->
+        <div class="rounded-xl border border-[#E9D5FF] bg-[#FAF5FB] p-4 flex items-start gap-3.5">
+          <div class="w-8 h-8 rounded-full bg-[#F7ECF8] text-[#852A91] flex items-center justify-center shrink-0 mt-0.5 border border-[#B77AD8]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="text-xs text-[#64748B] leading-relaxed">
+            <strong class="text-[#1E293B] font-bold block mb-0.5">Importância do Porte Contínuo</strong>
+            Leve este cartão em todas as consultas médicas, postos de saúde, exames e maternidade. Ele garante que toda a equipe assistencial conheça os detalhes da sua gravidez com segurança e acolhimento.
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé Institucional -->
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 1 de 6</div>
+      </footer>
+    </section>
+
+
+    <!-- =====================================================================
+         PÁGINA 2 — MINHA GESTAÇÃO EM ACOMPANHAMENTO & SOROLOGIAS
+         ===================================================================== -->
+    <section id="page-2" class="a4-sheet">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-3 mb-5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6F217B]">Cana Med Mulher</span>
+            <span class="text-[#B77AD8]">•</span>
+            <span class="text-xs text-[#64748B]">Helena Vasconcelos Albuquerque</span>
+          </div>
+          <span class="text-[11px] font-semibold text-[#852A91]">Minha gestação em acompanhamento</span>
+        </div>
+
+        <div class="mb-6">
+          <h2 class="font-serif text-2xl font-bold text-[#6F217B]">
+            Marcos da Gestação & Acompanhamento
+          </h2>
+          <p class="text-xs text-[#64748B] mt-0.5 mb-4">
+            Datas de referência, cálculo do tempo gestacional e exames laboratoriais essenciais.
+          </p>
+
+          <div class="grid grid-cols-12 gap-3.5 mb-4">
+            <div class="col-span-6 rounded-xl bg-[#F7ECF8] border border-[#B77AD8] p-4 flex flex-col justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#6F217B]">Idade gestacional na emissão</span>
+              <div class="my-2">
+                <span class="font-serif text-3xl font-bold text-[#6F217B]">28 semanas e 2 dias</span>
+              </div>
+              <span class="text-[11px] text-[#64748B]">Início do 3º trimestre gestacional</span>
+            </div>
+
+            <div class="col-span-6 rounded-xl bg-[#FDF2F8] border border-[#D83C91]/40 p-4 flex flex-col justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#D83C91]">Data provável do parto (DPP)</span>
+              <div class="my-2">
+                <span class="font-serif text-3xl font-bold text-[#6F217B]">16 de janeiro de 2027</span>
+              </div>
+              <span class="text-[11px] text-[#64748B]">Estimativa clínica (Regra de Naegele)</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            <div class="rounded-xl bg-[#FAF5FB] border border-[#E9D5FF] p-3.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block mb-1">DUM (Última Menstruação)</span>
+              <p class="text-base font-bold text-[#1E293B]">11/04/2026</p>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">Ciclo regular</span>
+            </div>
+
+            <div class="rounded-xl bg-[#FAF5FB] border border-[#E9D5FF] p-3.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block mb-1">1º Ultrassom Precoce</span>
+              <p class="text-base font-bold text-[#1E293B]">05/06/2026</p>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">7 sem e 5 dias (concordante)</span>
+            </div>
+
+            <div class="rounded-xl bg-[#FAF5FB] border border-[#E9D5FF] p-3.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block mb-1">Estatura & IMC Basal</span>
+              <p class="text-base font-bold text-[#852A91]">165 cm · 22.9 kg/m²</p>
+              <span class="text-[10px] text-[#64748B] block mt-0.5">IMC inicial adequado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Acompanhamento Laboratorial e Sorologias por Trimestre -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-serif text-2xl font-semibold text-[#6F217B]">
+              Acompanhamento Laboratorial & Sorologias
+            </h3>
+            <span class="text-[11px] text-[#64748B]">Protocolo FEBRASGO / Ministério da Saúde</span>
+          </div>
+          <p class="text-xs text-[#64748B] mb-3.5">
+            Rastreio trimestral de infecções congênitas e vigilância metabólica materna.
+          </p>
+
+          <div class="border border-[#E9D5FF] rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-[#6F217B] text-white text-[10px] uppercase tracking-wider">
+                  <th class="py-2.5 px-4 font-bold">Exame / Avaliação</th>
+                  <th class="py-2.5 px-3 font-bold text-center">1º Trimestre</th>
+                  <th class="py-2.5 px-3 font-bold text-center">2º Trimestre</th>
+                  <th class="py-2.5 px-3 font-bold text-center">3º Trimestre</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#E9D5FF]/60 text-xs">
+                <tr class="bg-white">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Coombs Indireto
+                    <span class="block text-[10px] text-[#64748B] font-normal">Anticorpos irregulares (especialmente se Rh negativo)</span>
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Não Reagente <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                </tr>
+                <tr class="bg-[#FAF5FB]">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Sífilis (VDRL / Teste Rápido)
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Não Reagente <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Não Reagente <span class="text-[10px] text-[#64748B] block">24/08/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#852A91] font-semibold">Solicitado (28–30s)</td>
+                </tr>
+                <tr class="bg-white">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    HIV (Anti-HIV / Teste Rápido)
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Não Reagente <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                  <td class="py-2 px-3 text-center text-[#852A91] font-semibold">Solicitado</td>
+                </tr>
+                <tr class="bg-[#FAF5FB]">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Hepatite B (HBsAg) e Hepatite C (Anti-HCV)
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Não Reagente <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                  <td class="py-2 px-3 text-center text-[#852A91] font-semibold">Solicitado HBsAg</td>
+                </tr>
+                <tr class="bg-white">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Toxoplasmose (IgG / IgM)
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">IgG+ / IgM- (Imune) <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                </tr>
+                <tr class="bg-[#FAF5FB]">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Glicemia de Jejum / TOTG 75g
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">84 mg/dL <span class="text-[10px] text-[#64748B] block">Normal (&lt; 92)</span></td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">TOTG: 82/118/104 mg/dL <span class="text-[10px] text-[#64748B] block">Normal (24–28s)</span></td>
+                  <td class="py-2 px-3 text-center text-[#64748B]">—</td>
+                </tr>
+                <tr class="bg-white">
+                  <td class="py-2 px-4 font-semibold text-[#1E293B]">
+                    Urina I (EAS) e Urocultura
+                  </td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Normal / Negativa <span class="text-[10px] text-[#64748B] block">02/06/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#1E293B] font-medium">Normal / Negativa <span class="text-[10px] text-[#64748B] block">24/08/2026</span></td>
+                  <td class="py-2 px-3 text-center text-[#852A91] font-semibold">Solicitado</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 2 de 6</div>
+      </footer>
+    </section>
+
+
+    <!-- =====================================================================
+         PÁGINA 3 — PÁGINA EXCLUSIVA DEDICADA: VACINAS DA GESTANTE
+         ===================================================================== -->
+    <section id="page-3" class="a4-sheet">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-3 mb-5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6F217B]">Cana Med Mulher</span>
+            <span class="text-[#B77AD8]">•</span>
+            <span class="text-xs text-[#64748B]">Helena Vasconcelos Albuquerque</span>
+          </div>
+          <span class="text-[11px] font-semibold text-[#D83C91]">Carteira de Imunização Materna</span>
+        </div>
+
+        <!-- Hero Editorial da Página de Vacinas -->
+        <div class="rounded-2xl bg-[#F7ECF8] border border-[#B77AD8] p-6 mb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-[#852A91] text-white flex items-center justify-center shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[#852A91]">Imunização Materno-Infantil</span>
+              <h2 class="font-serif text-3xl font-bold text-[#6F217B]">
+                Minhas Vacinas na Gestação: Proteção para Mim e para Meu Bebê
+              </h2>
+            </div>
+          </div>
+          <p class="text-xs text-[#64748B] leading-relaxed mt-2">
+            As vacinas durante a gravidez protegem a gestante de quadros graves e transferem anticorpos protetores (imunoglobulinas IgG) através da placenta. Esse escudo imunológico acompanha o recém-nascido durante os primeiros meses de vida, antes de ele completar o próprio calendário vacinal.
+          </p>
+        </div>
+
+        <!-- Grade de Vacinas Recomendadas -->
+        <div class="space-y-3 mb-5">
+          <!-- 1. dTpa (Adulto) -->
+          <div class="rounded-xl border border-[#B77AD8] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#852A91] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">dTpa (Tríplice Bacteriana Acelular do Adulto)</h4>
+                  <span class="text-[11px] text-[#64748B]">Previne Difteria, Tétano e Coqueluche no bebê</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F8] text-[#D83C91] border border-[#D83C91]/30">
+                A partir da 20ª sem (ideal 27ª–36ªs)
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#1E293B]">
+              <div><span class="text-[10px] text-[#64748B] block">Data:</span> <strong>14/09/2026</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">IG Aplicação:</span> <strong>23 semanas</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Lote:</span> <strong>AD24B918</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Status:</span> <strong class="text-emerald-700">✓ Dose Aplicada</strong></div>
+            </div>
+          </div>
+
+          <!-- 2. Influenza (Gripe) -->
+          <div class="rounded-xl border border-[#E9D5FF] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#852A91] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">Influenza (Gripe Sazonal)</h4>
+                  <span class="text-[11px] text-[#64748B]">Previne infecções respiratórias graves</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F7ECF8] text-[#852A91] border border-[#B77AD8]">
+                Qualquer Idade Gestacional (1 dose anual)
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#1E293B]">
+              <div><span class="text-[10px] text-[#64748B] block">Data:</span> <strong>01/06/2026</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Campanha:</span> <strong>Sazonal 2026</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Lote:</span> <strong>FLU2026-X1</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Status:</span> <strong class="text-emerald-700">✓ Dose Aplicada</strong></div>
+            </div>
+          </div>
+
+          <!-- 3. Hepatite B (Recombinante) -->
+          <div class="rounded-xl border border-[#E9D5FF] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#852A91] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">Hepatite B (Recombinante)</h4>
+                  <span class="text-[11px] text-[#64748B]">Previne transmissão vertical da Hepatite B</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F7ECF8] text-[#852A91] border border-[#B77AD8]">
+                3 doses (0, 1 e 6 meses) ou esquema prévio
+              </span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#1E293B]">
+              <div><span class="text-[10px] text-[#64748B] block">Esquema:</span> <strong>3 doses prévias</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Anti-HBs:</span> <strong>Reagente &gt; 100 mUI/mL</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Status:</span> <strong class="text-emerald-700">✓ Esquema Completo</strong></div>
+            </div>
+          </div>
+
+          <!-- 4. COVID-19 (Atualizada) -->
+          <div class="rounded-xl border border-[#E9D5FF] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#852A91] text-white text-xs font-bold flex items-center justify-center">4</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">COVID-19 (Vacina Atualizada / Reforço)</h4>
+                  <span class="text-[11px] text-[#64748B]">Proteção contra formas graves da SARS-CoV-2</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F7ECF8] text-[#852A91] border border-[#B77AD8]">
+                Qualquer Idade Gestacional
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#1E293B]">
+              <div><span class="text-[10px] text-[#64748B] block">Data:</span> <strong>10/05/2026</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Fabricante:</span> <strong>XBB / Moderna</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Lote:</span> <strong>CV260519</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Status:</span> <strong class="text-emerald-700">✓ Em Dia</strong></div>
+            </div>
+          </div>
+
+          <!-- 5. Vírus Sincicial Respiratório (VSR / Abrysvo) -->
+          <div class="rounded-xl border border-[#D83C91] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#D83C91] text-white text-xs font-bold flex items-center justify-center">5</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">Vírus Sincicial Respiratório (VSR / Abrysvo)</h4>
+                  <span class="text-[11px] text-[#64748B]">Previne bronquiolite e pneumonia no recém-nascido</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F8] text-[#D83C91] border border-[#D83C91]">
+                32ª a 36ª semanas (Dose Única)
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#1E293B]">
+              <div><span class="text-[10px] text-[#64748B] block">Data Prevista:</span> <strong>20/11/2026</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">IG Prevista:</span> <strong>32 semanas</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Via:</span> <strong>Intramuscular</strong></div>
+              <div><span class="text-[10px] text-[#64748B] block">Status:</span> <strong class="text-[#D83C91]">⏳ Agendada (32s)</strong></div>
+            </div>
+          </div>
+
+          <!-- 6. Imunoglobulina Anti-D -->
+          <div class="rounded-xl border border-[#E9D5FF] bg-white p-3 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#B77AD8] text-white text-xs font-bold flex items-center justify-center">6</span>
+                <div>
+                  <h4 class="text-sm font-bold text-[#6F217B]">Imunoglobulina Anti-D (300 mcg)</h4>
+                  <span class="text-[11px] text-[#64748B]">Profilaxia de aloimunização Rh (se gestante Rh negativo)</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F7ECF8] text-[#6F217B]">
+                28ª semana e até 72h pós-parto
+              </span>
+            </div>
+            <div class="mt-2 bg-[#FAF5FB] rounded-lg p-2 text-xs text-[#64748B]">
+              Status: <strong class="text-[#1E293B]">Não indicada</strong> (Gestante com tipagem sanguínea <strong>A Positivo / Rh+</strong>).
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerta de Contraindicações na Gestação -->
+        <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3 flex items-start gap-3">
+          <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <div class="text-[11px] text-rose-900 leading-relaxed">
+            <strong class="font-bold">Atenção às Contraindicações Absolutas:</strong> Vacinas de vírus ou bactérias vivas atenuadas são terminantemente contraindicadas na gravidez: <strong>Tríplice Viral (Sarampo, Caxumba, Rubéola), Varicela (Catapora), Febre Amarela (salvo risco epidemiológico estrito), HPV e Dengue</strong>.
+          </div>
+        </div>
+      </div>
+
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 3 de 6</div>
+      </footer>
+    </section>
+
+
+    <!-- =====================================================================
+         PÁGINA 4 — CURVAS DE VIGILÂNCIA OBSTÉTRICA (ATALAH & ALTURA UTERINA)
+         ===================================================================== -->
+    <section id="page-4" class="a4-sheet">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-3 mb-5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6F217B]">Cana Med Mulher</span>
+            <span class="text-[#B77AD8]">•</span>
+            <span class="text-xs text-[#64748B]">Helena Vasconcelos Albuquerque</span>
+          </div>
+          <span class="text-[11px] font-semibold text-[#852A91]">Curvas de Vigilância Obstétrica</span>
+        </div>
+
+        <div class="mb-4">
+          <h2 class="font-serif text-2xl font-bold text-[#6F217B]">
+            Evolução Nutricional e Fetal
+          </h2>
+          <p class="text-xs text-[#64748B] mt-0.5">
+            Monitoramento do índice de massa corporal materno (Curva de Atalah) e do crescimento fetal (Curva de Altura Uterina).
+          </p>
+        </div>
+
+        <!-- Gráfico 1: Curva de Ganho de Peso Gestacional (Atalah) -->
+        <div class="border border-[#E9D5FF] rounded-xl bg-white p-4 mb-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-sm font-bold text-[#6F217B]">Curva de IMC Gestacional (Critério de Atalah)</h3>
+              <span class="text-[10px] text-[#64748B]">Estatura: 165 cm · IMC inicial: 22.9 kg/m²</span>
+            </div>
+            <div class="flex items-center gap-3 text-[10px]">
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-[#F7ECF8] border border-[#B77AD8] rounded-sm inline-block"></span> IMC Adequado</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-[#852A91] rounded-full inline-block"></span> Minha Evolução</span>
+            </div>
+          </div>
+
+          <!-- SVG da Curva de Atalah -->
+          <svg viewBox="0 0 600 200" class="w-full h-44 border border-[#F1E8F5] rounded-lg bg-[#FAF5FB]">
+            <!-- Faixas Atalah -->
+            <polygon points="50,190 550,190 550,150 50,165" fill="#FFF1F2" />
+            <polygon points="50,165 550,150 550,110 50,130" fill="#FFFBEB" />
+            <polygon points="50,130 550,110 550,60 50,80" fill="#F7ECF8" />
+            <polygon points="50,80 550,60 550,20 50,20" fill="#F0F9FF" />
+
+            <!-- Linhas de grade X -->
+            <line x1="50" y1="20" x2="50" y2="190" stroke="#CBD5E1" stroke-width="1"/>
+            <line x1="150" y1="20" x2="150" y2="190" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="250" y1="20" x2="250" y2="190" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="350" y1="20" x2="350" y2="190" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="450" y1="20" x2="450" y2="190" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="550" y1="20" x2="550" y2="190" stroke="#CBD5E1" stroke-width="1"/>
+
+            <!-- Rótulos Semanas -->
+            <text x="50" y="198" font-size="9" fill="#64748B" text-anchor="middle">6s</text>
+            <text x="150" y="198" font-size="9" fill="#64748B" text-anchor="middle">12s</text>
+            <text x="250" y="198" font-size="9" fill="#64748B" text-anchor="middle">20s</text>
+            <text x="350" y="198" font-size="9" fill="#64748B" text-anchor="middle">28s</text>
+            <text x="450" y="198" font-size="9" fill="#64748B" text-anchor="middle">34s</text>
+            <text x="550" y="198" font-size="9" fill="#64748B" text-anchor="middle">40s</text>
+
+            <!-- Linha da Paciente Helena -->
+            <polyline points="150,118 200,115 250,110 300,105 350,98" fill="none" stroke="#852A91" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="150" cy="118" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="200" cy="115" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="250" cy="110" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="300" cy="105" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="350" cy="98" r="5" fill="#852A91" stroke="#FFFFFF" stroke-width="2"/>
+          </svg>
+          <div class="mt-1 flex items-center justify-between text-[10px] text-[#64748B]">
+            <span>Faixas: Azul (Baixo peso) · Lilás (Adequado) · Amarelo (Sobrepeso) · Rosa (Obesidade)</span>
+            <span class="font-bold text-[#852A91]">Última medição: 28s / IMC 25.3 kg/m² (Adequado)</span>
+          </div>
+        </div>
+
+        <!-- Gráfico 2: Curva de Altura Uterina (P10 a P90) -->
+        <div class="border border-[#E9D5FF] rounded-xl bg-white p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-sm font-bold text-[#6F217B]">Curva de Altura Uterina (Percentis 10 a 90)</h3>
+              <span class="text-[10px] text-[#64748B]">Crescimento fetal intrauterino conforme idade gestacional</span>
+            </div>
+            <div class="flex items-center gap-3 text-[10px]">
+              <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-[#B77AD8] inline-block"></span> P10</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-[#D83C91] inline-block"></span> P90</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-[#852A91] rounded-full inline-block"></span> Altura da Paciente</span>
+            </div>
+          </div>
+
+          <!-- SVG da Altura Uterina -->
+          <svg viewBox="0 0 600 200" class="w-full h-44 border border-[#F1E8F5] rounded-lg bg-[#FAF5FB]">
+            <!-- Polígono P10 a P90 -->
+            <polygon points="100,165 550,45 550,20 100,140" fill="#FDF2F8" />
+
+            <!-- Linha P10 e P90 -->
+            <line x1="100" y1="165" x2="550" y2="45" stroke="#B77AD8" stroke-width="2" stroke-dasharray="4 3"/>
+            <line x1="100" y1="140" x2="550" y2="20" stroke="#D83C91" stroke-width="2" stroke-dasharray="4 3"/>
+
+            <!-- Linhas de grade X -->
+            <line x1="100" y1="20" x2="100" y2="180" stroke="#CBD5E1" stroke-width="1"/>
+            <line x1="200" y1="20" x2="200" y2="180" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="300" y1="20" x2="300" y2="180" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="400" y1="20" x2="400" y2="180" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+            <line x1="500" y1="20" x2="500" y2="180" stroke="#CBD5E1" stroke-dasharray="3 3"/>
+
+            <!-- Rótulos Semanas -->
+            <text x="100" y="195" font-size="9" fill="#64748B" text-anchor="middle">12s</text>
+            <text x="200" y="195" font-size="9" fill="#64748B" text-anchor="middle">18s</text>
+            <text x="300" y="195" font-size="9" fill="#64748B" text-anchor="middle">24s</text>
+            <text x="400" y="195" font-size="9" fill="#64748B" text-anchor="middle">30s</text>
+            <text x="500" y="195" font-size="9" fill="#64748B" text-anchor="middle">36s</text>
+
+            <!-- Linha da Paciente Helena -->
+            <polyline points="200,135 250,122 300,105 350,92 400,78" fill="none" stroke="#852A91" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="200" cy="135" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="250" cy="122" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="300" cy="105" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="350" cy="92" r="4.5" fill="#6F217B" stroke="#FFFFFF" stroke-width="1.5"/>
+            <circle cx="400" cy="78" r="5" fill="#852A91" stroke="#FFFFFF" stroke-width="2"/>
+          </svg>
+          <div class="mt-1 flex items-center justify-between text-[10px] text-[#64748B]">
+            <span>Faixa tracejada lilás/magenta: intervalo esperado de normalidade fetal</span>
+            <span class="font-bold text-[#852A91]">Última medição: 28s / AU 27 cm (Dentro do canal eutrófico)</span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 4 de 6</div>
+      </footer>
+    </section>
+
+
+    <!-- =====================================================================
+         PÁGINA 5 — MINHAS CONSULTAS DE PRÉ-NATAL (CONSULTAS 1 A 10)
+         ===================================================================== -->
+    <section id="page-5" class="a4-sheet">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-3 mb-5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6F217B]">Cana Med Mulher</span>
+            <span class="text-[#B77AD8]">•</span>
+            <span class="text-xs text-[#64748B]">Helena Vasconcelos Albuquerque</span>
+          </div>
+          <span class="text-[11px] font-semibold text-[#852A91]">Consultas de Pré-Natal (1 a 10)</span>
+        </div>
+
+        <div class="mb-4">
+          <h2 class="font-serif text-2xl font-bold text-[#6F217B]">
+            Acompanhando Minha Gestação
+          </h2>
+          <p class="text-xs text-[#64748B] mt-0.5 mb-3">
+            Registro cronológico das consultas ambulatoriais, parâmetros vitais maternos e fetais.
+          </p>
+        </div>
+
+        <!-- Tabela Clínica de 10 Consultas -->
+        <div class="border border-[#B77AD8] rounded-xl overflow-hidden shadow-sm mb-4">
+          <table class="clinical-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Data</th>
+                <th style="width: 12%;" class="num-col">IG (Sem/D)</th>
+                <th style="width: 10%;" class="num-col">Peso (kg)</th>
+                <th style="width: 9%;" class="num-col">IMC</th>
+                <th style="width: 12%;" class="num-col">PA (mmHg)</th>
+                <th style="width: 9%;" class="num-col">AU (cm)</th>
+                <th style="width: 11%;" class="num-col">BCF (bpm)</th>
+                <th style="width: 11%;" class="num-col">Mov. Fetal</th>
+                <th style="width: 12%;">Apresentação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>05/06/2026</strong></td>
+                <td class="num-col font-semibold">12s 0d</td>
+                <td class="num-col">62.8</td>
+                <td class="num-col">23.1</td>
+                <td class="num-col">110/70</td>
+                <td class="num-col">—</td>
+                <td class="num-col">154</td>
+                <td class="num-col text-[#64748B]">&lt; 18s</td>
+                <td>Indiferente</td>
+              </tr>
+              <tr>
+                <td><strong>03/07/2026</strong></td>
+                <td class="num-col font-semibold">16s 0d</td>
+                <td class="num-col">63.9</td>
+                <td class="num-col">23.5</td>
+                <td class="num-col">112/70</td>
+                <td class="num-col">15.0</td>
+                <td class="num-col">150</td>
+                <td class="num-col text-[#64748B]">&lt; 18s</td>
+                <td>Indiferente</td>
+              </tr>
+              <tr>
+                <td><strong>31/07/2026</strong></td>
+                <td class="num-col font-semibold">20s 0d</td>
+                <td class="num-col">65.2</td>
+                <td class="num-col">24.0</td>
+                <td class="num-col">110/72</td>
+                <td class="num-col">19.0</td>
+                <td class="num-col">146</td>
+                <td class="num-col font-semibold text-emerald-700">Presente</td>
+                <td>Cefálica</td>
+              </tr>
+              <tr>
+                <td><strong>28/08/2026</strong></td>
+                <td class="num-col font-semibold">24s 0d</td>
+                <td class="num-col">66.8</td>
+                <td class="num-col">24.5</td>
+                <td class="num-col">114/74</td>
+                <td class="num-col">23.0</td>
+                <td class="num-col">144</td>
+                <td class="num-col font-semibold text-emerald-700">Presente</td>
+                <td>Cefálica</td>
+              </tr>
+              <tr>
+                <td><strong>26/10/2026</strong></td>
+                <td class="num-col font-semibold text-[#852A91]">28s 2d</td>
+                <td class="num-col font-bold">68.9</td>
+                <td class="num-col font-bold">25.3</td>
+                <td class="num-col font-semibold">114/72</td>
+                <td class="num-col font-bold">27.0</td>
+                <td class="num-col font-bold text-[#852A91]">143</td>
+                <td class="num-col font-semibold text-emerald-700">Ativa</td>
+                <td class="font-semibold text-[#6F217B]">Cefálica</td>
+              </tr>
+              <tr>
+                <td class="text-[#CBD5E1]">____/____/____</td>
+                <td class="num-col text-[#CBD5E1]">___s ___d</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___ / ___</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___</td>
+                <td class="num-col text-[#CBD5E1]">______</td>
+                <td class="text-[#CBD5E1]">____________</td>
+              </tr>
+              <tr>
+                <td class="text-[#CBD5E1]">____/____/____</td>
+                <td class="num-col text-[#CBD5E1]">___s ___d</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___ / ___</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___</td>
+                <td class="num-col text-[#CBD5E1]">______</td>
+                <td class="text-[#CBD5E1]">____________</td>
+              </tr>
+              <tr>
+                <td class="text-[#CBD5E1]">____/____/____</td>
+                <td class="num-col text-[#CBD5E1]">___s ___d</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___ / ___</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___</td>
+                <td class="num-col text-[#CBD5E1]">______</td>
+                <td class="text-[#CBD5E1]">____________</td>
+              </tr>
+              <tr>
+                <td class="text-[#CBD5E1]">____/____/____</td>
+                <td class="num-col text-[#CBD5E1]">___s ___d</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___ / ___</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___</td>
+                <td class="num-col text-[#CBD5E1]">______</td>
+                <td class="text-[#CBD5E1]">____________</td>
+              </tr>
+              <tr>
+                <td class="text-[#CBD5E1]">____/____/____</td>
+                <td class="num-col text-[#CBD5E1]">___s ___d</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___ / ___</td>
+                <td class="num-col text-[#CBD5E1]">___,__</td>
+                <td class="num-col text-[#CBD5E1]">___</td>
+                <td class="num-col text-[#CBD5E1]">______</td>
+                <td class="text-[#CBD5E1]">____________</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Legenda Explicativa Amigável -->
+        <div class="rounded-xl border border-[#E9D5FF] bg-[#FAF5FB] p-3 text-[11px] text-[#64748B] flex items-center justify-between">
+          <span><strong>Legenda:</strong> IG (Idade Gestacional) · AU (Altura Uterina) · BCF (Batimentos Cardíacos Fetais, normal 110–160 bpm)</span>
+          <span class="text-[#852A91] font-semibold">Edema: Ausente em todas as visitas</span>
+        </div>
+      </div>
+
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 5 de 6</div>
+      </footer>
+    </section>
+
+
+    <!-- =====================================================================
+         PÁGINA 6 — CONTINUAÇÃO, ANOTAÇÕES CLÍNICAS & SINAIS DE ALERTA
+         ===================================================================== -->
+    <section id="page-6" class="a4-sheet">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#E9D5FF] pb-3 mb-5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6F217B]">Cana Med Mulher</span>
+            <span class="text-[#B77AD8]">•</span>
+            <span class="text-xs text-[#64748B]">Helena Vasconcelos Albuquerque</span>
+          </div>
+          <span class="text-[11px] font-semibold text-[#852A91]">Anotações & Sinais de Alerta</span>
+        </div>
+
+        <!-- Seção 1: Anotações das Minhas Consultas por Data -->
+        <div class="mb-5">
+          <h3 class="font-serif text-2xl font-bold text-[#6F217B] mb-2">
+            Anotações & Condutas das Consultas
+          </h3>
+          <div class="space-y-2.5">
+            <div class="border border-[#E9D5FF] rounded-xl p-3 bg-white">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold text-[#6F217B]">26/10/2026 · 28 semanas e 2 dias</span>
+                <span class="text-[10px] text-[#64748B]">Dra. Camila Torres (CRM 24190-PE)</span>
+              </div>
+              <p class="text-xs text-[#1E293B] leading-relaxed">
+                Início do 3º trimestre sem queixas clínicas. Ganho de peso adequado (1.1 kg no último mês). AU 27cm compatível. Solicitado TOTG e sorologias do 3º trimestre. Prescrito Sulfato Ferroso e Ácido Fólico. Agendada vacina VSR (Abrysvo) para 32ª semana. Retorno em 15 dias.
+              </p>
+            </div>
+            <div class="border border-[#E9D5FF] rounded-xl p-3 bg-[#FAF5FB]">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold text-[#6F217B]">28/08/2026 · 24 semanas</span>
+                <span class="text-[10px] text-[#64748B]">Dra. Camila Torres (CRM 24190-PE)</span>
+              </div>
+              <p class="text-xs text-[#1E293B] leading-relaxed">
+                Ultrassom morfológico de 2º trimestre normal. Movimentação fetal ativa. Administrada vacina dTpa. Orientada sobre sintomas de contrações de treinamento vs. parto prematuro.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção 2: Minhas Dúvidas para a Próxima Consulta -->
+        <div class="mb-5">
+          <h3 class="font-serif text-2xl font-bold text-[#6F217B] mb-1">
+            Espaço para Minhas Dúvidas
+          </h3>
+          <p class="text-[11px] text-[#64748B] mb-2">
+            Anote aqui perguntas, sintomas ou dúvidas que surgirem entre as consultas para conversar com sua médica:
+          </p>
+          <div class="border border-[#B77AD8] border-dashed rounded-xl p-3 bg-[#FAF5FB] min-h-[90px] text-xs text-[#64748B] flex flex-col justify-between">
+            <span>• Plano de parto e opções de alívio da dor na maternidade escolhida...</span>
+            <div class="border-b border-[#E9D5FF] border-dashed w-full my-2"></div>
+            <span class="text-[10px] italic text-[#B77AD8]">Linha livre para anotações manuais da gestante</span>
+          </div>
+        </div>
+
+        <!-- Seção 3: Sinais de Alerta Obstétricos -->
+        <div class="rounded-xl border border-rose-300 bg-rose-50/80 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h4 class="text-sm font-bold text-rose-900">Sinais de Alerta — Procure a Maternidade Imediatamente:</h4>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs text-rose-950">
+            <div>• Sangramento vaginal de qualquer intensidade</div>
+            <div>• Perda de líquido pela vagina (bolsa rota)</div>
+            <div>• Dor de cabeça intensa, turvação visual ou escotomas</div>
+            <div>• Dor forte no estômago ou baixo ventre</div>
+            <div>• Ausência ou diminuição acentuada dos movimentos fetais</div>
+            <div>• Febre acima de 37.8°C ou calafrios</div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="pt-3 border-t border-[#E9D5FF] flex items-center justify-between text-[10px] text-[#64748B]">
+        <div>
+          <strong class="text-[#6F217B] font-bold">Cana Med Mulher</strong> · Cartão da Gestante Editorial · Lei nº 13.787/2018
+        </div>
+        <div class="font-semibold text-[#852A91]">Página 6 de 6</div>
+      </footer>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleGrayscale() {
+      document.body.classList.toggle('grayscale-mode');
+      const btn = document.getElementById('btn-grayscale');
+      if (document.body.classList.contains('grayscale-mode')) {
+        btn.classList.add('bg-white', 'text-black');
+      } else {
+        btn.classList.remove('bg-white', 'text-black');
+      }
+    }
+
+    function toggleContractBadges() {
+      document.body.classList.toggle('show-contract');
+      const legend = document.getElementById('contract-legend');
+      const btn = document.getElementById('btn-contract');
+      if (document.body.classList.contains('show-contract')) {
+        legend.classList.remove('hidden');
+        btn.classList.add('bg-purple-500/30');
+      } else {
+        legend.classList.add('hidden');
+        btn.classList.remove('bg-purple-500/30');
+      }
+    }
+  </script>
+</body>
+</html>

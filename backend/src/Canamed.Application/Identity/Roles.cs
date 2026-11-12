@@ -1,11 +1,14 @@
-namespace Canamed.Application.Identity;
+﻿namespace Canamed.Application.Identity;
 
 /// <summary>
-/// Papéis da primeira versão (SPEC-0003, seção 4) e o mapa de permissões correspondente.
+/// Papéis do sistema e o mapa de permissões correspondente.
 /// O papel é atribuído por clínica, no vínculo do usuário (ADR-0008).
 /// </summary>
 public static class Roles
 {
+    /// <summary>Administrador Geral com controle total da clínica e PEP (gestão + clínico + operacional).</summary>
+    public const string Admin = "admin";
+
     /// <summary>Gestor da clínica: administra usuários e configurações da agenda. Exige MFA.</summary>
     public const string Manager = "gestor";
 
@@ -16,7 +19,19 @@ public static class Roles
     public const string Professional = "profissional";
 
     /// <summary>Papéis válidos.</summary>
-    public static IReadOnlyList<string> All { get; } = [Manager, Receptionist, Professional];
+    /// <summary>Permissões clínicas assistenciais reservadas exclusivamente a médicos com CRM ativo (RN-006 / CFM 1.821).</summary>
+    public static readonly IReadOnlySet<string> ClinicalPermissions = new HashSet<string>(StringComparer.Ordinal)
+    {
+        Permissions.RecordsRead,
+        Permissions.RecordsCreate,
+        Permissions.RecordsUpdate,
+        Permissions.RecordsFinalize,
+        Permissions.RecordsAddendum,
+        Permissions.DocumentsSign,
+        Permissions.WorkspaceAccess,
+    };
+
+    public static IReadOnlyList<string> All { get; } = [Admin, Manager, Receptionist, Professional];
 
     /// <summary>Indica se o papel é conhecido.</summary>
     public static bool Exists(string? role) =>
@@ -26,6 +41,7 @@ public static class Roles
     public static IReadOnlySet<string> PermissionsFor(string? role) =>
         role switch
         {
+            Admin => new HashSet<string>(Permissions.All, StringComparer.Ordinal),
             Manager => new HashSet<string>(StringComparer.Ordinal)
             {
                 Permissions.AgendaRead,
@@ -103,3 +119,4 @@ public static class Roles
     /// <summary>Indica se o papel exige segundo fator (RN-010).</summary>
     public static bool RequiresMfa(string? role) => role == Manager;
 }
+

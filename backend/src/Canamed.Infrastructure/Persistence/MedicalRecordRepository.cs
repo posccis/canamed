@@ -133,6 +133,24 @@ public sealed class MedicalRecordRepository(CanamedDbContext dbContext) : IMedic
         return query.CountAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<MedicalRecord>> ListPendingDraftsAsync(Guid clinicId, Guid? doctorId, CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.MedicalRecords
+            .Include(r => r.Addenda)
+            .Include(r => r.GynecologicalData)
+            .Where(r => r.ClinicId == clinicId && r.Status == MedicalRecordStatus.EmAndamento);
+
+        if (doctorId is not null && doctorId != Guid.Empty)
+        {
+            query = query.Where(r => r.DoctorId == doctorId);
+        }
+
+        return await query
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task AddPrenatalVisitAsync(PrenatalVisitRecord record, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(record);
@@ -147,5 +165,35 @@ public sealed class MedicalRecordRepository(CanamedDbContext dbContext) : IMedic
             .OrderBy(v => v.VisitDate)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+    }
+    public async Task AddLarcPlacementAsync(LarcPlacementRecord record, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        await dbContext.LarcPlacementRecords.AddAsync(record, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<LarcPlacementRecord?> GetLarcPlacementByIdAsync(Guid id, Guid clinicId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.LarcPlacementRecords
+            .FirstOrDefaultAsync(l => l.Id == id && l.ClinicId == clinicId, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<LarcPlacementRecord>> ListLarcPlacementsByPatientAsync(Guid patientId, Guid clinicId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.LarcPlacementRecords
+            .AsNoTracking()
+            .Where(l => l.PatientId == patientId && l.ClinicId == clinicId)
+            .OrderByDescending(l => l.InsertionDate)
+            .ThenByDescending(l => l.CreatedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task UpdateLarcPlacementAsync(LarcPlacementRecord record, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        dbContext.LarcPlacementRecords.Update(record);
+        return Task.CompletedTask;
     }
 }

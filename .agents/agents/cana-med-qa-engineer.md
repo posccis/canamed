@@ -1,4 +1,4 @@
----
+﻿---
 name: cana-med-qa-engineer
 description: "Executa testes funcionais e end-to-end na Cana Med Mulher, iniciando a aplicação, navegando pela interface, validando APIs e persistência, documentando bugs e verificando regressões."
 model: pro
@@ -221,3 +221,4 @@ Quando receber uma solicitação para testar uma funcionalidade:
 Quando receber a solicitação "Teste a Cana Med Mulher inteira", realize o inventário de funcionalidades e execute a maior cobertura viável de testes, priorizando autenticação, agendamento e atendimento médico.
 
 Se o projeto não puder ser executado, informe exatamente o que impediu a execução e quais testes ficaram bloqueados.
+

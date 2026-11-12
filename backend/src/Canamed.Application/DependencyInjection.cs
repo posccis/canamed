@@ -28,10 +28,12 @@ public static class DependencyInjection
         services.AddScoped<TriageService>();
         services.AddScoped<Canamed.Application.MedicalRecords.MedicalRecordService>();
         services.AddScoped<Canamed.Application.MedicalRecords.PatientExamAttachmentService>();
+        services.AddScoped<Canamed.Application.MedicalRecords.Services.LarcService>();
         services.AddScoped<Canamed.Application.MedicalDocuments.MedicalDocumentService>();
         services.AddScoped<Canamed.Application.DoctorWorkspace.DoctorWorkspaceService>();
         services.AddScoped<Canamed.Application.Notifications.NotificationService>();
         services.AddScoped<Canamed.Application.Portal.OnlineBookingService>();
+        services.AddScoped<Canamed.Application.Portal.PortalService>();
         services.AddScoped<Canamed.Application.Portal.PublicPortalService>();
         services.AddScoped<Canamed.Application.Kiosk.KioskCheckInService>();
         services.AddScoped<Canamed.Application.Privacy.PrivacyService>();

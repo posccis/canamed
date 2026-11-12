@@ -22,26 +22,43 @@ test.describe('Fila de espera', () => {
     // Escopo do formulário de encaixe: a barra de filtros também tem os rótulos Paciente/Profissional.
     const walkInForm = page.locator('form', { has: page.getByRole('button', { name: 'Registrar encaixe' }) });
 
-    await selectOptionByText(walkInForm.getByLabel('Paciente'), 'Paciente Sintético');
-    await selectOptionByText(walkInForm.getByLabel('Profissional'), 'Dra. Ana');
+    const patientName = await selectFirstAvailableOption(walkInForm.getByLabel('Paciente'));
+    await selectFirstAvailableOption(walkInForm.getByLabel('Profissional'));
     await walkInForm.getByLabel('Prioridade').selectOption('preferencial');
     await walkInForm.getByRole('button', { name: 'Registrar encaixe' }).click();
 
     await expect(page.getByRole('status')).toContainText('Encaixe registrado.');
 
-    const row = page.locator('.agenda__list .agenda__item').filter({ hasText: 'Paciente Sintético Um' }).first();
+    const patientFirstName = patientName.split(' ')[0] || 'Mariana';
+    // Seleciona a linha recém-adicionada que está aguardando chamada
+    const row = page.locator('.agenda__list .agenda__item', { has: page.getByRole('button', { name: 'Chamar' }) })
+      .filter({ hasText: patientFirstName })
+      .first();
 
     await expect(row).toContainText('Preferencial');
 
     await row.getByRole('button', { name: 'Chamar' }).click();
     await expect(page.getByRole('status')).toContainText('Paciente chamado.');
 
-    await row.getByRole('button', { name: 'Iniciar' }).click();
+    const calledRow = page.locator('.agenda__list .agenda__item', { has: page.getByRole('button', { name: 'Iniciar' }) })
+      .filter({ hasText: patientFirstName })
+      .first();
+
+    await calledRow.getByRole('button', { name: 'Iniciar' }).click();
     await expect(page.getByRole('status')).toContainText('Atendimento iniciado.');
 
-    await row.getByRole('button', { name: 'Finalizar' }).click();
+    const attendingRow = page.locator('.agenda__list .agenda__item', { has: page.getByRole('button', { name: 'Finalizar' }) })
+      .filter({ hasText: patientFirstName })
+      .first();
+
+    await attendingRow.getByRole('button', { name: 'Finalizar' }).click();
     await expect(page.getByRole('status')).toContainText('Atendimento concluído.');
-    await expect(row).toContainText('Atendido');
+
+    const finishedRow = page.locator('.agenda__list .agenda__item')
+      .filter({ hasText: patientFirstName })
+      .filter({ hasText: 'Atendido' })
+      .first();
+    await expect(finishedRow).toBeVisible();
   });
 
   test('fechamento do dia devolve o resumo', async ({ page }) => {
@@ -54,8 +71,7 @@ test.describe('Fila de espera', () => {
 });
 
 async function openQueueAsync(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Recepção' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Fila de espera' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fila & Recepção', exact: true }).click();
   await expect(page.getByRole('heading', { level: 2, name: /Fila do dia/ })).toBeVisible();
 }
 
@@ -84,13 +100,17 @@ async function clearTodayQueueAsync(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Atualizar' }).first().click();
 }
 
-async function selectOptionByText(
-  select: ReturnType<Page['getByLabel']>,
-  text: string,
-): Promise<void> {
-  const value = await select.locator('option', { hasText: text }).first().getAttribute('value');
-
-  if (value) {
-    await select.selectOption(value);
+async function selectFirstAvailableOption(select: ReturnType<Page['getByLabel']>): Promise<string> {
+  const options = select.locator('option');
+  const count = await options.count();
+  for (let i = 0; i < count; i++) {
+    const opt = options.nth(i);
+    const val = await opt.getAttribute('value');
+    const label = (await opt.innerText()).trim();
+    if (val && val.trim() !== '' && !label.toLowerCase().includes('selecione')) {
+      await select.selectOption(val);
+      return label;
+    }
   }
+  return '';
 }

@@ -1,4 +1,4 @@
----
+﻿---
 name: validador
 description: "Agente Validador e Revisor de Código do Cana Med. Garante conformidade estrita com as especificações, executa auditoria técnica de qualidade, exige evidências reais de testes (Verification Before Completion) e previne regressões."
 model: flash
@@ -74,3 +74,4 @@ O relatório do Validador deve ser claro e objetivo:
   - **[IMPORTANT]**: Desvios de boas práticas ou fragilidades de código que devem ser corrigidos antes do encerramento.
   - **[MINOR]**: Sugestões cosméticas ou otimizações não bloqueantes.
 - **Evidências:** Comandos executados e trechos do log de testes comprovando o estado atual.
+

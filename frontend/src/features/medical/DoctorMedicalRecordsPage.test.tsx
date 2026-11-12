@@ -241,6 +241,68 @@ describe('DoctorMedicalRecordsPage Component', () => {
       expect(screen.getByText(/Negativo para neoplasia/i)).toBeInTheDocument();
     });
   });
+
+  it('alterna o Modo Privacidade e adiciona classe privacy-blur nos dados clínicos sensíveis (Task 9)', async () => {
+    mocks.apiGet.mockImplementation(async (path: string) => {
+      if (path === '/patients') {
+        return [
+          {
+            id: 'patient-priv',
+            name: 'Fernanda Privacidade',
+            phone: '81999998888',
+            email: 'fernanda@example.com',
+            birthDate: '1992-07-10',
+            isActive: true,
+          },
+        ];
+      }
+      if (path === '/patients/patient-priv/medical-records') {
+        return [
+          {
+            id: 'rec-priv-1',
+            clinicId: 'clinic-1',
+            patientId: 'patient-priv',
+            doctorId: 'doc-1',
+            status: 'finalizado',
+            subjective: 'Histórico ginecológico confidencial e íntimo.',
+            objective: 'Exame especular realizado.',
+            assessment: 'Diagnóstico sensível.',
+            plan: 'Orientações.',
+            createdAt: '2026-10-01T14:00:00Z',
+            finalizedAt: '2026-10-01T14:30:00Z',
+            addenda: [],
+          },
+        ];
+      }
+      if (path === '/patients/patient-priv/medical-documents') {
+        return [];
+      }
+      return [];
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/medico/prontuario/patient-priv']}>
+        <Routes>
+          <Route path="/medico/prontuario/:patientId" element={<DoctorMedicalRecordsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Fernanda Privacidade')).toBeInTheDocument();
+      expect(screen.getByText('Histórico ginecológico confidencial e íntimo.')).toBeInTheDocument();
+    });
+
+    const privacyBtn = screen.getByRole('button', { name: /Modo Privacidade/i });
+    expect(privacyBtn).toBeInTheDocument();
+    expect(privacyBtn).toHaveAttribute('aria-pressed', 'false');
+
+    // Ao clicar para ativar o Modo Privacidade
+    fireEvent.click(privacyBtn);
+    expect(privacyBtn).toHaveAttribute('aria-pressed', 'true');
+
+    // Elementos com dados íntimos devem possuir a classe privacy-blur
+    const sensitiveContainer = screen.getByTestId('sensitive-clinical-records');
+    expect(sensitiveContainer).toHaveClass('privacy-blur');
+  });
 });
-
-

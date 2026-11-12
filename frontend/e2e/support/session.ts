@@ -30,12 +30,13 @@ export async function signInAsManager(page: Page): Promise<void> {
   expect(email, 'Defina Canamed__Development__SeedUserEmail no .env').not.toBe('');
   expect(password, 'Defina Canamed__Development__SeedUserPassword no .env').not.toBe('');
 
-  await page.goto('/');
-  await page.getByLabel('E-mail').fill(email);
-  await page.getByLabel('Senha', { exact: true }).fill(password);
+  await page.goto('/app');
+  await page.locator('input[type="email"]').waitFor({ state: 'visible' });
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();
 
-  const agendaButton = page.getByRole('button', { name: 'Agenda', exact: true });
+  const agendaButton = page.locator('.sidebar__item', { hasText: 'Agenda' }).first();
   const codeField = page.getByLabel('Código de verificação');
   const enrollmentHeading = page.getByRole('heading', { name: 'Verificação em duas etapas' });
 
@@ -60,6 +61,7 @@ export async function signInAsManager(page: Page): Promise<void> {
   await expect(agendaButton).toBeVisible();
 
   // Aguarda o cadastro mínimo carregar: sem profissional, a agenda fica sem ação de agendamento.
+  await page.goto('/app/agenda');
   await expect(page.getByRole('button', { name: 'Novo agendamento', exact: true })).toBeEnabled();
 }
 

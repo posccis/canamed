@@ -49,6 +49,16 @@ public sealed class Appointment : Entity
     /// <summary>Origem do agendamento (desk, online, etc.) — SPEC-0015.</summary>
     public string Origin { get; private set; } = "desk";
 
+    /// <summary>Queixa prévia e histórico confidencial preenchido pela paciente (RN-005).</summary>
+    public string? ClinicalPreAnamnesis { get; private set; }
+
+    /// <summary>Indica se a paciente confirmou a leitura do checklist de preparo pré-exame (RN-014).</summary>
+    public bool PreExamInstructionsAcknowledged { get; private set; }
+
+    /// <summary>Prazo em dias previsto para retorno sem ônus conforme Resolução CFM nº 1.958/2010 (RN-015).</summary>
+    public int? PlannedReturnDays { get; private set; }
+
+
 
     /// <summary>Preenchido na exclusão lógica (RN-012); registros excluídos não bloqueiam a agenda.</summary>
     public DateTimeOffset? DeletedAt { get; private set; }
@@ -71,7 +81,10 @@ public sealed class Appointment : Entity
         Guid? roomId = null,
         bool isOverbooking = false,
         string? overbookingReason = null,
-        string origin = "desk")
+        string origin = "desk",
+        string? clinicalPreAnamnesis = null,
+        bool preExamInstructionsAcknowledged = false,
+        int? plannedReturnDays = null)
     {
         if (clinicId == Guid.Empty)
         {
@@ -118,6 +131,9 @@ public sealed class Appointment : Entity
             IsOverbooking = isOverbooking,
             OverbookingReason = isOverbooking ? overbookingReason?.Trim() : null,
             Origin = origin,
+            ClinicalPreAnamnesis = string.IsNullOrWhiteSpace(clinicalPreAnamnesis) ? null : clinicalPreAnamnesis.Trim(),
+            PreExamInstructionsAcknowledged = preExamInstructionsAcknowledged,
+            PlannedReturnDays = plannedReturnDays,
         };
 
         appointment.MarkCreated(now);
@@ -167,6 +183,24 @@ public sealed class Appointment : Entity
     }
 
     /// <summary>Remarca o agendamento para um novo início, mantendo o histórico no log de auditoria (RN-007).</summary>
+    public void SetClinicalPreAnamnesis(string? preAnamnesis, DateTimeOffset now)
+    {
+        ClinicalPreAnamnesis = string.IsNullOrWhiteSpace(preAnamnesis) ? null : preAnamnesis.Trim();
+        MarkUpdated(now);
+    }
+
+    public void AcknowledgePreExamInstructions(DateTimeOffset now)
+    {
+        PreExamInstructionsAcknowledged = true;
+        MarkUpdated(now);
+    }
+
+    public void SetPlannedReturnDays(int? days, DateTimeOffset now)
+    {
+        PlannedReturnDays = days;
+        MarkUpdated(now);
+    }
+
     public void Reschedule(
         DateTimeOffset newStartsAt,
         DateTimeOffset now,

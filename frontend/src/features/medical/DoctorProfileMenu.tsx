@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, LogOut, ShieldCheck, Stethoscope } from 'lucide-react';
 import type { Session } from '../auth/authApi';
 
@@ -68,7 +68,9 @@ export function DoctorProfileMenu({ session, onSignOut }: DoctorProfileMenuProps
   }
 
   const roleLabel =
-    session.role === 'gestor'
+    session.role === 'admin'
+      ? 'Administrador Geral (Controle Total)'
+      : session.role === 'gestor'
       ? 'Gestor Clínico / Médico'
       : session.role === 'profissional'
         ? 'Médica(o) Assistencial'
@@ -123,6 +125,19 @@ export function DoctorProfileMenu({ session, onSignOut }: DoctorProfileMenuProps
             </div>
           </div>
 
+          {(session.role === 'admin' || session.role === 'gestor' || session.permissions.includes('clinic:read')) && (
+            <div style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid var(--color-border-subtle, #e2e8f0)' }}>
+              <a
+                href="/app/dashboard"
+                className="doctor-profile-dropdown__item"
+                role="menuitem"
+                style={{ textDecoration: 'none', color: 'var(--color-primary-dark, #6F217B)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem' }}
+              >
+                <ShieldCheck size={16} />
+                <span>Recepção & Gestão da Clínica</span>
+              </a>
+            </div>
+          )}
           <div style={{ padding: '0.25rem 0' }}>
             <button
               type="button"
@@ -139,3 +154,4 @@ export function DoctorProfileMenu({ session, onSignOut }: DoctorProfileMenuProps
     </div>
   );
 }
+

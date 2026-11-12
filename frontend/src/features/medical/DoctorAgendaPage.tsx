@@ -27,9 +27,9 @@ export function DoctorAgendaPage() {
   async function handleStartConsultation(appointmentId: string, patientName: string) {
     setActionInProgress(appointmentId);
     try {
-      await doctorStartConsultationByAppointment(appointmentId);
+      const active = await doctorStartConsultationByAppointment(appointmentId);
       addToast(`Atendimento iniciado: ${patientName}`, 'success');
-      navigate('/medico/consultorio');
+      navigate('/medico/consultorio', { state: { activeConsultation: active } });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha ao iniciar consulta.';
       addToast(msg, 'error');

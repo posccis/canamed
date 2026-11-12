@@ -1,9 +1,12 @@
-import { PatientHomePage } from './PatientPortalPages';
+import { useParams } from 'react-router-dom';
+import { PatientPortal } from '../PatientPortal';
+import { useClinicBySlug } from '../useClinicBySlug';
 
 /**
- * Legado redirecionado: A página inicial do paciente agora segue 100% o protótipo oficial
- * (assets/prototypes/cana_med_mulher_paciente.html) implementado em PatientPortal.
+ * Componente de compatibilidade para suíte de testes legada do portal.
  */
 export function PatientHub() {
-  return <PatientHomePage />;
+  const { slug } = useParams<{ slug: string }>();
+  const clinicState = useClinicBySlug(slug);
+  return <PatientPortal clinic={clinicState.status === 'ready' ? clinicState.clinic : null} />;
 }

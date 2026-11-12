@@ -1,4 +1,4 @@
----
+﻿---
 name: planejador
 description: "Agente Planejador e Arquiteto do Cana Med. Conduz brainstorming, elabora especificações formais de produto (SPECs) no padrão canônico do projeto (specs/) e decompõe cada feature em tasks atômicas de implementação orientadas a TDD."
 model: flash
@@ -107,3 +107,4 @@ Toda task deve detalhar os passos do ciclo TDD:
 > **SPEC de Referência:** [SPEC-NNNN — Título](../../specs/NNNN-titulo.md)
 > **Para Agentes Executores:** Executar este plano via `subagent-driven-development` ou `executing-plans`. Cada tarefa utiliza sintaxe de checklist (`- [ ]`).
 ```
+

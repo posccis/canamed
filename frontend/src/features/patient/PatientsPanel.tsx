@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Users,
   Search,
@@ -441,7 +441,7 @@ export function PatientsPanel() {
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
                     <td style={{ padding: '0.85rem 1.25rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--color-secondary, #005F6A)' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--color-secondary, #6F217B)' }}>
                         {patient.name}
                       </div>
                       {patient.email && (
@@ -464,7 +464,7 @@ export function PatientsPanel() {
 
                     <td style={{ padding: '0.85rem 1rem', color: '#334155' }}>
                       {patient.healthPlanName ? (
-                        <span className="badge" style={{ background: '#f0fdfa', color: '#005F6A' }}>
+                        <span className="badge" style={{ background: '#f0fdfa', color: '#6F217B' }}>
                           {patient.healthPlanName}
                         </span>
                       ) : (
@@ -480,7 +480,7 @@ export function PatientsPanel() {
                       {patient.isActive ? (
                         <span
                           className="badge"
-                          style={{ background: '#e6fffa', color: '#005F6A', border: '1px solid #b2f5ea' }}
+                          style={{ background: '#F7ECF8', color: '#6F217B', border: '1px solid #b2f5ea' }}
                         >
                           Ativa
                         </span>
@@ -536,7 +536,7 @@ export function PatientsPanel() {
                             onClick={() => void handleToggleActive(patient)}
                             title="Reativar cadastro"
                             aria-label={`Reativar ${patient.name}`}
-                            style={{ color: '#008080' }}
+                            style={{ color: '#852A91' }}
                           >
                             <RotateCcw size={15} />
                           </button>
@@ -786,7 +786,7 @@ export function PatientsPanel() {
                 lineHeight: 1.45,
               }}
             >
-              <div style={{ fontWeight: 600, color: '#005F6A', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <div style={{ fontWeight: 600, color: '#6F217B', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <FileText size={14} /> Observações administrativas e sigilo
               </div>
               <p style={{ margin: 0 }}>
@@ -827,7 +827,7 @@ export function PatientsPanel() {
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 600, color: '#005F6A', fontSize: '0.9rem' }}>
+                      <div style={{ fontWeight: 600, color: '#6F217B', fontSize: '0.9rem' }}>
                         {app.appointmentTypeName}
                       </div>
                       <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -914,3 +914,4 @@ export function PatientsPanel() {
     </div>
   );
 }
+

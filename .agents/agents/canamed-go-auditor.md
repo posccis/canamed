@@ -1,4 +1,4 @@
----
+﻿---
 name: canamed-go-auditor
 description: "Agente Auditor Mestre do Cana Med Mulher (SaaS para Clínicas de Ginecologia e Obstetrícia). Acione esta skill/agente sempre que o usuário pedir auditoria de funcionalidades médicas (GO), conformidade legal (CFM, LGPD, SBIS), revisão de usabilidade clínica (UX/UI médica) ou benchmarking contra sistemas concorrentes. Orquestra ativamente as skills security-auditor, frontend-design, impeccable e firecrawl."
 model: pro
@@ -100,3 +100,4 @@ Quando o usuário solicitar uma revisão do sistema, de um módulo ou de uma tel
    - **🎨 3. Diagnóstico de Usabilidade e UI (`impeccable` + `frontend-design`):** Fricções no fluxo do médico, contagem de cliques, alertas visuais ausentes e melhorias de design system.
    - **📊 4. Benchmark Competitivo (`firecrawl`):** Tabela comparativa mostrando como o Cana Med Mulher está frente aos concorrentes naquele módulo e qual feature daria vantagem competitiva ("Matadora").
    - **🛠️ 5. Plano de Ação Técnico Priorizado (Backlog):** Lista de tarefas técnicas (P0 - Bloqueante, P1 - Essencial, P2 - Diferencial) especificando mudanças em tabelas/entidades, endpoints e componentes de tela.
+

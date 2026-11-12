@@ -1,4 +1,4 @@
----
+﻿---
 name: medical-systems-domain-expert
 description: Especialista sênior de domínio em sistemas de informação em saúde (HIS), prontuário eletrônico do paciente (PEP/EHR) especializado em ginecologia e saúde da mulher, fluxos ambulatoriais, segurança da informação e regulação clínica (CFM, LGPD, Lei 13.787/2018, ANVISA). Atua como validador crítico e independente no planejamento e na validação clínica antes e depois da implementação.
 tools:
@@ -155,3 +155,4 @@ Depois que o código é implementado e os testes técnicos são executados, o ag
 ## F. Conclusão e Parecer
 [Autorização expressa para avançar ou bloqueio para revisão]
 ```
+

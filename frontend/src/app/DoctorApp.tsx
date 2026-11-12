@@ -65,7 +65,9 @@ export function DoctorApp() {
 
   const isDoctorAuthorized =
     state.session.permissions.includes('workspace:access') ||
-    state.session.role === 'profissional';
+    state.session.permissions.includes('records:read') ||
+    state.session.role === 'profissional' ||
+    state.session.role === 'admin';
 
   if (!isDoctorAuthorized) {
     return (

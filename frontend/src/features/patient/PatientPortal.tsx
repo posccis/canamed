@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Calendar,
-  Clock,
   User,
   Phone,
   ArrowLeft,
@@ -10,12 +9,10 @@ import {
   Check,
   X,
   AlertCircle,
-  HelpCircle,
   LogOut,
   MapPin,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Info,
 } from 'lucide-react';
 import {
@@ -28,7 +25,61 @@ import {
 } from './patientApi';
 import { useToast } from '../layout/Toast';
 import { CanamedLogoCurta } from '../../shared/CanamedLogo';
+import { PreExamInstructionsModal } from './components/PreExamInstructionsModal';
 import './patient-portal.css';
+
+
+export interface CareTypeItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  duration: string;
+  icon: string;
+  requiresPreExamPreparation: boolean;
+}
+
+export const CARE_TYPES: CareTypeItem[] = [
+  {
+    id: 'primeira_consulta',
+    title: '1ª Consulta Ginecológica',
+    subtitle: 'Anamnese completa, avaliação clínica e preventivo anual',
+    duration: '45 min',
+    icon: '🩺',
+    requiresPreExamPreparation: false,
+  },
+  {
+    id: 'retorno',
+    title: 'Retorno de Exames',
+    subtitle: 'Reavaliação de exames solicitados e conduta médica',
+    duration: '20 min',
+    icon: '🔄',
+    requiresPreExamPreparation: false,
+  },
+  {
+    id: 'pre_natal',
+    title: 'Consulta Pré-Natal',
+    subtitle: 'Acompanhamento gestacional, curva fetal e vitalidade',
+    duration: '40 min',
+    icon: '🤰',
+    requiresPreExamPreparation: false,
+  },
+  {
+    id: 'preventivo',
+    title: 'Preventivo / Papanicolaou',
+    subtitle: 'Coleta oncótica cervical e exame especular detalhado',
+    duration: '30 min',
+    icon: '🔬',
+    requiresPreExamPreparation: true,
+  },
+  {
+    id: 'diu_larc',
+    title: 'Inserção / Revisão de DIU',
+    subtitle: 'Colocação ou acompanhamento ultrassonográfico de LARC',
+    duration: '40 min',
+    icon: '🌀',
+    requiresPreExamPreparation: true,
+  },
+];
 
 export type PatientPortalTab = 'home' | 'schedule' | 'appointments' | 'details' | 'profile';
 
@@ -65,7 +116,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
   // Agendamentos
   const [appointments, setAppointments] = useState<OnlineAppointment[]>([]);
-  const [loadingAppointments, setLoadingAppointments] = useState(false);
+  const [, setLoadingAppointments] = useState(false);
 
   // Auth / OTP Modal
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -77,6 +128,11 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
   // Schedule Flow State
   const [scheduleStep, setScheduleStep] = useState<1 | 2 | 3 | 4>(1);
+    // Atendimento GO e Preparo Pré-Exame (RN-014)
+  const [selectedCareType, setSelectedCareType] = useState<CareTypeItem | null>(() => CARE_TYPES[0]);
+  const [isPreExamModalOpen, setIsPreExamModalOpen] = useState(false);
+  const [preExamAcknowledged, setPreExamAcknowledged] = useState(false);
+  const [clinicalPreAnamnesis, setClinicalPreAnamnesis] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState<{ id: string; name: string; specialtyId: string; specialtyName?: string } | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>(() => {
     const today = new Date();
@@ -387,8 +443,6 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
     sessionStorage.clear();
     setSession(null);
     setAppointments([]);
-    setDocuments([]);
-    setExamAttachments([]);
     onLogoutRequested?.();
     navigateTo('home');
     addToast('Sessão encerrada com segurança.', 'info');
@@ -408,8 +462,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
 
   // Próxima consulta em destaque
   const nextAppointment = useMemo(() => {
-    const now = new Date();
-    return appointments
+      return appointments
       .filter((a) => a.status === 'agendado' || a.status === 'Agendado' || a.status === 'confirmado')
       .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0];
   }, [appointments]);
@@ -901,7 +954,7 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       fontSize: '0.85rem',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      boxShadow: '0 4px 10px rgba(133, 42, 145, 0.2)',
+                      boxShadow: '0 4px 10px rgba(0, 128, 128, 0.2)',
                     }}
                   >
                     <CalendarPlus size={16} />
@@ -1157,13 +1210,138 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
               })}
             </div>
 
-            {/* Passo 1: Seleção de Profissional / Especialidade */}
+            {/* Passo 1: Seleção de Atendimento GO e Profissional */}
             {scheduleStep === 1 && (
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1E293B', marginBottom: '0.35rem' }}>
+                {/* 1.1 Cards de Atendimento GO */}
+                <div style={{ marginBottom: '1.75rem' }}>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1E293B', marginBottom: '0.35rem' }}>
+                    Tipo de Atendimento GO
+                  </h2>
+                  <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '0 0 1rem' }}>
+                    Selecione o serviço ginecológico ou obstétrico desejado:
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
+                    {CARE_TYPES.map((care) => {
+                      const isSelected = selectedCareType?.id === care.id;
+                      return (
+                        <button
+                          key={care.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCareType(care);
+                            if (care.requiresPreExamPreparation) {
+                              setIsPreExamModalOpen(true);
+                              setPreExamAcknowledged(false);
+                            } else {
+                              setPreExamAcknowledged(true);
+                            }
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            padding: '1rem',
+                            background: isSelected ? '#F7ECF8' : '#FFFFFF',
+                            border: isSelected ? '2px solid #852A91' : '1px solid #E2E8F0',
+                            borderRadius: '14px',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '1.5rem', lineHeight: 1 }} role="img" aria-label={care.title}>
+                              {care.icon}
+                            </span>
+                            <div>
+                              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.92rem', color: '#1E293B' }}>
+                                {care.title}
+                              </p>
+                              <p style={{ margin: '0.2rem 0 0.4rem', fontSize: '0.78rem', color: '#64748B', lineHeight: 1.3 }}>
+                                {care.subtitle}
+                              </p>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 600,
+                                  color: '#6F217B',
+                                  background: '#F1F5F9',
+                                  padding: '0.15rem 0.5rem',
+                                  borderRadius: '6px',
+                                }}
+                              >
+                                {care.duration}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              border: isSelected ? '2px solid #852A91' : '2px solid #CBD5E1',
+                              background: isSelected ? '#852A91' : 'transparent',
+                              color: '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {isSelected && <Check size={12} />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedCareType?.requiresPreExamPreparation && (
+                    <div
+                      style={{
+                        marginTop: '0.75rem',
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: '8px',
+                        background: preExamAcknowledged ? '#F0FDF9' : '#FEF3C7',
+                        border: `1px solid ${preExamAcknowledged ? '#B77AD8' : '#F59E0B'}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      <span style={{ color: preExamAcknowledged ? '#6F217B' : '#92400E', fontWeight: 600 }}>
+                        {preExamAcknowledged
+                          ? '✓ Orientações de preparo pré-exame confirmadas'
+                          : '⚠️ Confirmação obrigatória de preparo pendente'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsPreExamModalOpen(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#852A91',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        {preExamAcknowledged ? 'Rever' : 'Abrir orientações'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 1.2 Profissional */}
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', marginBottom: '0.35rem' }}>
                   {isRescheduling ? 'Reagendar: Novo Profissional?' : 'Com quem deseja passar?'}
-                </h2>
-                <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '0 0 1.25rem' }}>
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '0 0 1rem' }}>
                   Selecione o profissional de sua preferência para o atendimento:
                 </p>
 
@@ -1482,6 +1660,43 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Pré-Anamnese e Motivo do Atendimento */}
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <h3 style={{ margin: '0 0 0.35rem', fontSize: '0.98rem', fontWeight: 700, color: '#1E293B' }}>
+                    Motivo do Atendimento ou Sintomas (Opcional)
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748B', margin: '0 0 0.85rem', lineHeight: 1.4 }}>
+                    Se desejar, informe sintomas ou observações que auxiliem na condução da consulta ginecológica:
+                  </p>
+                  <textarea
+                    placeholder="Ex: Rotina anual, dores no baixo ventre, atraso menstrual..."
+                    value={clinicalPreAnamnesis}
+                    onChange={(e) => setClinicalPreAnamnesis(e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      padding: '0.6rem 0.75rem',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '0.88rem',
+                      color: '#1E293B',
+                      fontFamily: 'inherit',
+                      resize: 'vertical',
+                      outline: 'none',
+                    }}
+                  />
                 </div>
 
                 {/* Aviso da Política de 24h e 15 minutos */}
@@ -2644,6 +2859,21 @@ export function PatientPortal({ initialTab = 'home', onTabChange, clinic, onLogo
           </div>
         </div>
       )}
+      {/* Modal de Instruções de Preparo Pré-Exame (RN-014) */}
+      <PreExamInstructionsModal
+        isOpen={isPreExamModalOpen}
+        careTypeId={selectedCareType?.id || ''}
+        careTitle={selectedCareType?.title || ''}
+        onConfirm={() => {
+          setPreExamAcknowledged(true);
+          setIsPreExamModalOpen(false);
+          addToast('Preparo pré-exame confirmado com sucesso!', 'success');
+        }}
+        onClose={() => {
+          setIsPreExamModalOpen(false);
+        }}
+      />
     </div>
   );
 }
+

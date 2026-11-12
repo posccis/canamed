@@ -133,6 +133,7 @@ api.MapMedicalRecordEndpoints();
 api.MapPatientExamAttachmentEndpoints();
 api.MapMedicalDocumentEndpoints();
 api.MapDoctorWorkspaceEndpoints();
+api.MapLarcEndpoints();
 api.MapNotificationEndpoints();
 api.MapPortalEndpoints();
 api.MapPublicPortalEndpoints();

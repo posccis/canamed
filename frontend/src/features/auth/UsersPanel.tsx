@@ -11,6 +11,7 @@ import {
 } from './authApi';
 
 const roleLabels: Record<string, string> = {
+  admin: 'Administrador Geral (Total)',
   gestor: 'Gestor',
   recepcionista: 'Recepção',
   profissional: 'Profissional',
@@ -141,6 +142,7 @@ export function UsersPanel() {
           <label className="field field--short">
             <span className="field__label">Papel</span>
             <select className="field__input" value={role} onChange={(event) => setRole(event.target.value)}>
+              <option value="admin">Administrador Geral (Total)</option>
               <option value="gestor">Gestor</option>
               <option value="recepcionista">Recepção</option>
               <option value="profissional">Profissional</option>

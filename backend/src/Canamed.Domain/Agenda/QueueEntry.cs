@@ -190,7 +190,15 @@ public sealed class QueueEntry : Entity
 
     /// <summary>Inicia o atendimento (RN-005).</summary>
     public void Start(DateTimeOffset now) =>
-        TransitionTo(QueueStatus.InService, now, [QueueStatus.Called], static (entry, moment) => entry.StartedAt = moment);
+        TransitionTo(
+            QueueStatus.InService,
+            now,
+            [QueueStatus.Called, QueueStatus.Waiting],
+            static (entry, moment) =>
+            {
+                entry.CalledAt ??= moment;
+                entry.StartedAt = moment;
+            });
 
     /// <summary>Conclui o atendimento na fila, a partir do atendimento em andamento (RN-005).</summary>
     public void Complete(DateTimeOffset now) =>

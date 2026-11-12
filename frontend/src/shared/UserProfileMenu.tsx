@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, LogOut, User, Settings, Bell, ShieldCheck } from 'lucide-react';
-import type { Session } from '../auth/authApi';
+import { ChevronDown, LogOut, Settings, ShieldCheck } from 'lucide-react';
+import type { Session } from '../features/auth/authApi';
 
 interface UserProfileMenuProps {
   session: Session;
@@ -19,6 +19,8 @@ function getInitials(name?: string): string {
 
 function formatRole(role?: string): string {
   switch (role) {
+    case 'admin':
+      return 'Administrador Geral (Total)';
     case 'gestor':
       return 'Recepção / Gestão';
     case 'recepcionista':

@@ -1,4 +1,4 @@
----
+﻿---
 name: orquestrador
 description: "Agente Orquestrador Central do Cana Med. Coordena o ciclo completo de ponta a ponta: engenharia de software clínico (planejador, especialistas médico e de UI/UX, implementador e validador) e trilha de design e comunicação (criador de conteúdo estratégico e social media designer no Canvas MCP)."
 model: flash
@@ -114,7 +114,7 @@ flowchart TD
     
     subgraph CriacaoConteudo [Estratégia & Conteúdo de Marca]
         ContentCreator --> NonTechDocs[Consulta GEMINI.md, Visão do Produto e Dores das Clínicas]
-        ContentCreator --> BrandAssets[Verifica cores oficiais #008080, #005F6A e logos em assets/brand/]
+        ContentCreator --> BrandAssets[Verifica cores oficiais #852A91, #6F217B e logos em assets/brand/]
         ContentCreator --> ContentPackage[Gera Pacote de Conteúdo: Roteiro slide a slide, copy completa e legenda]
     end
 
@@ -151,3 +151,4 @@ flowchart TD
 
 ### 4. Context Hygiene
 - Isole o contexto dos subagentes: cada subagente recebe apenas o brief conciso da tarefa, os arquivos relevantes e o diff do commit em análise. Nunca polua o contexto dos agentes com o histórico completo da sessão.
+

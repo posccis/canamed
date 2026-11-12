@@ -68,7 +68,7 @@ describe('Roteamento por URL das superfícies (SPEC-0026 / ADR-0011)', () => {
     navigateTo('/p/cana-med');
     render(<App />);
 
-    expect(await screen.findByText(/CANA MED/i)).toBeInTheDocument();
+    expect((await screen.findAllByText(/CANA MED/i)).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: /Agendar Agora/i })).toBeInTheDocument();
     expect(screen.queryByRole('complementary', { name: 'Navegação principal da aplicação' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Sair$/ })).not.toBeInTheDocument();
