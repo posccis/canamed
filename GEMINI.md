@@ -952,35 +952,40 @@ Como plataforma especializada em ginecologia, o CANAMED lida com dados de saúde
 
 # Governança de Agentes Especialistas no Ciclo de Desenvolvimento (Obrigatório)
 
-O desenvolvimento de qualquer funcionalidade, especialmente no módulo de PEP ginecológico, deve cumprir obrigatoriamente o ciclo em quatro fases coordenadas:
+O desenvolvimento de qualquer funcionalidade, especialmente no módulo de PEP ginecológico, deve cumprir obrigatoriamente a esteira multiagente com execução paralela em worktrees isolados, roteamento de modelos e cinco fases coordenadas:
 
-### Fase A — Planejamento
-1. O agente planejador delimita o escopo da funcionalidade e elabora a proposta na SPEC.
-2. O **Medical Systems Domain Expert** revisa criticamente os requisitos clínicos, fluxos ginecológicos e conformidade regulatória.
-3. O **UI/UX Reviewer** revisa os requisitos de interface, usabilidade, acessibilidade e consistência visual.
-4. As observações e ajustes são incorporados à SPEC, definindo critérios objetivos de aceitação funcional, clínica e visual.
+### Fase 1 — Planejamento & Contratos
+1. O `@planejador` delimita o escopo da funcionalidade e elabora a proposta na SPEC.
+2. O **`@medical-systems-domain-expert`** (`pro`) revisa criticamente os requisitos clínicos, fluxos ginecológicos, bioética e conformidade regulatória (CFM, SBIS, LGPD).
+3. O **`@ui-ux-design-planner`** (`pro`) elabora as especificações detalhadas de UI/UX clínica de 12 seções, garantindo redução de atrito médico e consistência com `theme.css`.
+4. O **`@integration-engineer`** (`flash`) define os contratos de API (DTOs compartilhados e OpenAPI schemas) antes do início da codificação paralela.
+5. O `@orquestrador` aloca os worktrees isolados (`Workspace: "share"`) para as frentes técnicas.
 
-### Fase B — Implementação
-1. O agente implementador segue estritamente a SPEC aprovada.
-2. Reutiliza a arquitetura (.NET 10 / PostgreSQL), padrões e componentes visuais existentes do frontend (React 19 / CSS tokens).
-3. Constrói todos os estados da interface (carregamento, sucesso, erro, vazio).
-4. Executa testes automatizados (TDD/unitários/integração).
-5. Registra formalmente limitações e eventuais desvios.
+### Fase 2 — Implementação Paralela Isolada (TDD Rigoroso)
+Cada frente técnica opera em seu próprio worktree isolado, com ownership estrito de arquivos para evitar sobrescritas:
+1. **`@database-engineer`** (`flash`): Modela schemas PostgreSQL, interceptors de imutabilidade (Lei 13.787), conversão criptográfica (LGPD Art. 11) e migrations EF Core 10 em `backend/src/Canamed.Infrastructure/Persistence`.
+2. **`@backend-implementer`** (`flash`): Implementa regras clínicas de domínio (.NET 10 / C# 13), calculadoras obstétricas/ginecológicas, casos de uso e testes unitários em `Canamed.Domain` e `Canamed.Application`.
+3. **`@frontend-implementer`** (`flash`): Constrói telas React 19, formulários, componentes vetoriais SVG (Mapa Cervical, Curvas Atalah/AU) e auto-save com debounce em `frontend/src/features`.
+4. Cada frente executa seus testes locais com cobertura TDD (Red-Green-Refactor) antes da entrega.
 
-### Fase C — Validação
-1. O validador técnico verifica compilação e suíte integral de testes (`dotnet test`, `npm test`).
-2. O **Medical Systems Domain Expert** audita a completude funcional, coerência clínica dos dados e rastreabilidade.
-3. O **UI/UX Reviewer** avalia a qualidade visual renderizada, ausência de regressões e usabilidade.
-4. Os apontamentos são classificados por severidade (P0 - Bloqueador, P1 - Importante, P2 - Evolução).
-5. Bloqueadores P0 exigem correção imediata pelo implementador antes da liberação.
+### Fase 3 — Integração e Wire-up
+1. O **`@integration-engineer`** (`flash`) realiza o merge das branches de trabalho na branch `integration/<feature>`.
+2. Implementa os endpoints da API (.NET 10) e os clients de consumo HTTP correspondentes no frontend (`frontend/src/api`).
+3. Executa a suíte de testes de integração de API garantindo conectividade e respostas padronizadas em `ProblemDetails`.
 
-### Fase D — Conclusão (Definition of Done)
-Uma entrega só é considerada concluída quando:
-- Todos os critérios de aceitação forem atendidos;
-- 100% dos testes exigidos forem executados e aprovados com evidências registradas;
-- Não houver pendências críticas (P0) clínicas, visuais ou de segurança;
-- A revisão visual tiver sido concluída (com limitações técnicas registradas quando aplicável);
-- A ação for registrada no `docs/CHANGELOG_AGENTE.md`.
+### Fase 4 — Validação Técnica e QA
+1. O **`@validador`** (`flash`) verifica a compilação geral e executa a suíte completa de testes (`dotnet test`, `npm test`) exigindo 100% de aprovação e evidências reais.
+2. O **`@cana-med-qa-engineer`** (`pro`) executa testes funcionais e de regressão automatizados no navegador real via Playwright, validando fluxos de ponta a ponta.
+
+### Fase 5 — Auditoria Final e Conclusão (Definition of Done)
+1. O **`@canamed-go-auditor`** (`pro`), em conjunto com os especialistas clínicos e de UI/UX, audita a completude funcional, coerência médica dos dados, acessibilidade e ausência de atrito no consultório.
+2. Os apontamentos são classificados por severidade (P0 - Bloqueador, P1 - Importante, P2 - Evolução). Bloqueadores P0 exigem correção imediata na respectiva frente antes da liberação.
+3. O `@orquestrador` realiza o merge seguro da branch de integração na `main` e executa a limpeza dos worktrees.
+4. Uma entrega só é considerada concluída quando:
+   - Todos os critérios de aceitação forem atendidos;
+   - 100% dos testes exigidos forem executados e aprovados com evidências registradas;
+   - Não houver pendências críticas (P0) clínicas, visuais ou de segurança;
+   - A ação for registrada no `docs/CHANGELOG_AGENTE.md`.
 
 ---
 

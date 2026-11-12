@@ -1,6 +1,6 @@
 # Ecossistema Multiagente — Cana Med
 
-Este diretório (`.agents/`) define o ecossistema autônomo de inteligência artificial para o projeto **Cana Med**, projetado para atuar tanto no ciclo de engenharia de software (backend .NET C#, frontend React TypeScript, modelagem de dados, regras clínicas e conformidade LGPD) quanto na estratégia de marca, copywriting e produção visual no Canva via Canvas MCP.
+Este diretório (`.agents/`) define o ecossistema autônomo de inteligência artificial para o projeto **Cana Med**, projetado para atuar no ciclo completo de engenharia de software clínico com execução paralela isolada, roteamento centralizado de modelos (Gemini Flash vs Gemini Pro) e esteira de design de marca e redes sociais no Canva via Canvas MCP.
 
 ---
 
@@ -8,117 +8,105 @@ Este diretório (`.agents/`) define o ecossistema autônomo de inteligência art
 
 ### 1. Trilha de Engenharia de Software & Prontuário Clínico (PEP Ginecológico)
 
-| Agente | Arquivo de Definição | Modelo | Papel Principal | Skills Habilitadas |
-| :--- | :--- | :--- | :--- | :--- |
-| **Orquestrador** | [`agents/orquestrador.md`](./agents/orquestrador.md) | **`flash`** | Coordena o ciclo de ponta a ponta, gerencia branches isoladas (worktrees), despacha subagentes e governa o ledger. | `subagent-driven-development`<br>`dispatching-parallel-agents`<br>`using-git-worktrees`<br>`finishing-a-development-branch`<br>`using-superpowers`<br>`find-skills`<br>`diagnosing-superpowers` |
-| **Planejador** | [`agents/planejador.md`](./agents/planejador.md) | **`flash`** | Redige especificações formais de produto (`specs/`) no padrão canônico e decompõe cada feature em planos atômicos de tarefas (`docs/plans/`). | `brainstorming`<br>`writing-plans`<br>`using-superpowers`<br>`find-skills`<br>`writing-skills` |
-| **UI/UX Design Planner** | [`agents/ui-ux-design-planner.md`](./agents/ui-ux-design-planner.md) | **`pro`** | Especialista exclusivo em planejamento visual e ergonomia clínica. Elabora planos de design de 12 seções orientados a implementação sem alterar código diretamente. | `frontend-design`<br>`impeccable`<br>`ui-styling`<br>`ui-ux-pro-max`<br>`web-design-guidelines`<br>`security-auditor` |
-| **Medical Systems Domain Expert** | [`agents/medical-systems-domain-expert.md`](./agents/medical-systems-domain-expert.md) | **`pro`** | Especialista sênior em HIS, PEP Ginecológico, CFM, LGPD e fluxos ambulatoriais. Valida criticamente SPECs (Fase A) e audita integridade clínica pós-implementação (Fase C). | `verification-before-completion`<br>`requesting-code-review` |
-| **UI/UX Reviewer** | [`agents/ui-ux-reviewer.md`](./agents/ui-ux-reviewer.md) | **`pro`** | Especialista em ergonomia clínica, consistência de design system (`theme.css`) e acessibilidade. Revisa SPECs (Fase A) e audita a interface renderizada (Fase C). | `verification-before-completion`<br>`requesting-code-review` |
-| **Auditor Mestre GO** | [`agents/canamed-go-auditor.md`](./agents/canamed-go-auditor.md) | **`pro`** | Auditor Chefe de Produto, Informática Médica, Compliance Legal e UX Clínica do Cana Med Mulher. Conduz auditorias end-to-end e benchmarking orquestrando 4 skills especialistas. | `security-auditor`<br>`frontend-design`<br>`impeccable`<br>`firecrawl`<br>`verification-before-completion`<br>`requesting-code-review` |
-| **Implementador** | [`agents/implementador.md`](./agents/implementador.md) | **`flash`** | Executa as tarefas de código estritamente sob o método TDD (Red-Green-Refactor) com investigação sistemática de causa-raiz. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
-| **Validador** | [`agents/validador.md`](./agents/validador.md) | **`flash`** | Auditor técnico de qualidade e conformidade com as specs. Aplica a regra "Evidência antes de afirmações", executando testes reais e emitindo relatórios de revisão. | `verification-before-completion`<br>`requesting-code-review`<br>`systematic-debugging`<br>`using-superpowers` |
-| **Cana Med QA Engineer** | [`agents/cana-med-qa-engineer.md`](./agents/cana-med-qa-engineer.md) | **`pro`** | Executa testes funcionais e end-to-end reais na Cana Med Mulher, simulando usuário real via Playwright, validando APIs, persistência, documentando bugs e checando regressões. | `playwright`<br>`playwright-cli`<br>`verification-before-completion`<br>`systematic-debugging`<br>`requesting-code-review` |
+| Agente | Arquivo de Definição | Modelo Designado | Papel Principal e Atuação | Skills Habilitadas |
+| :--- | :--- | :---: | :--- | :--- |
+| **`@orquestrador`**<br>*(alias: `@orchestrator`)* | [`agents/orquestrador.md`](./agents/orquestrador.md) | **`flash`** | **Coordenador Central**: Conduz a esteira de 12 passos, gerencia worktrees isolados (`share`), despacha tarefas paralelas e orquestra validação e QA. | `subagent-driven-development`<br>`dispatching-parallel-agents`<br>`using-git-worktrees`<br>`finishing-a-development-branch`<br>`using-superpowers`<br>`find-skills`<br>`diagnosing-superpowers` |
+| **`@planejador`**<br>*(alias: `@planner`)* | [`agents/planejador.md`](./agents/planejador.md) | **`flash`** | **Arquiteto de Requisitos**: Redige especificações formais (`specs/`) e decompõe cada feature em planos atômicos de tarefas (`docs/plans/`). | `brainstorming`<br>`writing-plans`<br>`using-superpowers`<br>`find-skills`<br>`writing-skills` |
+| **`@medical-systems-domain-expert`** | [`agents/medical-systems-domain-expert.md`](./agents/medical-systems-domain-expert.md) | **`pro`** | **Validador Médico Sênior**: Especialista em HIS, CFM, Lei 13.787/2018, LGPD e protocolos de saúde da mulher (FEBRASGO/INCA). | `verification-before-completion`<br>`requesting-code-review` |
+| **`@ui-ux-design-planner`** | [`agents/ui-ux-design-planner.md`](./agents/ui-ux-design-planner.md) | **`pro`** | **Planejador de Ergonomia Clínica**: Elabora planos visuais de 12 seções orientados a redução de atrito e consistência visual para consultórios. | `frontend-design`<br>`impeccable`<br>`ui-styling`<br>`ui-ux-pro-max`<br>`web-design-guidelines`<br>`security-auditor` |
+| **`@ui-ux-reviewer`** | [`agents/ui-ux-reviewer.md`](./agents/ui-ux-reviewer.md) | **`pro`** | **Auditor de Interface e Design System**: Avalia conformidade estética com `theme.css`, acessibilidade (WCAG AA) e ergonomia médica. | `verification-before-completion`<br>`requesting-code-review` |
+| **`@integration-engineer`** | [`agents/integration-engineer.md`](./agents/integration-engineer.md) | **`flash`** | **Engenheiro de Contratos & Integração**: Define DTOs, schemas OpenAPI, rotas de API (.NET 10), clients fetch e merge das branches de trabalho. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
+| **`@database-engineer`** | [`agents/database-engineer.md`](./agents/database-engineer.md) | **`flash`** | **Engenheiro de Banco de Dados**: Modela schemas PostgreSQL, migrations EF Core 10, interceptors de imutabilidade e criptografia em repouso. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
+| **`@backend-implementer`** | [`agents/backend-implementer.md`](./agents/backend-implementer.md) | **`flash`** | **Engenheiro de Backend**: Implementa regras clínicas de domínio (.NET 10 / C# 13), calculadoras obstétricas/ginecológicas e testes unitários TDD. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
+| **`@frontend-implementer`** | [`agents/frontend-implementer.md`](./agents/frontend-implementer.md) | **`flash`** | **Engenheiro de Frontend**: Constrói telas React 19, formulários dinâmicos, componentes vetoriais SVG (Mapa Cervical, Curvas Atalah/AU) e auto-save. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`ui-styling`<br>`using-superpowers` |
+| **`@implementador`**<br>*(alias: `@implementer`)* | [`agents/implementador.md`](./agents/implementador.md) | **`flash`** | **Implementador Geral (Fallback)**: Executor de correções atômicas pontuais que não demandam divisão em frentes paralelas. | `test-driven-development`<br>`executing-plans`<br>`systematic-debugging`<br>`receiving-code-review`<br>`using-superpowers` |
+| **`@validador`**<br>*(alias: `@validator`)* | [`agents/validador.md`](./agents/validador.md) | **`flash`** | **Auditor Técnico de Qualidade**: Garante a regra "Evidência antes de afirmações", rodando testes (`dotnet test`, `npm test`) com 0 falhas. | `verification-before-completion`<br>`requesting-code-review`<br>`systematic-debugging`<br>`using-superpowers` |
+| **`@cana-med-qa-engineer`**<br>*(alias: `@qa-engineer`)* | [`agents/cana-med-qa-engineer.md`](./agents/cana-med-qa-engineer.md) | **`pro`** | **Engenheiro de QA E2E**: Executa testes de ponta a ponta simulando usuários reais no navegador com Playwright. | `playwright`<br>`playwright-cli`<br>`verification-before-completion`<br>`systematic-debugging`<br>`requesting-code-review` |
+| **`@canamed-go-auditor`** | [`agents/canamed-go-auditor.md`](./agents/canamed-go-auditor.md) | **`pro`** | **Auditor Chefe de Produto GO & Compliance**: Conduz auditorias end-to-end de produto médico, segurança (DevSecOps) e conformidade legal. | `security-auditor`<br>`frontend-design`<br>`impeccable`<br>`firecrawl`<br>`verification-before-completion`<br>`requesting-code-review` |
 
 ---
 
 ### 2. Trilha de Marca, Conteúdo e Design Visual (Canva / Canvas MCP)
 
-| Agente | Arquivo de Definição | Modelo | Papel Principal | Insumos e Materiais Obrigatórios |
-| :--- | :--- | :--- | :--- | :--- |
-| **Design Content Creator** | [`agents/cana-med-design-content-creator.md`](./agents/cana-med-design-content-creator.md) | **`inherit`** | Estrategista de conteúdo e copywriting para os designs do Canvas MCP. Consulta todas as informações não técnicas da plataforma, define a narrativa, dores das clínicas, copy slide a slide e seleção de materiais oficiais. | `GEMINI.md`, `docs/visao-produto.md`, `docs/identidade-visual.md`, `assets/brand/` (logos oficiais, ícones 2px outline e paleta oficial #008080 teal, #005F6A petróleo, #66CDAA menta). |
-| **Social Media Designer** | [`agents/cana-med-social-designer-agent.md`](./agents/cana-med-social-designer-agent.md) | **`inherit`** | Designer de execução visual. Opera diretamente as ferramentas do Canvas MCP no Canva, estruturando diagramação, hierarquia visual, contraste, responsividade mobile e revisão dos designs editáveis. | Pacote de conteúdo do Content Creator, ferramentas Canva MCP, assets oficiais em `assets/brand/`. |
+| Agente | Arquivo de Definição | Modelo Designado | Papel Principal | Insumos Obrigatórios |
+| :--- | :--- | :---: | :--- | :--- |
+| **`@cana-med-design-content-creator`** | [`agents/cana-med-design-content-creator.md`](./agents/cana-med-design-content-creator.md) | **`inherit`** | Estrategista de conteúdo e copywriting não técnico. Define narrativas, personas médicas/pacientes, roteiros slide a slide e seleção de ativos oficiais. | `GEMINI.md`, `docs/visao-produto.md`, `docs/identidade-visual.md`, `assets/brand/` (#008080 teal, #005F6A petróleo, #66CDAA menta). |
+| **`@cana-med-social-designer`**<br>*(alias: `@social-designer`)* | [`agents/cana-med-social-designer-agent.md`](./agents/cana-med-social-designer-agent.md) | **`inherit`** | Designer de execução visual. Opera as ferramentas do Canvas MCP no Canva, diagramando peças no formato Instagram (1080x1350 ou 1080x1920) com tipografia limpa. | Pacote de conteúdo do Content Creator, ferramentas Canva MCP, assets oficiais em `assets/brand/`. |
 
 ---
 
-## Fluxos de Trabalho Integrados
-
-### Fluxo 1: Engenharia de Software Clínico (Ciclo de 4 Fases — GEMINI.md)
+## Fluxo Operacional Paralelo em 5 Fases
 
 ```
-[Demanda / Épico Clínico]
+[Demanda Clínica / Épico]
         │
         ▼
- 1. ORQUESTRADOR ──► Prepara Worktree / Branch Isolada (using-git-worktrees)
+ 1. ORQUESTRADOR ──► Interpretação da Demanda e Consulta às SPECs
         │
         ▼
- 2. FASE A: PLANEJAMENTO
+ 2. FASE 1: PLANEJAMENTO E CONTRATOS
     ├── PLANEJADOR redige proposta de SPEC formal em specs/
-    ├── MEDICAL SYSTEMS EXPERT valida requisitos clínicos, CFM e fluxos de ginecologia
-    └── UI/UX REVIEWER valida ergonomia de tela, tokens visuais e acessibilidade
+    ├── MEDICAL SYSTEMS EXPERT valida regras clínicas, CFM e protocolos
+    ├── UI/UX DESIGN PLANNER desenha especificações ergonômicas de interface
+    └── INTEGRATION ENGINEER define DTOs compartilhados e schemas OpenAPI
         │
-        ▼ Planejador consolida SPEC aprovada e Plano de Tasks (docs/plans/)
+        ▼ Orquestrador provisiona Worktrees Isolados (Workspace: "share")
         │
- 3. FASE B: IMPLEMENTAÇÃO ATÔMICA (Subagent-Driven Development)
-    ┌────────────────────────────────────────────────────────┐
-    │ Para cada task atômica do plano:                       │
-    │ 3.1 IMPLEMENTADOR  ──► TDD: Red -> Green -> Refactor   │
-    │                        (test-driven-development)       │
-    │        │                                               │
-    │        ▼                                               │
-    │ 3.2 VALIDADOR     ──► Evidências de Testes & Auditoria │
-    │                       (verification-before-completion) │
-    │        │                                               │
-    │   Aprovado? ──► [Não] ──► Retorna ao Implementador     │
-    │        │                                               │
-    │       [Sim]                                            │
-    │        ▼                                               │
-    │   Ledger atualizado & Próxima tarefa                   │
-    └────────────────────────────────────────────────────────┘
+ 3. FASE 2: EXECUÇÃO PARALELA ISOLADA (TDD Rigoroso)
+    ┌───────────────────────────┬───────────────────────────┬───────────────────────────┐
+    │     DATABASE ENGINEER     │    BACKEND IMPLEMENTER    │   FRONTEND IMPLEMENTER    │
+    │  (Worktree: *-database)   │   (Worktree: *-backend)   │  (Worktree: *-frontend)   │
+    │                           │                           │                           │
+    │ • Modelagem de entidades  │ • Regras de domínio (.NET)│ • Telas e blocos (React)  │
+    │ • Interceptors imutáveis  │ • Calculadoras clínicas   │ • Componentes SVG e temas │
+    │ • Migrations EF Core 10   │ • Casos de uso / handlers │ • Auto-save com debounce  │
+    │ • Criptografia LGPD       │ • Testes unitários xUnit  │ • Testes Vitest c/ mocks  │
+    └───────────────────────────┴───────────────────────────┴───────────────────────────┘
         │
-        ▼
- 4. FASE C: VALIDAÇÃO INTEGRAL
-    ├── VALIDADOR executa suíte completa de testes (dotnet test, npm test, build)
-    ├── MEDICAL SYSTEMS EXPERT audita coerência clínica e integridade de prontuário
-    └── UI/UX REVIEWER audita interface renderizada e conformidade estética
+        ▼ Todas as frentes com testes unitários locais aprovados
+        │
+ 4. FASE 3: INTEGRAÇÃO E WIRE-UP
+    ├── INTEGRATION ENGINEER realiza merge das frentes na branch "integration/*"
+    ├── Mapeamento de rotas de API (.NET 10) e conexão do client fetch frontend
+    └── Execução e aprovação dos testes de integração de API
         │
         ▼
- 5. ORQUESTRADOR ──► Conclusão da Branch e Integração / PR (finishing-a-development-branch)
+ 5. FASE 4: VALIDAÇÃO TÉCNICA E QA
+    ├── VALIDADOR TÉCNICO audita compilação geral e suítes completas com 0 falhas
+    └── CANA MED QA ENGINEER executa testes funcionais E2E no navegador (Playwright)
+        │
+        ▼
+ 6. FASE 5: AUDITORIA FINAL E MERGE
+    ├── AUDITOR MESTRE GO & ESPECIALISTAS validam conformidade ética e usabilidade
+    └── ORQUESTRADOR realiza merge seguro na "main" e conclui a limpeza de worktrees
 ```
 
 ---
 
-### Fluxo 2: Produção de Conteúdo e Design Visual no Canva (Canvas MCP)
+## Política de Governança de Arquivos (Zero Conflict Ownership)
 
-```
-[Demanda de Design / Post / Carrossel / Story / Destaques]
-        │
-        ▼
- 1. ORQUESTRADOR ──► Despacha a demanda com objetivo e público-alvo
-        │
-        ▼
- 2. DESIGN CONTENT CREATOR (Estratégia e Redação Não Técnica)
-    ├── Consulta GEMINI.md, Visão de Produto e desafios reais das clínicas
-    ├── Define personas (médicos ginecologistas, gestores, recepcionistas, pacientes)
-    ├── Redige o roteiro slide a slide com gancho forte, corpo e CTA claro
-    ├── Seleciona os materiais oficiais corretos em assets/brand/ (logos, cores, ícones)
-    └── Produz a legenda completa da publicação com hashtags estratégicas
-        │
-        ▼ Entrega Pacote de Conteúdo Estruturado
-        │
- 3. SOCIAL MEDIA DESIGNER (Execução no Canva via Canvas MCP)
-    ├── Cria/abre design editável no Canva no formato correto (1080x1350, 1080x1920)
-    ├── Aplica a paleta oficial (#008080, #005F6A, #66CDAA) e insere logos e ícones
-    ├── Diagrama os textos respeitando hierarquia tipográfica e margens de respiro
-    ├── Revisa legibilidade em tela de celular e contraste WCAG
-    └── Entrega link do design editável e preview
-        │
-        ▼
- 4. ORQUESTRADOR ──► Valida fidelidade com a marca e entrega ao usuário
-```
+Para impedir sobrescritas acidentais em execução concorrente:
+
+| Agente | Diretórios Exclusivos de Escrita (Ownership) |
+| :--- | :--- |
+| **`@database-engineer`** | `backend/src/Canamed.Infrastructure/Persistence/**`, migrations e scripts SQL. |
+| **`@backend-implementer`** | `backend/src/Canamed.Domain/**`, `backend/src/Canamed.Application/**`, `backend/tests/Canamed.UnitTests/**`. |
+| **`@frontend-implementer`** | `frontend/src/features/**`, `frontend/src/components/**`, `frontend/src/styles/**`, testes Vitest. |
+| **`@integration-engineer`** | `backend/src/Canamed.Api/Endpoints/**`, `frontend/src/api/**`, `backend/tests/Canamed.IntegrationTests/**`. |
+| **`@planejador`** | `specs/**`, `docs/plans/**`. |
+| **`@orquestrador`** | Merges finais, branches principais e relatórios consolidados. |
 
 ---
 
-## Como Utilizar no Antigravity / Gemini CLI
+## Como Invocar no Antigravity / Gemini CLI
 
-- **Descoberta Automática:** Todos os agentes em `.agents/agents/*.md` são automaticamente registrados na sessão.
-- **Invocação Direta:**
-  - `@orquestrador` (ou `@orchestrator`): para gerenciar épicos, releases e fluxos completos.
-  - `@planejador` (ou `@planner`): para desenhar SPECs e planos de tasks.
-  - `@medical-systems-domain-expert`: para análise clínica e regulatória de saúde da mulher.
-  - `@ui-ux-reviewer`: para auditoria e padronização visual do frontend.
-  - `@implementador` (ou `@implementer`): para codificação e testes TDD.
-  - `@validador` (ou `@validator`): para revisão de código e evidência de testes.
-  - `@cana-med-qa-engineer` (ou `@qa-engineer`): para execução de testes funcionais e E2E reais no navegador, validação de fluxos e regressão.
-  - `@cana-med-design-content-creator`: para criar conteúdos, narrativas, copys e seleção de ativos para designs.
-  - `@cana-med-social-designer`: para criar e editar designs diretamente no Canva via MCP.
+- **Orquestração Geral:** `@orquestrador` para gerenciar releases, épicos clínicos e novas funcionalidades.
+- **Planejamento de Produto:** `@planejador` para novas SPECs e decomposição de tarefas.
+- **Planejamento de Interface:** `@ui-ux-design-planner` para especificações detalhadas de UI/UX clínica.
+- **Consultoria Clínica:** `@medical-systems-domain-expert` para validações de regras médicas e CFM.
+- **Persistência & Dados:** `@database-engineer` para migrations, índices e interceptors.
+- **Lógica de Backend:** `@backend-implementer` para serviços clínicos e regras de negócio em C#.
+- **Interface & Componentes:** `@frontend-implementer` para componentes React e estilização.
+- **Contratos & Integração:** `@integration-engineer` para DTOs, OpenAPI, endpoints e unificação.
+- **Qualidade & Revisão:** `@validador` para checagem técnica e `@cana-med-qa-engineer` para testes E2E Playwright.
+- **Design no Canva:** `@cana-med-design-content-creator` (copy/estratégia) e `@cana-med-social-designer` (execução Canvas MCP).
